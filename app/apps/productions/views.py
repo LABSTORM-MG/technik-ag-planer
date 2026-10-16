@@ -403,11 +403,11 @@ def crew_respond(request, pk):
     return redirect(next_url)
 
 
-# ---------- To-dos ----------
+# ---------- To-dos (alle Mitglieder dürfen anlegen, abhaken und löschen) ----------
 
 
 @require_POST
-@permission_required_in_org(Perm.MANAGE_PRODUCTIONS)
+@org_required
 def todo_create(request, pk):
     production = _production(request, pk)
     form = TodoForm(request.POST)
@@ -429,7 +429,7 @@ def todo_toggle(request, pk):
 
 
 @require_POST
-@permission_required_in_org(Perm.MANAGE_PRODUCTIONS)
+@org_required
 def todo_delete(request, pk):
     todo = _todo(request, pk)
     todo.delete()

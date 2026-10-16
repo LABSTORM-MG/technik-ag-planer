@@ -13,4 +13,7 @@ class Color(models.TextChoices):
     TEAL = "teal", "Türkis"
     PINK = "pink", "Pink"
     YELLOW = "yellow", "Gelb"
+    VIOLET = "violet", "Violett"
+    LIME = "lime", "Hellgrün"
+    CORAL = "coral", "Koralle"
     GREY = "grey", "Grau"

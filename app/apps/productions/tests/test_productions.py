@@ -214,8 +214,11 @@ def test_detail_shows_location_and_navigation(member_client, concert):
     assert "google.com/maps/dir" in content
 
 
-def test_todos_create_toggle_delete(org, planner_client, student_client, concert):
-    planner_client.post(
+def test_all_members_create_toggle_and_delete_todos(org, student_client, concert):
+    content = student_client.get(reverse("productions:detail", args=[concert.pk])).content.decode()
+    assert "+ To-do" in content
+
+    student_client.post(
         reverse("productions:todo_create", args=[concert.pk]), {"text": "Funkmikros laden"}
     )
     todo = Todo.objects.for_org(org).get()
@@ -224,11 +227,22 @@ def test_todos_create_toggle_delete(org, planner_client, student_client, concert
     todo.refresh_from_db()
     assert todo.done and todo.done_by is not None
 
-    assert (
-        student_client.post(reverse("productions:todo_delete", args=[todo.pk])).status_code == 403
-    )
-    planner_client.post(reverse("productions:todo_delete", args=[todo.pk]))
+    student_client.post(reverse("productions:todo_delete", args=[todo.pk]))
     assert not Todo.objects.exists()
+
+
+def test_palette_has_twelve_colors_with_tokens():
+    from pathlib import Path
+
+    from apps.productions.palette import Color
+
+    app_dir = Path(__file__).resolve().parents[3]
+    tokens = (app_dir / "static/css/tokens.css").read_text()
+    css = (app_dir / "static/css/app.css").read_text()
+    assert len(Color) == 12
+    for color in Color:
+        assert f"--palette-{color.value}:" in tokens
+        assert f".color-{color.value} " in css
 
 
 def test_teacher_registers_as_supervisor(org, make_member, login, concert):

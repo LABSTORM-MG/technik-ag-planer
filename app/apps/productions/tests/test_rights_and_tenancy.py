@@ -91,7 +91,6 @@ STUDENT_FORBIDDEN = [
     ("get", "productions:job_create", "production"),
     ("get", "productions:job_crew", "job"),
     ("post", "productions:crew_remove", "assignment"),
-    ("post", "productions:todo_create", "production"),
     ("get", "productions:trash", None),
     ("get", "productions:categories", None),
     ("get", "productions:statuses", None),

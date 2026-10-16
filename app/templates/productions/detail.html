@@ -106,16 +106,13 @@
             <button type="submit" class="todo__check{% if todo.done %} todo__check--done{% endif %}" aria-label="{% if todo.done %}Als offen markieren{% else %}Abhaken{% endif %}: {{ todo.text }}" aria-pressed="{{ todo.done|yesno:'true,false' }}"></button>
             <span class="list__title{% if todo.done %} todo__text--done{% endif %}">{{ todo.text }}</span>
           </form>
-          {% if org_perms.MANAGE_PRODUCTIONS %}
-            <form method="post" action="{% url 'productions:todo_delete' todo.pk %}">
-              {% csrf_token %}<button type="submit" class="icon-button" aria-label="To-do löschen">{% include "includes/icon.html" with name="close" %}</button>
-            </form>
-          {% endif %}
+          <form method="post" action="{% url 'productions:todo_delete' todo.pk %}">
+            {% csrf_token %}<button type="submit" class="icon-button" aria-label="To-do löschen">{% include "includes/icon.html" with name="close" %}</button>
+          </form>
         </li>
       {% empty %}
         <li class="list__item muted">Keine To-dos.</li>
       {% endfor %}
-      {% if org_perms.MANAGE_PRODUCTIONS %}
         <li class="list__item">
           <form method="post" action="{% url 'productions:todo_create' production.pk %}" class="inline-form">
             {% csrf_token %}
@@ -124,7 +121,6 @@
             <button type="submit" class="button button--secondary button--small">Hinzufügen</button>
           </form>
         </li>
-      {% endif %}
     </ul>
   </section>
 
