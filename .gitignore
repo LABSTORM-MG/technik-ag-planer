@@ -1,0 +1,32 @@
+# Geheimnisse
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Django
+*.sqlite3
+/app/media/
+/app/staticfiles/
+
+# Backups
+/deploy/backup/data/
+*.dump
+*.sql.gz
+
+# Editor / System
+.idea/
+.vscode/
+*.swp
+.DS_Store
