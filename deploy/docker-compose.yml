@@ -1,0 +1,82 @@
+# Betrieb auf dem eigenen Server. Konfiguration in ../.env (Vorlage: ../.env.example).
+#   docker compose -f deploy/docker-compose.yml up -d
+
+x-app: &app
+  image: ghcr.io/labstorm-mg/technik-ag-planer:${APP_VERSION:-latest}
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile
+    target: prod
+  env_file: ../.env
+  restart: unless-stopped
+  depends_on:
+    db:
+      condition: service_healthy
+    cache:
+      condition: service_healthy
+
+services:
+  web:
+    <<: *app
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import os, urllib.request;
+          host = os.environ["DJANGO_ALLOWED_HOSTS"].split(",")[0];
+          urllib.request.urlopen(urllib.request.Request("http://localhost:8000/healthz/",
+          headers={"Host": host, "X-Forwarded-Proto": "https"}), timeout=5)
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  worker:
+    <<: *app
+    command: ["celery", "-A", "config", "worker", "--beat", "--loglevel=info"]
+
+  db:
+    image: postgres:17-alpine
+    env_file: ../.env
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  caddy:
+    image: caddy:2-alpine
+    env_file: ../.env
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  pgdata:
+  redisdata:
+  caddy_data:
+  caddy_config:

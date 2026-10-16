@@ -1,0 +1,14 @@
+{% comment %}
+  Bottom-Sheet (Handy) bzw. Dialog (Computer), wiederverwendbar für Menüs und Formulare.
+  Verwendung:
+    {% include "includes/sheet_start.html" with sheet_id="sheet-x" title="Titel" %}
+      … Inhalt …
+    {% include "includes/sheet_end.html" %}
+  Öffnen mit einem Button: data-sheet-open="sheet-x"
+{% endcomment %}
+<dialog class="sheet" id="{{ sheet_id }}" aria-labelledby="{{ sheet_id }}-title" data-sheet>
+  <div class="sheet__grip" data-sheet-grip aria-hidden="true"></div>
+  <div class="sheet__header">
+    <h2 class="sheet__title" id="{{ sheet_id }}-title">{{ title }}</h2>
+    <button type="button" class="icon-button" data-sheet-close aria-label="Schließen">{% include "includes/icon.html" with name="close" %}</button>
+  </div>
