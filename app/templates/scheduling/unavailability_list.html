@@ -1,0 +1,31 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Nicht verfügbar{% endblock %}
+{% block page_title %}Nicht verfügbar{% endblock %}
+{% block page_content %}
+<div class="stack">
+  <p class="muted">Trage Tage oder Zeiten ein, an denen du nicht kannst. Sie erscheinen im Kalender der AG, und beim Einteilen gibt es eine Warnung.</p>
+  <div><a class="button button--primary" href="{% url 'scheduling:unavailability_create' %}" data-sheet-url>+ Nicht verfügbar</a></div>
+  {% if entries %}
+    <ul class="list">
+      {% for u in entries %}
+        <li class="list__item">
+          <div class="list__main">
+            <a class="list__link list__title" href="{% url 'scheduling:unavailability_edit' u.pk %}" data-sheet-url>
+              {% if u.start_date == u.end_date %}{{ u.start_date|date:"D., d.m.Y" }}{% else %}{{ u.start_date|date:"D., d.m." }} – {{ u.end_date|date:"D., d.m.Y" }}{% endif %}
+            </a>
+            <span class="list__subtitle">{% if u.all_day %}ganztägig{% else %}{{ u.start_time|time:"H:i"|default:"0:00" }} – {{ u.end_time|time:"H:i"|default:"24:00" }} Uhr{% endif %}{% if u.note %} · {{ u.note }}{% endif %}</span>
+          </div>
+          <div class="list__actions">
+            <a class="button button--secondary button--small" href="{% url 'scheduling:ics_unavailability' u.pk %}">.ics</a>
+            <form method="post" action="{% url 'scheduling:unavailability_delete' u.pk %}" data-confirm="Eintrag löschen?">
+              {% csrf_token %}<button type="submit" class="icon-button" aria-label="Löschen">{% include "includes/icon.html" with name="close" %}</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Keine Einträge.</p>
+  {% endif %}
+</div>
+{% endblock %}

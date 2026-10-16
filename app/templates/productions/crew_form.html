@@ -8,7 +8,7 @@
   {% if conflicts %}
     <div class="message message--warning" role="alert">
       <p><strong>Achtung, Überschneidung:</strong> {{ form.cleaned_data.membership.user }} ist zu dieser Zeit schon eingeplant:</p>
-      <ul>{% for c in conflicts %}<li>{{ c.job.production }} – {{ c.job.name }}, {{ c.job.start_time|time:"H:i" }}–{{ c.job.end_time|time:"H:i" }} Uhr ({{ c.get_status_display }})</li>{% endfor %}</ul>
+      {% include "scheduling/includes/conflicts.html" %}
       <p>Trotzdem eintragen?</p>
     </div>
   {% endif %}

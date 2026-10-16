@@ -189,3 +189,13 @@ function initForms(root) {
 }
 
 initForms(document);
+
+// Schulstunde gewählt → zugehöriges Zeitfeld sofort ausfüllen (Server rechnet zusätzlich um)
+document.addEventListener("change", (event) => {
+  const select = event.target.closest("select[data-period-map]");
+  if (!select || !select.value) return;
+  const target = document.getElementById(select.dataset.periodTarget.replace("__prefix__", ""))
+    || select.closest(".time-period")?.querySelector('input[type="time"]');
+  const times = JSON.parse(select.dataset.periodMap)[select.value];
+  if (target && times) target.value = select.dataset.periodEdge === "start" ? times[0] : times[1];
+});

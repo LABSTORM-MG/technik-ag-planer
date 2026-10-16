@@ -22,7 +22,7 @@ class Section:
 DASHBOARD = Section(
     "dashboard", "Dashboard", "home", "productions:dashboard", 3, mobile_label="Home"
 )
-CALENDAR = Section("calendar", "Kalender", "calendar", "core:calendar", 4)
+CALENDAR = Section("calendar", "Kalender", "calendar", "scheduling:calendar", 4)
 PRODUCTIONS = Section("productions", "Produktionen", "clapper", "productions:list", 3)
 INVENTORY = Section("inventory", "Material", "box", "core:inventory", 6)
 BOARD = Section("board", "Board", "chat", "core:board", 5)
@@ -42,6 +42,7 @@ NEW_ITEMS = [
         "hint": "Einfacher Termin, z. B. AG-Treffen",
         "icon": "calendar",
         "perm": Perm.CREATE_EVENTS,
+        "url_name": "scheduling:event_create",
     },
     {
         "label": "Produktion",
@@ -55,6 +56,7 @@ NEW_ITEMS = [
         "hint": "Tage oder Zeiträume, an denen du nicht kannst",
         "icon": "slash",
         "perm": Perm.OWN_UNAVAILABILITY,
+        "url_name": "scheduling:unavailability_create",
     },
 ]
 

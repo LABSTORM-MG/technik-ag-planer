@@ -13,7 +13,7 @@ PUBLIC_URLS = [
 ]
 PROTECTED_URLS = [
     reverse("productions:dashboard"),
-    reverse("core:calendar"),
+    reverse("scheduling:calendar"),
     reverse("organizations:settings"),
     reverse("organizations:members"),
     reverse("accounts:profile"),

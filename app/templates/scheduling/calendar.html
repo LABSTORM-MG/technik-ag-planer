@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Kalender – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Kalender{% endblock %}
+{% block content %}
+<div class="stack">
+  <header class="page-header page-header--actions">
+    <h1 class="page-title">{{ title }}</h1>
+    <div class="toolbar">
+      <a class="icon-button" href="{{ links.prev }}" aria-label="Zurück">‹</a>
+      <a class="button button--secondary button--small" href="{{ links.today }}">Heute</a>
+      <a class="icon-button" href="{{ links.next }}" aria-label="Weiter">›</a>
+      {% if org_perms.CREATE_EVENTS %}<a class="button button--primary button--small" href="{{ new_event_url }}" data-sheet-url>+ Termin</a>{% endif %}
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <nav class="segmented" aria-label="Ansicht">
+      <a href="{{ links.month }}"{% if view == "monat" %} aria-current="page"{% endif %}>Monat</a>
+      <a href="{{ links.week }}"{% if view == "woche" %} aria-current="page"{% endif %}>Woche</a>
+      <a href="{{ links.agenda }}"{% if view == "agenda" %} aria-current="page"{% endif %}>Agenda</a>
+    </nav>
+    <nav class="segmented" aria-label="Filter">
+      <a href="{{ links.all }}"{% if not mine %} aria-current="page"{% endif %}>Alle</a>
+      <a href="{{ links.mine }}"{% if mine %} aria-current="page"{% endif %}>Meine</a>
+    </nav>
+  </div>
+
+  {% if view == "agenda" %}
+    {% for day in agenda %}
+      <section>
+        <h2 class="section-title{% if day.is_today %} cal-today-label{% endif %}">{{ day.date|date:"l, j. F" }}{% if day.is_today %} · heute{% endif %}</h2>
+        <ul class="list">{% for e in day.all %}{% include "scheduling/includes/entry.html" %}{% endfor %}</ul>
+      </section>
+    {% empty %}
+      <p class="muted">Keine Einträge in den nächsten Wochen.</p>
+    {% endfor %}
+  {% else %}
+    <div class="cal cal--{{ view }}" role="grid" aria-label="{{ title }}">
+      <div class="cal__row cal__head" role="row">{% for wd in weekdays %}<div role="columnheader">{{ wd }}</div>{% endfor %}</div>
+      {% for week in grid %}
+        <div class="cal__row" role="row">
+          {% for day in week %}
+            <a role="gridcell" href="{{ day.url }}" class="cal__day{% if not day.in_month %} cal__day--outside{% endif %}{% if day.is_today %} cal__day--today{% endif %}{% if day.is_selected %} cal__day--selected{% endif %}"{% if day.is_selected %} aria-current="date"{% endif %}>
+              <span class="cal__num">{% if view == "woche" %}{{ day.date|date:"D j." }}{% else %}{{ day.date.day }}{% endif %}</span>
+              {% for e in day.entries %}
+                <span class="cal-bar cal-bar--{{ e.kind }}{% if e.color %} color-{{ e.color }}{% endif %}{% if e.cancelled %} cal-bar--cancelled{% endif %}">{{ e.label }}</span>
+              {% endfor %}
+              {% if day.overflow %}<span class="cal__more">+{{ day.overflow }}</span>{% endif %}
+            </a>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <section class="card cal-detail" id="tag">
+      <div class="section-head">
+        <h2 class="section-title">{{ selected|date:"l, j. F" }}</h2>
+        {% if org_perms.CREATE_EVENTS %}<a class="button button--secondary button--small" href="{{ new_event_url }}" data-sheet-url>+ Termin an diesem Tag</a>{% endif %}
+      </div>
+      {% if selected_entries %}
+        <ul class="list list--flat">{% for e in selected_entries %}{% include "scheduling/includes/entry.html" %}{% endfor %}</ul>
+      {% else %}
+        <p class="muted">Keine Termine an diesem Tag.</p>
+      {% endif %}
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

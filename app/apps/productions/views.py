@@ -11,6 +11,8 @@ from django.views.decorators.http import require_POST
 from apps.organizations.decorators import org_required, permission_required_in_org
 from apps.organizations.models import Membership
 from apps.organizations.permissions import Perm
+from apps.scheduling.models import EventAttendee
+from apps.scheduling.services import find_conflicts
 
 from . import services
 from .forms import (
@@ -90,7 +92,15 @@ def dashboard(request):
     today = timezone.localdate()
     upcoming = list(_productions(request).upcoming(today).prefetch_related("jobs"))
     my_assignments = list(_my_assignments(request, today))
-    open_requests = [a for a in my_assignments if not a.is_confirmed]
+    my_events = list(
+        EventAttendee.objects.for_org(request.organization)
+        .filter(membership=request.membership, event__date__gte=today)
+        .select_related("event")
+        .order_by("event__date", "event__start_time")
+    )
+    open_requests = [a for a in my_assignments if not a.is_confirmed] + [
+        a for a in my_events if not a.is_confirmed and not a.event.cancelled
+    ]
 
     next_production = upcoming[0] if upcoming else None
     next_job = next_production.next_job() if next_production else None
@@ -106,6 +116,7 @@ def dashboard(request):
             "next_production": next_production,
             "next_job": next_job,
             "my_assignments": my_assignments,
+            "my_events": my_events,
             "open_request_count": len(open_requests),
             "view": view,
         },
@@ -206,7 +217,12 @@ def _production_form(request, production=None):
     form = ProductionForm(
         request.POST or None, instance=instance, organization=request.organization
     )
-    formset = JobFormSet(request.POST or None, instance=instance, prefix="jobs")
+    formset = JobFormSet(
+        request.POST or None,
+        instance=instance,
+        prefix="jobs",
+        form_kwargs={"organization": request.organization},
+    )
     if request.method == "POST" and form.is_valid():
         # Jobs gegen die (neuen) Daten der Produktion prüfen
         formset.instance = form.instance
@@ -308,7 +324,7 @@ def _job_form(request, production, job=None):
     instance = job or Job(production=production, organization=request.organization)
     if job is None and request.method == "GET":
         instance.date = production.start_date
-    form = JobForm(request.POST or None, instance=instance)
+    form = JobForm(request.POST or None, instance=instance, organization=request.organization)
     if request.method == "POST" and form.is_valid():
         saved = form.save(commit=False)
         saved.production = production
@@ -354,7 +370,9 @@ def job_crew(request, pk):
     conflicts = []
     if request.method == "POST" and form.is_valid():
         membership = form.cleaned_data["membership"]
-        conflicts = list(services.overlapping_assignments(membership, job))
+        conflicts = find_conflicts(
+            membership, job.start_datetime, job.end_datetime, exclude_job=job
+        )
         if not conflicts or form.cleaned_data["ignore_conflicts"]:
             assignment = services.assign(
                 job,

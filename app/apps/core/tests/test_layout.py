@@ -5,7 +5,7 @@ from apps.core import navigation
 
 PAGES = [
     ("productions:dashboard", "Dashboard"),
-    ("core:calendar", "Kalender"),
+    ("scheduling:calendar", "Kalender"),
     ("productions:list", "Produktionen"),
     ("core:inventory", "Material"),
     ("core:board", "Board"),
@@ -84,7 +84,7 @@ def test_new_menu_lists_all_entries_for_planners(org, make_member, login, role):
 
 
 def test_active_menu_item_is_marked(client):
-    content = client.get(reverse("core:calendar")).content.decode()
+    content = client.get(reverse("scheduling:calendar")).content.decode()
     sidebar = content.split('<aside class="sidebar"', 1)[1].split("</aside>", 1)[0]
 
     active = sidebar.split('aria-current="page"', 1)[1].split("</a>", 1)[0]

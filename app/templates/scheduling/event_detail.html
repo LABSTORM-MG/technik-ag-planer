@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ event.title }} – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Termin{% endblock %}
+{% block content %}
+<article class="stack">
+  <header class="page-header">
+    <p class="eyebrow"><a href="{% url 'scheduling:calendar' %}?datum={{ event.date|date:'Y-m-d' }}&amp;tag={{ event.date|date:'Y-m-d' }}">← Kalender</a>{% if event.series %} · Serie {{ event.series.get_frequency_display }} bis {{ event.series.until|date:"d.m.Y" }}{% endif %}</p>
+    <h1 class="page-title{% if event.cancelled %} todo__text--done{% endif %}">{{ event.title }}</h1>
+    <p class="muted">{{ event.date|date:"l, j. F Y" }} · {% if event.all_day %}ganztägig{% else %}{{ event.start_time|time:"H:i" }}–{{ event.end_time|time:"H:i" }} Uhr{% endif %}{% if event.location %} · {{ event.location }}{% endif %}</p>
+    {% if event.cancelled %}<p><span class="tag tag--warning">abgesagt</span></p>{% endif %}
+    <div class="toolbar">
+      <a class="button button--secondary button--small" href="{% url 'scheduling:ics_event' event.pk %}">In Kalender übernehmen</a>
+      {% if org_perms.CREATE_EVENTS %}
+        <a class="button button--secondary button--small" href="{% url 'scheduling:event_edit' event.pk %}" data-sheet-url>Bearbeiten</a>
+        <form method="post" action="{% url 'scheduling:event_cancel' event.pk %}">
+          {% csrf_token %}<button type="submit" class="button button--secondary button--small">{% if event.cancelled %}Absage zurücknehmen{% else %}Absagen{% endif %}</button>
+        </form>
+        <a class="button button--secondary button--small" href="{% url 'scheduling:event_delete' event.pk %}">Löschen</a>
+      {% endif %}
+    </div>
+  </header>
+
+  {% if event.notes %}<section class="card"><h2 class="section-title">Notizen</h2><p class="prewrap">{{ event.notes }}</p></section>{% endif %}
+
+  <section>
+    <div class="section-head">
+      <h2 class="section-title">Leute</h2>
+      {% if org_perms.CREATE_EVENTS %}<a class="button button--secondary button--small" href="{% url 'scheduling:event_attendees' event.pk %}" data-sheet-url>Einteilen oder anfragen</a>{% endif %}
+    </div>
+    {% if attendees %}
+      <ul class="crew card">
+        {% for a in attendees %}
+          <li class="crew__item">
+            <span class="crew__name">{{ a.membership.user }}</span>
+            <span class="tag {% if a.is_confirmed %}tag--success{% else %}tag--warning{% endif %}">{{ a.get_status_display }}</span>
+            {% if a.membership_id == current_membership.pk and not a.is_confirmed %}
+              <form method="post" action="{% url 'scheduling:attendee_respond' a.pk %}">
+                {% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" name="antwort" value="ja" class="button button--primary button--small">Annehmen</button>
+                <button type="submit" name="antwort" value="nein" class="button button--secondary button--small">Ablehnen</button>
+              </form>
+            {% endif %}
+            {% if org_perms.CREATE_EVENTS %}
+              <form method="post" action="{% url 'scheduling:attendee_remove' a.pk %}">
+                {% csrf_token %}<button type="submit" class="icon-button" aria-label="{{ a.membership.user }} entfernen">{% include "includes/icon.html" with name="close" %}</button>
+              </form>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Niemand eingeteilt.</p>
+    {% endif %}
+  </section>
+</article>
+{% endblock %}

@@ -6,22 +6,6 @@ from django.utils import timezone
 from .models import CrewAssignment, Job, Production, ProductionStatus, Todo
 
 
-def overlapping_assignments(membership, job):
-    """Andere Jobs, in denen die Person zur selben Zeit eingeteilt oder angefragt ist."""
-    return (
-        CrewAssignment.objects.for_org(job.organization)
-        .filter(
-            membership=membership,
-            job__date=job.date,
-            job__start_time__lt=job.end_time,
-            job__end_time__gt=job.start_time,
-            job__production__deleted_at__isnull=True,
-        )
-        .exclude(job=job)
-        .select_related("job", "job__production")
-    )
-
-
 def assign(job, membership, *, status, role_label="", requested_by=None):
     """Fragt an oder teilt ein. Bestehender Eintrag wird aktualisiert."""
     assignment, created = CrewAssignment.objects.get_or_create(

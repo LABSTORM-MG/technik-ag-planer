@@ -1,0 +1,26 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Stundenraster{% endblock %}
+{% block page_title %}Stundenraster{% endblock %}
+{% block page_content %}
+<div class="stack">
+  <p class="muted">Die Unterrichtsstunden gelten an allen Schultagen gleich. Pausen ergeben sich aus den Lücken. Zeiten lassen sich danach überall auch als Schulstunde eingeben.</p>
+  {% if is_suggestion %}<ul class="messages"><li class="message message--warning">Noch kein Stundenraster gespeichert – unten steht ein Vorschlag. Bitte anpassen und speichern.</li></ul>{% endif %}
+  <form method="post" class="form card" novalidate>
+    {% csrf_token %}
+    {{ formset.management_form }}
+    {% if formset.non_form_errors %}<ul class="form-errors" role="alert">{% for e in formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    <div class="periods">
+      <div class="periods__row periods__head"><span>Stunde</span><span>Beginn</span><span>Ende</span><span>Löschen</span></div>
+      {% for f in formset %}
+        <div class="periods__row">
+          {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+          <span>{{ f.number }}</span><span>{{ f.start_time }}</span><span>{{ f.end_time }}</span>
+          <span>{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</span>
+          {% if f.errors %}<span class="field__error periods__error">{% for field in f %}{% for e in field.errors %}{{ e }} {% endfor %}{% endfor %}</span>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <div><button type="submit" class="button button--primary">Speichern</button></div>
+  </form>
+</div>
+{% endblock %}

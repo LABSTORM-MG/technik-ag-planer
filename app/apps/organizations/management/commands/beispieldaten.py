@@ -55,6 +55,7 @@ class Command(BaseCommand):
                 )
 
         self._productions(Organization.objects.get(name="Technik-AG Nord"))
+        self._scheduling(Organization.objects.get(name="Technik-AG Nord"))
 
         self.stdout.write(self.style.SUCCESS("Beispieldaten angelegt."))
         self.stdout.write(f"Passwort für alle Konten: {PASSWORD}")
@@ -149,3 +150,57 @@ class Command(BaseCommand):
         assign(show, members["emma@nord.example"], status="confirmed", role_label="Monitor")
         for text in ["Funkmikros laden", "Bühnenplan drucken"]:
             Todo.objects.create(organization=org, production=concert, text=text)
+
+    def _scheduling(self, org):
+        from datetime import date, time, timedelta
+
+        from django.utils import timezone
+
+        from apps.scheduling.models import Event, SchoolPeriod, Unavailability
+        from apps.scheduling.periods import DEFAULT_PERIODS
+        from apps.scheduling.services import create_event
+
+        if SchoolPeriod.objects.for_org(org).exists():
+            return
+        for number, start, end in DEFAULT_PERIODS:
+            SchoolPeriod.objects.create(
+                organization=org, number=number, start_time=start, end_time=end
+            )
+        today = timezone.localdate()
+        # Nächster Donnerstag, wöchentlich bis Schuljahresende (30. Juni)
+        first = today + timedelta(days=(3 - today.weekday()) % 7 or 7)
+        until = date(first.year + (first.month >= 7), 6, 30)
+        if not Event.objects.for_org(org).exists():
+            create_event(
+                org,
+                {
+                    "title": "AG-Treffen",
+                    "date": first,
+                    "start_time": time(14),
+                    "end_time": time(15, 30),
+                    "location": "Technikraum",
+                    "notes": "",
+                },
+                frequency="weekly",
+                until=until,
+            )
+        members = {m.user.email: m for m in Membership.objects.for_org(org).select_related("user")}
+        # Emma schreibt eine Klausur (1.–4. Stunde), Ben ist zwei Tage auf Klassenfahrt
+        klausur = today + timedelta(days=2)
+        Unavailability.objects.create(
+            organization=org,
+            membership=members["emma@nord.example"],
+            start_date=klausur,
+            end_date=klausur,
+            start_time=time(8),
+            end_time=time(11, 20),
+            note="Klausur",
+        )
+        trip = today + timedelta(days=5)
+        Unavailability.objects.create(
+            organization=org,
+            membership=members["ben@nord.example"],
+            start_date=trip,
+            end_date=trip + timedelta(days=1),
+            note="Klassenfahrt",
+        )

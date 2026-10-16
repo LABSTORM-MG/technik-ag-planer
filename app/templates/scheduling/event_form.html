@@ -1,0 +1,36 @@
+{% extends layout %}
+{% block title %}{% if event %}Termin bearbeiten{% else %}Neuer Termin{% endif %} – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Termin{% endblock %}
+{% block content %}
+  <h1 class="page-title sheet-title">{% if event %}Termin bearbeiten{% else %}Neuer Termin{% endif %}</h1>
+  <form method="post" action="{% if event %}{% url 'scheduling:event_edit' event.pk %}{% else %}{% url 'scheduling:event_create' %}{% endif %}" class="form" novalidate{% if not event %} data-draft="event-new"{% endif %}>
+    {% csrf_token %}
+    <p class="draft-note" data-draft-note hidden>Entwurf wiederhergestellt.</p>
+    {% if form.non_field_errors %}<ul class="form-errors" role="alert">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    {% include "includes/field.html" with field=form.title %}
+    {% include "includes/field.html" with field=form.date %}
+    {% include "includes/time_or_period.html" %}
+    {% include "includes/field.html" with field=form.location %}
+    {% include "includes/field.html" with field=form.notes %}
+    {% if form.repeat %}
+      <details class="disclosure"{% if form.repeat.value %} open{% endif %}>
+        <summary>Wiederholen (Serie)</summary>
+        <div class="form">
+          {% include "includes/field.html" with field=form.repeat %}
+          {% include "includes/field.html" with field=form.until %}
+        </div>
+      </details>
+    {% endif %}
+    {% if scope_form %}
+      <div class="card">
+        <p class="muted">Dieser Termin gehört zu einer Serie.</p>
+        {% include "includes/field.html" with field=scope_form.scope %}
+      </div>
+    {% endif %}
+    <p class="field__help">Leute einteilen oder anfragen kannst du nach dem Speichern.</p>
+    <div class="form-actions">
+      {% if not event %}<button type="button" class="button button--secondary" data-draft-discard>Entwurf verwerfen</button>{% else %}<a class="button button--secondary" href="{% url 'scheduling:event_detail' event.pk %}">Abbrechen</a>{% endif %}
+      <button type="submit" class="button button--primary">Speichern</button>
+    </div>
+  </form>
+{% endblock %}

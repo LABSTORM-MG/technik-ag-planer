@@ -1,0 +1,11 @@
+{% comment %}Beginn/Ende als Uhrzeit oder Schulstunde. Parameter: form (mit PeriodTimesMixin){% endcomment %}
+<div class="form-row">
+  <div class="time-period">
+    {% include "includes/field.html" with field=form.start_time %}
+    {% if form.start_period %}{% include "includes/field.html" with field=form.start_period %}{% endif %}
+  </div>
+  <div class="time-period">
+    {% include "includes/field.html" with field=form.end_time %}
+    {% if form.end_period %}{% include "includes/field.html" with field=form.end_period %}{% endif %}
+  </div>
+</div>

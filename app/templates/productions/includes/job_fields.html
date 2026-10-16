@@ -2,11 +2,8 @@
   {% for hidden in jf.hidden_fields %}{{ hidden }}{% endfor %}
   {% if jf.non_field_errors %}<ul class="form-errors">{% for e in jf.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
   {% include "includes/field.html" with field=jf.name %}
-  <div class="form-row form-row--3">
-    {% include "includes/field.html" with field=jf.date %}
-    {% include "includes/field.html" with field=jf.start_time %}
-    {% include "includes/field.html" with field=jf.end_time %}
-  </div>
+  {% include "includes/field.html" with field=jf.date %}
+  {% include "includes/time_or_period.html" with form=jf %}
   {% include "includes/field.html" with field=jf.meeting_point %}
   {% if jf.DELETE %}<div class="field field--checkbox">{{ jf.DELETE }}<label for="{{ jf.DELETE.id_for_label }}">Job entfernen</label></div>{% endif %}
 </div>

@@ -1,6 +1,6 @@
 # CLAUDE.md – Projektregeln
 
-Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Aktueller Meilenstein: **3 – Produktionen** (danach 4 – Kalender und Zeiten) (siehe Abschnitt 15 der Feature-Liste).
+Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Aktueller Meilenstein: **4 – Kalender und Zeiten** (danach 5 – Board) (siehe Abschnitt 15 der Feature-Liste).
 
 ## Regeln
 
@@ -32,3 +32,5 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Aktueller Meilenst
 - Farben, Abstände, Radien: `app/static/css/tokens.css`
 - Formulare: Template mit `{% extends layout %}`, Link mit `data-sheet-url` öffnet es im Bottom-Sheet; `<form data-draft="…">` speichert Entwürfe im Browser (ADR 0005)
 - `app/apps/productions/`: Produktionen (weich gelöscht: `objects` vs. `all_objects`), Jobs, Crew, To-dos, Dashboard
+- `app/apps/scheduling/`: Kalender (`calendar_entries` als gemeinsame Quelle), Termine/Serien, „Nicht verfügbar“, Stundenraster (`PeriodTimesMixin` für Zeitfelder), Konflikte (`find_conflicts`), ICS (ADR 0006)
+- Produktions-Fixtures (`make_production`, `make_job`, `make_assignment`, `concert`, …): `app/tests/fixtures_productions.py`
