@@ -1,0 +1,14 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Zwei-Faktor für alle{% endblock %}
+{% block page_title %}Zwei-Faktor für alle Mitglieder{% endblock %}
+{% block page_content %}
+  <section class="card">
+    <p>Wenn die Pflicht aktiv ist, muss jedes Mitglied eine Authenticator-App einrichten, bevor es die App weiter nutzen kann. Standard: aus – freiwillig je Person.</p>
+    <p class="muted">Aktuell ohne Zwei-Faktor: {{ without_2fa }} Mitglied{{ without_2fa|pluralize:"er" }}.</p>
+    <form method="post" class="form" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <div><button type="submit" class="button button--primary">Speichern</button></div>
+    </form>
+  </section>
+{% endblock %}

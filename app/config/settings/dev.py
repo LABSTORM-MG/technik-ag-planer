@@ -14,6 +14,8 @@ EMAIL_HOST = env("EMAIL_HOST", default="localhost")
 EMAIL_PORT = env.int("EMAIL_PORT", default=1025)
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=False)
 
+ADMIN_REQUIRE_2FA = env.bool("DJANGO_ADMIN_REQUIRE_2FA", default=False)
+
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},

@@ -1,0 +1,17 @@
+{% if current_organization %}
+  <div class="org-switch">
+    <span class="org-switch__name">{{ current_organization.name }}</span>
+    {% if user_memberships|length > 1 %}
+      <form method="post" action="{% url 'organizations:switch' %}" data-auto-submit>
+        {% csrf_token %}
+        <label class="visually-hidden" for="org-switch-{{ place|default:'nav' }}">AG wechseln</label>
+        <select name="org" id="org-switch-{{ place|default:'nav' }}">
+          {% for m in user_memberships %}
+            <option value="{{ m.organization_id }}"{% if m.organization_id == current_organization.pk %} selected{% endif %}>{{ m.organization.name }}</option>
+          {% endfor %}
+        </select>
+        <noscript><button type="submit" class="button button--secondary button--small">Wechseln</button></noscript>
+      </form>
+    {% endif %}
+  </div>
+{% endif %}

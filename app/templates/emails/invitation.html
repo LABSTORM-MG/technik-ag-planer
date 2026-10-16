@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="de">
+<body style="font-family: system-ui, sans-serif; line-height: 1.5;">
+  <p>Hallo,</p>
+  <p>{% if invited_by %}{{ invited_by }} hat dich{% else %}du wurdest{% endif %} in die <strong>{{ organization.name }}</strong> im Technik-AG Planer eingeladen{% if invitation.role == "owner" %} – als Owner der AG{% endif %}.</p>
+  <p><a href="{{ url }}">Einladung annehmen</a></p>
+  <p>Der Link ist {{ valid_days }} Tage gültig und funktioniert nur einmal.</p>
+  <p>Wenn du mit dieser Einladung nichts anfangen kannst, ignoriere diese E-Mail einfach.</p>
+</body>
+</html>

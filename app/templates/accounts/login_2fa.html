@@ -1,0 +1,14 @@
+{% extends "auth_base.html" %}
+{% block title %}Code eingeben{% endblock %}
+{% block content %}
+  <h1 class="page-title">Code eingeben</h1>
+  <p class="muted">Öffne deine Authenticator-App und gib den 6-stelligen Code ein.</p>
+  <form method="post" class="form" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <button type="submit" class="button button--primary button--block">Bestätigen</button>
+  </form>
+{% endblock %}
+{% block footer %}
+  <p class="auth__footer"><a href="{% url 'accounts:login' %}">Zurück zur Anmeldung</a> · Handy verloren? Wende dich an den Betreiber.</p>
+{% endblock %}

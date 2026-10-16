@@ -6,7 +6,7 @@ export UID := $(shell id -u)
 export GID := $(shell id -g)
 
 .DEFAULT_GOAL := help
-.PHONY: help dev down logs build test lint format migrate makemigrations shell superuser
+.PHONY: help dev down logs build test lint format migrate makemigrations shell superuser beispieldaten reset-db
 
 help: ## Diese Übersicht
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-16s %s\n", $$1, $$2}'
@@ -16,6 +16,11 @@ dev: ## Entwicklungsumgebung starten (App :8000, Mailpit :8025)
 
 down: ## Entwicklungsumgebung stoppen
 	$(COMPOSE_DEV) down
+
+reset-db: ## Entwicklungs-Datenbank löschen und neu aufsetzen (alle lokalen Daten weg!)
+	$(COMPOSE_DEV) down -v
+	$(COMPOSE_DEV) up -d db cache
+	$(RUN_DEV) python manage.py migrate
 
 logs: ## Logs der Entwicklungsumgebung
 	$(COMPOSE_DEV) logs -f
@@ -43,3 +48,6 @@ shell: ## Django-Shell
 
 superuser: ## Betreiber-Konto für den Django-Admin anlegen
 	$(RUN_DEV) python manage.py createsuperuser
+
+beispieldaten: ## Zwei Beispiel-AGs mit Konten in allen Rollen anlegen
+	$(RUN_DEV) python manage.py beispieldaten

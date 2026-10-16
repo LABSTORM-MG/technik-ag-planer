@@ -1,0 +1,12 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Name und Jahrgangsstufe{% endblock %}
+{% block page_title %}Name und Jahrgangsstufe{% endblock %}
+{% block page_content %}
+  <section class="card">
+    <form method="post" class="form" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <div><button type="submit" class="button button--primary">Speichern</button></div>
+    </form>
+  </section>
+{% endblock %}

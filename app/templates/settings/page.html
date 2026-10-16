@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% comment %}Unterseite der Einstellungen mit Zurück-Link. Blöcke: page_title, page_content{% endcomment %}
+{% block title %}{% block page_title_text %}{% endblock %} – Einstellungen{% endblock %}
+{% block topbar_title %}Einstellungen{% endblock %}
+{% block content %}
+  <header class="page-header">
+    <p class="eyebrow"><a href="{% url 'organizations:settings' %}">← Einstellungen</a></p>
+    <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+  </header>
+  {% block page_content %}{% endblock %}
+{% endblock %}

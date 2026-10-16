@@ -57,3 +57,15 @@
     grip.addEventListener("pointercancel", end);
   });
 })();
+
+// Auswahlfelder, die beim Ändern direkt absenden (z. B. „AG wechseln“)
+document.addEventListener("change", (event) => {
+  const form = event.target.closest("form[data-auto-submit]");
+  if (form && event.target.matches("select")) form.requestSubmit();
+});
+
+// Sicherheitsabfrage vor folgenreichen Aktionen: <form data-confirm="Wirklich …?">
+document.addEventListener("submit", (event) => {
+  const message = event.target.dataset?.confirm;
+  if (message && !window.confirm(message)) event.preventDefault();
+});

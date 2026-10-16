@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 
+from apps.organizations.permissions import Perm
+
 
 @dataclass(frozen=True)
 class Section:
@@ -22,7 +24,7 @@ CALENDAR = Section("calendar", "Kalender", "calendar", "core:calendar", 4)
 PRODUCTIONS = Section("productions", "Produktionen", "clapper", "core:productions", 3)
 INVENTORY = Section("inventory", "Material", "box", "core:inventory", 6)
 BOARD = Section("board", "Board", "chat", "core:board", 5)
-SETTINGS = Section("settings", "Einstellungen", "gear", "core:settings", 12)
+SETTINGS = Section("settings", "Einstellungen", "gear", "organizations:settings", 12)
 
 # Reihenfolge der Seitenleiste
 SIDEBAR = [DASHBOARD, CALENDAR, PRODUCTIONS, INVENTORY, BOARD, SETTINGS]
@@ -31,14 +33,25 @@ MOBILE_LEFT = [DASHBOARD, CALENDAR]
 MOBILE_RIGHT = [PRODUCTIONS]
 MOBILE_MORE = [INVENTORY, BOARD]
 
-# Einträge im „+ Neu“-Menü (Abschnitt 4)
+# Einträge im „+ Neu“-Menü (Abschnitt 4) – sichtbar je nach Recht
 NEW_ITEMS = [
-    {"label": "Termin", "hint": "Einfacher Termin, z. B. AG-Treffen", "icon": "calendar"},
-    {"label": "Produktion", "hint": "Veranstaltung mit Jobs und Crew", "icon": "clapper"},
+    {
+        "label": "Termin",
+        "hint": "Einfacher Termin, z. B. AG-Treffen",
+        "icon": "calendar",
+        "perm": Perm.CREATE_EVENTS,
+    },
+    {
+        "label": "Produktion",
+        "hint": "Veranstaltung mit Jobs und Crew",
+        "icon": "clapper",
+        "perm": Perm.MANAGE_PRODUCTIONS,
+    },
     {
         "label": "Nicht verfügbar",
         "hint": "Tage oder Zeiträume, an denen du nicht kannst",
         "icon": "slash",
+        "perm": Perm.OWN_UNAVAILABILITY,
     },
 ]
 

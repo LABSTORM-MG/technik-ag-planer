@@ -1,0 +1,14 @@
+{% extends "auth_base.html" %}
+{% block title %}Keine AG{% endblock %}
+{% block content %}
+  <h1 class="page-title">Keine AG</h1>
+  <p>Dein Konto gehört derzeit zu keiner aktiven AG. Sobald dich jemand einlädt, bekommst du eine E-Mail mit einem Link.</p>
+  {% if user.is_staff %}
+    <p class="muted">Du bist als Betreiber angemeldet.</p>
+    <p><a class="button button--primary" href="/{{ admin_url }}">Zum Django-Admin</a></p>
+  {% endif %}
+  <p><a href="{% url 'accounts:two_factor' %}">Zwei-Faktor-Anmeldung einrichten</a> · <a href="{% url 'accounts:password_change' %}">Passwort ändern</a></p>
+  <form method="post" action="{% url 'accounts:logout' %}">
+    {% csrf_token %}<button type="submit" class="button button--secondary">Abmelden</button>
+  </form>
+{% endblock %}

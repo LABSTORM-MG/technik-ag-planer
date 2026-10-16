@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Einstellungen – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Einstellungen{% endblock %}
+{% block content %}
+  <header class="page-header">
+    <p class="eyebrow">{{ current_organization.name }}</p>
+    <h1 class="page-title">Einstellungen</h1>
+    <p><span class="tag tag--accent">{{ current_membership.get_role_display }}</span></p>
+  </header>
+  <div class="stack">
+    {% for title, entries in groups %}
+      <section>
+        <h2 class="section-title">{{ title }}</h2>
+        <ul class="list">
+          {% for entry in entries %}
+            <li class="list__item{% if not entry.url_name %} list__item--muted{% endif %}">
+              <div class="list__main">
+                {% if entry.url_name %}
+                  <a class="list__link list__title" href="{% url entry.url_name %}">{{ entry.label }}</a>
+                {% else %}
+                  <span class="list__title">{{ entry.label }}</span>
+                {% endif %}
+                <span class="list__subtitle">{{ entry.subtitle }}</span>
+              </div>
+              {% if not entry.url_name %}<span class="tag">folgt in M{{ entry.milestone }}</span>{% endif %}
+            </li>
+          {% endfor %}
+          {% if title == "Konto" %}
+            <li class="list__item">
+              <div class="list__main">
+                <span class="list__title">Abmelden</span>
+                <span class="list__subtitle">{{ user.email }}</span>
+              </div>
+              <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}<button type="submit" class="button button--secondary button--small">Abmelden</button>
+              </form>
+            </li>
+          {% endif %}
+        </ul>
+      </section>
+    {% endfor %}
+    {% if user_memberships|length > 1 %}
+      <section>
+        <h2 class="section-title">AG wechseln</h2>
+        <div class="card">{% include "includes/org_switch.html" with place="settings" %}</div>
+      </section>
+    {% endif %}
+  </div>
+{% endblock %}

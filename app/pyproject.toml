@@ -10,6 +10,8 @@ dependencies = [
   "celery[redis]>=5.5",
   "gunicorn>=23.0",
   "whitenoise>=6.9",
+  "django-otp>=1.6",
+  "qrcode>=8.0",
 ]
 
 [dependency-groups]

@@ -1,0 +1,47 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Zwei-Faktor-Anmeldung{% endblock %}
+{% block page_title %}Meine Zwei-Faktor-Anmeldung{% endblock %}
+{% block page_content %}
+<div class="stack">
+  {% if forced and not device %}
+    <ul class="messages"><li class="message message--warning">Deine AG schreibt die Zwei-Faktor-Anmeldung vor. Bitte richte sie jetzt ein, um weiterzumachen.</li></ul>
+  {% endif %}
+
+  {% if device %}
+    <section class="card">
+      <p><span class="tag tag--success">Aktiv</span></p>
+      <p>Bei jeder Anmeldung fragt die App nach einem Code aus deiner Authenticator-App.</p>
+    </section>
+    {% if required %}
+      <p class="muted">Deine AG schreibt die Zwei-Faktor-Anmeldung vor. Ausschalten ist deshalb nicht möglich.</p>
+    {% else %}
+      <section class="card">
+        <h2 class="section-title">Ausschalten</h2>
+        <form method="post" action="{% url 'accounts:two_factor_disable' %}" class="form" novalidate>
+          {% csrf_token %}
+          {% with form=disable_form %}{% include "includes/form_fields.html" %}{% endwith %}
+          <div><button type="submit" class="button button--secondary">Zwei-Faktor ausschalten</button></div>
+        </form>
+      </section>
+    {% endif %}
+  {% else %}
+    <section class="card">
+      <p><span class="tag">Aus</span></p>
+      <h2 class="section-title">Einrichten in drei Schritten</h2>
+      <ol>
+        <li>Installiere eine Authenticator-App, z. B. Google Authenticator, Microsoft Authenticator oder 2FAS.</li>
+        <li>Scanne diesen QR-Code mit der App:
+          <img class="qr" src="{{ qr }}" alt="QR-Code für die Authenticator-App" width="200" height="200">
+          <span class="field__help">Scannen geht nicht? Gib diesen Schlüssel von Hand ein: <span class="secret">{{ secret }}</span></span>
+        </li>
+        <li>Gib den Code ein, den die App jetzt anzeigt.</li>
+      </ol>
+      <form method="post" class="form" novalidate>
+        {% csrf_token %}
+        {% include "includes/form_fields.html" %}
+        <div><button type="submit" class="button button--primary">Einrichtung abschließen</button></div>
+      </form>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import environ
+from celery.schedules import crontab
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -22,7 +23,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
+    "django_otp",
+    "django_otp.plugins.otp_totp",
     "apps.core",
+    "apps.audit",
+    "apps.accounts",
+    "apps.organizations",
 ]
 
 MIDDLEWARE = [
@@ -33,6 +39,11 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
+    "django.contrib.auth.middleware.LoginRequiredMiddleware",
+    "apps.audit.context.AuditMiddleware",
+    "apps.organizations.middleware.OrganizationMiddleware",
+    "apps.organizations.middleware.Require2FAMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -75,9 +86,26 @@ CACHES = {
     }
 }
 
+# Konten und Anmeldung
+AUTH_USER_MODEL = "accounts.User"
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "core:dashboard"
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 Tage – angemeldet bleiben auf dem Handy
+LOGIN_MAX_ATTEMPTS = 5
+LOGIN_BLOCK_SECONDS = 15 * 60
+TRUST_X_FORWARDED_FOR = env.bool("DJANGO_TRUST_X_FORWARDED_FOR", default=False)
+INVITATION_VALID_DAYS = 7
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 1 Tag
+OTP_TOTP_ISSUER = "Technik-AG Planer"
+# Django-Admin nur mit bestätigter Zwei-Faktor-Anmeldung
+ADMIN_REQUIRE_2FA = env.bool("DJANGO_ADMIN_REQUIRE_2FA", default=True)
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 8},
+    },
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
@@ -100,6 +128,9 @@ STORAGES = {
 
 ADMIN_URL = env("DJANGO_ADMIN_URL", default="admin/")
 
+# Öffentliche Adresse für Links in E-Mails (Einladungen)
+SITE_URL = env("SITE_URL", default="http://localhost:8000")
+
 # E-Mail – nur für Einladungen und „Passwort vergessen“
 EMAIL_HOST = env("EMAIL_HOST", default="localhost")
 EMAIL_PORT = env.int("EMAIL_PORT", default=587)
@@ -113,7 +144,13 @@ CELERY_BROKER_URL = env("CELERY_BROKER_URL", default=REDIS_URL)
 CELERY_RESULT_BACKEND = None
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_IGNORE_RESULT = True
-CELERY_BEAT_SCHEDULE = {}
+CELERY_BEAT_SCHEDULE = {
+    "audit-aufraeumen": {
+        "task": "apps.audit.tasks.purge_old_entries",
+        "schedule": crontab(hour=3, minute=15),
+    },
+}
+AUDIT_RETENTION_DAYS = 7
 
 LOGGING = {
     "version": 1,
