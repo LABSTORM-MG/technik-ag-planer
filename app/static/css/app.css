@@ -793,6 +793,9 @@ a.list__item:hover,
 .color-teal { --item-color: var(--palette-teal); }
 .color-pink { --item-color: var(--palette-pink); }
 .color-yellow { --item-color: var(--palette-yellow); }
+.color-violet { --item-color: var(--palette-violet); }
+.color-lime { --item-color: var(--palette-lime); }
+.color-coral { --item-color: var(--palette-coral); }
 .color-grey { --item-color: var(--palette-grey); }
 
 /* ---------- Produktionen ---------- */
