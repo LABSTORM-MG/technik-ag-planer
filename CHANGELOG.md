@@ -6,6 +6,15 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Hinzugefügt
 
+**Meilenstein 5 – Board** (#7)
+
+- Board als gemeinsamer Chat der AG: Nachrichten mit farbigem Namen und Uhrzeit, Datumstrenner, eigene Nachrichten rechts; neue Nachrichten erscheinen ohne Neuladen
+- Eigene Nachrichten bearbeiten („bearbeitet“) und löschen; Lehrkräfte, Admins und Owner können alle Nachrichten löschen
+- Systemmeldungen: neue Produktion, Status, Datum oder Ort geändert, gelöscht und wiederhergestellt, neues Mitglied, „noch X Plätze frei“ 3 Tage vor einem Job
+- Chats je Produktion: Leiste mit Kreisen oben im Board, ungelesene zuerst; Button „Chat“ in der Produktion
+- Zähler ungelesener Nachrichten in Seitenleiste und „Mehr“
+- Jobs mit „Benötigte Personen“ und Anzeige „x von y besetzt“
+
 **Meilenstein 4 – Kalender und Zeiten** (#5)
 
 - Kalender mit Monats-, Wochen- und Agenda-Ansicht, Filter „Alle“/„Meine“, Tagesdetail und „+ Termin an diesem Tag“
@@ -45,3 +54,7 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 - Docker-Setup für Betrieb (Web, Worker, PostgreSQL, Redis, Caddy mit HTTPS) und Entwicklung (Live-Reload, Mailpit)
 - Health-Check `/healthz/`, Celery-Worker mit Beat
 - Makefile, CI (Lint, Tests, Sicherheits-Check, Docker-Build) und Release-Workflow (Image nach GHCR)
+
+### Entfernt
+
+- `CONTRIBUTING.md` und `SECURITY.md`: Die Lizenz-Zustimmung steht in der Pull-Request-Vorlage, Sicherheitslücken werden privat über GitHub gemeldet

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{% if production %}Chat: {{ production.name }}{% else %}Board{% endif %} – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Board{% endblock %}
+{% block content %}
+<div class="board" data-board data-poll-url="{% url 'board:new' %}{% if production %}?produktion={{ production.pk }}{% endif %}" data-last-id="{{ last_id }}">
+  <header class="board__head{% if production.category %} color-{{ production.category.color }}{% endif %}">
+    <div>
+      {% if production %}
+        <p class="eyebrow"><a href="{% url 'board:index' %}">← Board</a></p>
+        <h1 class="page-title">{{ production.name }}</h1>
+        <p class="muted"><a href="{% url 'productions:detail' production.pk %}">Zur Produktion</a></p>
+      {% else %}
+        <h1 class="page-title">Board</h1>
+      {% endif %}
+    </div>
+    <button type="button" class="icon-button" data-sheet-open="sheet-more" aria-label="Menü">{% include "includes/icon.html" with name="more" %}</button>
+  </header>
+
+  {% include "board/includes/chat_bar.html" %}
+
+  <section class="chat" aria-label="Nachrichten">
+    {% if has_older %}
+      <p class="chat__older"><a class="button button--secondary button--small" href="{{ chat_url }}?vor={{ chat_messages.0.pk }}">Ältere Nachrichten laden</a></p>
+    {% endif %}
+    <ol class="chat__list" data-board-list>
+      {% include "board/includes/messages.html" %}
+    </ol>
+    {% if not chat_messages %}<p class="muted chat__empty" data-board-empty>Noch keine Nachrichten. Schreib die erste!</p>{% endif %}
+    <span id="ende"></span>
+  </section>
+
+  <form method="post" action="{% url 'board:send' %}" class="chat-input" data-board-form>
+    {% csrf_token %}
+    {% if production %}<input type="hidden" name="produktion" value="{{ production.pk }}">{% endif %}
+    <label class="visually-hidden" for="{{ form.text.id_for_label }}">{{ form.text.label }}</label>
+    {{ form.text }}
+    <button type="submit" class="button button--primary chat-input__send" aria-label="Senden">{% include "includes/icon.html" with name="send" %}</button>
+  </form>
+</div>
+{% endblock %}

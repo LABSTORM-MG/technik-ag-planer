@@ -77,7 +77,7 @@ class ProductionForm(forms.ModelForm):
         self.fields["status"].empty_label = None
         if not self.instance.pk:
             self.fields["status"].initial = ProductionStatus.planning_for(organization).pk
-        self.fields["chat_enabled"].help_text = "Der Chat folgt in Meilenstein 5."
+        self.fields["chat_enabled"].help_text = "Alle Mitglieder können ihn lesen und schreiben."
 
     def clean(self):
         cleaned = super().clean()
@@ -90,7 +90,7 @@ class ProductionForm(forms.ModelForm):
 class JobForm(PeriodTimesMixin, forms.ModelForm):
     class Meta:
         model = Job
-        fields = ["name", "date", "start_time", "end_time", "meeting_point"]
+        fields = ["name", "date", "start_time", "end_time", "meeting_point", "crew_needed"]
         widgets = {"date": DateInput(), "start_time": TimeInput(), "end_time": TimeInput()}
 
     def __init__(self, *args, organization=None, **kwargs):

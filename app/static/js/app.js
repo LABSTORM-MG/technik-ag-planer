@@ -199,3 +199,95 @@ document.addEventListener("change", (event) => {
   const times = JSON.parse(select.dataset.periodMap)[select.value];
   if (target && times) target.value = select.dataset.periodEdge === "start" ? times[0] : times[1];
 });
+
+// Board: neue Nachrichten alle 10 s holen, per fetch senden, Enter sendet (Shift+Enter = neue Zeile).
+// Ohne JavaScript funktioniert alles über normale Formulare und Neuladen der Seite.
+(() => {
+  const board = document.querySelector("[data-board]");
+  if (!board) return;
+  const POLL_MS = 10000;
+  const list = board.querySelector("[data-board-list]");
+  const form = board.querySelector("[data-board-form]");
+  const input = form.querySelector("textarea");
+  let lastId = Number(board.dataset.lastId) || 0;
+  let busy = false;
+
+  const scrollToEnd = () => document.getElementById("ende")?.scrollIntoView({ block: "end" });
+
+  function autosize() {
+    input.style.height = "auto";
+    input.style.height = `${input.scrollHeight}px`;
+  }
+
+  async function poll() {
+    if (busy) return;
+    busy = true;
+    try {
+      const url = new URL(board.dataset.pollUrl, window.location.href);
+      url.searchParams.set("nach", String(lastId));
+      const response = await fetch(url, { cache: "no-store" });
+      if (response.status !== 200) return;
+      const nearEnd = window.innerHeight + window.scrollY >= document.body.scrollHeight - 160;
+      list.querySelectorAll("[data-board-last]").forEach((el) => el.remove());
+      const template = document.createElement("template");
+      template.innerHTML = await response.text();
+      // Datumstrenner nicht doppelt anzeigen
+      template.content.querySelectorAll("[data-day]").forEach((day) => {
+        if (list.querySelector(`[data-day="${day.dataset.day}"]`)) day.remove();
+      });
+      list.append(template.content);
+      lastId = Number(list.querySelector("[data-board-last]")?.dataset.boardLast) || lastId;
+      board.querySelector("[data-board-empty]")?.remove();
+      if (nearEnd) scrollToEnd();
+    } catch {
+      /* offline – nächster Versuch beim nächsten Intervall */
+    } finally {
+      busy = false;
+    }
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!input.value.trim()) return;
+    const button = form.querySelector("[type=submit]");
+    button.disabled = true;
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        headers: { "X-Board": "1" },
+      });
+      if (response.status === 204) {
+        input.value = "";
+        autosize();
+        await poll();
+        scrollToEnd();
+      } else if (response.status === 400) {
+        window.alert(await response.text());
+      } else {
+        form.submit();
+      }
+    } catch {
+      form.submit();
+    } finally {
+      button.disabled = false;
+      input.focus();
+    }
+  });
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+      event.preventDefault();
+      form.requestSubmit();
+    }
+  });
+  input.addEventListener("input", autosize);
+
+  window.setInterval(() => {
+    if (document.visibilityState === "visible") poll();
+  }, POLL_MS);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") poll();
+  });
+  if (!window.location.hash || window.location.hash === "#ende") scrollToEnd();
+})();

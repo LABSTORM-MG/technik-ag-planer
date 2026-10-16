@@ -8,7 +8,7 @@ PAGES = [
     ("scheduling:calendar", "Kalender"),
     ("productions:list", "Produktionen"),
     ("core:inventory", "Material"),
-    ("core:board", "Board"),
+    ("board:index", "Board"),
     ("organizations:settings", "Einstellungen"),
 ]
 
@@ -58,7 +58,7 @@ def test_more_sheet_links_inventory_and_board(client):
     sheet = content.split('id="sheet-more"', 1)[1].split("</dialog>", 1)[0]
 
     assert reverse("core:inventory") in sheet
-    assert reverse("core:board") in sheet
+    assert reverse("board:index") in sheet
 
 
 def _new_sheet(client):

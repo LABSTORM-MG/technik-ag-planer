@@ -1,0 +1,14 @@
+{% extends layout %}
+{% block title %}Nachricht bearbeiten – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Board{% endblock %}
+{% block content %}
+  <h1 class="page-title sheet-title">Nachricht bearbeiten</h1>
+  <form method="post" action="{% url 'board:edit' message.pk %}" class="form" novalidate>
+    {% csrf_token %}
+    {% include "includes/field.html" with field=form.text %}
+    <div class="form-actions">
+      <a class="button button--secondary" href="{{ chat_url }}">Abbrechen</a>
+      <button type="submit" class="button button--primary">Speichern</button>
+    </div>
+  </form>
+{% endblock %}

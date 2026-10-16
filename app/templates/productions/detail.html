@@ -23,6 +23,7 @@
       {% else %}
         {% include "productions/includes/status.html" with status=production.status %}
       {% endif %}
+      {% if production.chat_enabled %}<a class="button button--secondary button--small" href="{% url 'board:production' production.pk %}">{% include "includes/icon.html" with name="chat" %} Chat</a>{% endif %}
       <a class="button button--secondary button--small" href="{% url 'scheduling:ics_production' production.pk %}">In Kalender übernehmen</a>
     </div>
   </header>
@@ -56,6 +57,7 @@
           <div>
             <h3 class="list__title">{{ job.name }}</h3>
             <p class="list__subtitle">{{ job.date|date:"D., d.m." }} · {{ job.start_time|time:"H:i" }}–{{ job.end_time|time:"H:i" }} Uhr{% if job.meeting_point %} · Treffpunkt: {{ job.meeting_point }}{% endif %}</p>
+            {% if job.crew_needed %}<p class="list__subtitle">{{ job.confirmed_count }} von {{ job.crew_needed }} besetzt</p>{% endif %}
           </div>
           <div class="list__actions">
             <a class="button button--secondary button--small" href="{% url 'scheduling:ics_job' job.pk %}" aria-label="Job {{ job.name }} in Kalender übernehmen">.ics</a>

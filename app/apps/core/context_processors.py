@@ -1,3 +1,5 @@
+from apps.board.services import nav_unread_count
+
 from . import navigation as sections
 from .design import THEME_COLOR
 
@@ -19,8 +21,7 @@ def navigation(request):
         "nav_mobile_more": sections.MOBILE_MORE,
         "nav_new_items": new_items,
         "nav_settings": sections.SETTINGS,
-        # Zähler ungelesener Board-Nachrichten – echte Werte ab Meilenstein 5
-        "nav_unread_count": 0,
+        "nav_unread_count": nav_unread_count(membership) if membership is not None else 0,
         "current_membership": membership,
         "current_organization": getattr(request, "organization", None),
         "user_memberships": getattr(request, "memberships", []),

@@ -569,7 +569,7 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | 2 | Konten und Organisationen | fertig | #2 |
 | 3 | Produktionen | fertig | #3, #4 |
 | 4 | Kalender und Zeiten | fertig | #5 |
-| 5 | Board | offen | |
+| 5 | Board | fertig | #7 |
 | 6 | Material | offen | |
 | 7 | Technik-Anfragen | offen | |
 | 8 | PDFs | offen | |
@@ -595,11 +595,17 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | Serien | Eine Serie erzeugt einzelne Termine; Rhythmus und Enddatum lassen sich nachträglich nicht ändern (stattdessen „alle folgenden“ löschen und neu anlegen) | Einzeln geänderte Termine bleiben verlässlich erhalten, passt zu einzelnen Google-Terminen | ADR 0006 |
 | Termine | Abgesagte Serientermine bleiben durchgestrichen sichtbar; Termine ohne Uhrzeit sind ganztägig; Termine haben die Akzentfarbe | Absagen sollen auffallen; Termine haben keine Kategorie | ADR 0006 |
 | Nicht verfügbar | Von–Bis ist ein durchgehender Zeitraum (z. B. Di. 8:00 bis Mi. 13:00) | Einfach einzugeben, eindeutig für Konfliktwarnungen | ADR 0006 |
+| Board | Aktualisierung alle 10 Sekunden (Polling) statt WebSockets; Änderungen und Löschungen anderer erscheinen nach dem Neuladen | Keine zusätzlichen Dienste im Betrieb | ADR 0007 |
+| Board | Der Zähler in der Navigation zählt Board und die Chats eigener Produktionen (Crew oder Aufsicht); die Chat-Leiste zeigt alle | Dieselbe Regel wie für Push-Mitteilungen | ADR 0007 |
+| Board | Zusätzliche Systemmeldung „Produktion wiederhergestellt“; Systemmeldungen kann nur die Moderation löschen | Löschen wird sonst nie zurückgenommen | ADR 0007 |
+| Jobs | Neues optionales Feld „Benötigte Personen“; die Detailansicht zeigt „x von y besetzt“ | Grundlage für „noch X Plätze frei“ (Entscheidung des Projektinhabers) | ADR 0007 |
+| Board | Absendernamen in einer festen Palette-Farbe je Konto | Wiedererkennbar ohne eigene Farbwahl | ADR 0007 |
 | Repository | Kein `CONTRIBUTING.md` und kein `SECURITY.md`: Die Zustimmung zur Lizenz steht in der Pull-Request-Vorlage, Sicherheitslücken werden privat über GitHub gemeldet | Entscheidung des Projektinhabers, weniger Dateien | Abschnitt 13 |
 
 **Offene Punkte für spätere Meilensteine**
 
-- M5: Board-Systemmeldung „Neue Produktion“ beim Anlegen; der Schalter „Eigener Chat“ wird schon gespeichert
+- M6: Systemmeldungen „Material defekt“ und „wieder verfügbar“ über `apps.board.services.post_system()` anschließen
 - M8: Die betroffenen Schulstunden für die Freistellungsliste werden schon berechnet (`apps/scheduling/periods.py`)
+- M11: Push-Mitteilung bei neuer Board- bzw. Chat-Nachricht (Chats nur für Eingeteilte, Regel wie `apps.board.services.my_chat_production_ids`)
 - M11: App-Icon (schlicht, ohne Schullogo; Entwürfe zur Auswahl) und Vollbild ohne Adressleiste beim Hinzufügen zum Home-Bildschirm (`display: standalone`). Testen nur über HTTPS möglich – auf dem eigenen Server oder über einen Tunnel
 - Vor dem Start: Test auf echten Handys (Android und iPhone)
