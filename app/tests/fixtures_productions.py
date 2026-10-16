@@ -1,3 +1,5 @@
+"""Fixtures für Produktionen, Jobs und Crew (über pytest_plugins in conftest.py geladen)."""
+
 from datetime import time, timedelta
 
 import pytest

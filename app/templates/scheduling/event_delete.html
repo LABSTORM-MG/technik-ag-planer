@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Termin löschen{% endblock %}
+{% block content %}
+  <section class="card">
+    <h1 class="page-title">„{{ event.title }}“ löschen?</h1>
+    <p class="muted">{{ event.date|date:"l, j. F Y" }}</p>
+    <form method="post" class="form">
+      {% csrf_token %}
+      {% if event.series %}
+        <div class="field">
+          <label class="field--checkbox"><input type="radio" name="scope" value="single" checked> Nur diesen Termin</label>
+          <label class="field--checkbox"><input type="radio" name="scope" value="following"> Diesen und alle folgenden der Serie</label>
+        </div>
+      {% endif %}
+      <div class="form-actions">
+        <a class="button button--secondary" href="{% url 'scheduling:event_detail' event.pk %}">Abbrechen</a>
+        <button type="submit" class="button button--danger">Löschen</button>
+      </div>
+    </form>
+  </section>
+{% endblock %}

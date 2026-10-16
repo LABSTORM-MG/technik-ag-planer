@@ -23,6 +23,7 @@
       {% else %}
         {% include "productions/includes/status.html" with status=production.status %}
       {% endif %}
+      <a class="button button--secondary button--small" href="{% url 'scheduling:ics_production' production.pk %}">In Kalender übernehmen</a>
     </div>
   </header>
 
@@ -57,6 +58,7 @@
             <p class="list__subtitle">{{ job.date|date:"D., d.m." }} · {{ job.start_time|time:"H:i" }}–{{ job.end_time|time:"H:i" }} Uhr{% if job.meeting_point %} · Treffpunkt: {{ job.meeting_point }}{% endif %}</p>
           </div>
           <div class="list__actions">
+            <a class="button button--secondary button--small" href="{% url 'scheduling:ics_job' job.pk %}" aria-label="Job {{ job.name }} in Kalender übernehmen">.ics</a>
             {% if org_perms.MANAGE_CREW %}<a class="button button--primary button--small" href="{% url 'productions:job_crew' job.pk %}" data-sheet-url>Crew</a>{% endif %}
             {% if org_perms.MANAGE_PRODUCTIONS %}
               <a class="button button--secondary button--small" href="{% url 'productions:job_edit' job.pk %}" data-sheet-url>Bearbeiten</a>

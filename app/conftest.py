@@ -9,6 +9,8 @@ from apps.accounts.models import User
 from apps.organizations.models import Membership, Organization
 from apps.organizations.permissions import Role
 
+pytest_plugins = ["tests.fixtures_productions"]
+
 _counter = itertools.count(1)
 PASSWORD = "Sicheres-Passwort-123"  # noqa: S105 – nur für Tests
 

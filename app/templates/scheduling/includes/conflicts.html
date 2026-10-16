@@ -1,0 +1,5 @@
+<ul class="conflicts">
+  {% for c in conflicts %}
+    <li><span class="tag{% if c.kind == 'unavailable' %} tag--warning{% endif %}">{% if c.kind == "job" %}Job{% elif c.kind == "event" %}Termin{% else %}Nicht verfügbar{% endif %}</span> {{ c.title }} · {{ c.when }}</li>
+  {% endfor %}
+</ul>

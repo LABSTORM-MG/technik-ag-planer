@@ -1,0 +1,22 @@
+{% extends layout %}
+{% block title %}Leute – {{ event.title }}{% endblock %}
+{% block topbar_title %}Termin{% endblock %}
+{% block content %}
+  <p class="eyebrow">{{ event.title }}</p>
+  <h1 class="page-title sheet-title">Leute einteilen oder anfragen</h1>
+  {% if conflicts %}
+    <div class="message message--warning" role="alert">
+      <p><strong>Achtung, Überschneidung:</strong> {{ form.cleaned_data.membership.user }} ist zu dieser Zeit schon eingeplant oder nicht verfügbar:</p>
+      {% include "scheduling/includes/conflicts.html" %}
+      <p>Trotzdem eintragen?</p>
+    </div>
+  {% endif %}
+  <form method="post" action="{% url 'scheduling:event_attendees' event.pk %}" class="form" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <div class="form-actions">
+      <a class="button button--secondary" href="{% url 'scheduling:event_detail' event.pk %}">Abbrechen</a>
+      <button type="submit" class="button button--primary">{% if conflicts %}Trotzdem eintragen{% else %}Eintragen{% endif %}</button>
+    </div>
+  </form>
+{% endblock %}

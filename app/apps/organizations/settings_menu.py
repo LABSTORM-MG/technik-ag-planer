@@ -61,7 +61,7 @@ GROUPS = [
             Entry(
                 "Stundenraster",
                 "Unterrichtsstunden mit Beginn und Ende festlegen",
-                milestone=4,
+                "scheduling:periods",
                 owner_only=True,
             ),
             Entry(
@@ -101,7 +101,11 @@ GROUPS = [
             Entry(
                 "Benachrichtigungen", "Push-Mitteilungen aktivieren und einstellen", milestone=11
             ),
-            Entry("Nicht verfügbar", "Tage oder Zeiträume, an denen du nicht kannst", milestone=4),
+            Entry(
+                "Nicht verfügbar",
+                "Tage oder Zeiträume, an denen du nicht kannst",
+                "scheduling:unavailability_list",
+            ),
             Entry("Meine Fähigkeiten", "Eigene Fähigkeiten aus der Liste auswählen", milestone=9),
             Entry("Hilfe & FAQ", "Kurze Antworten auf häufige Fragen", milestone=12),
             Entry("Über die App", "Alle Funktionen auf einen Blick", milestone=12),

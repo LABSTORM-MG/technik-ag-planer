@@ -2,6 +2,7 @@ from django import forms
 from django.forms import inlineformset_factory
 
 from apps.organizations.models import Membership
+from apps.scheduling.forms import PeriodTimesMixin
 
 from .models import Category, CrewAssignment, Job, Production, ProductionStatus, Todo
 from .palette import Color
@@ -86,11 +87,15 @@ class ProductionForm(forms.ModelForm):
         return cleaned
 
 
-class JobForm(forms.ModelForm):
+class JobForm(PeriodTimesMixin, forms.ModelForm):
     class Meta:
         model = Job
         fields = ["name", "date", "start_time", "end_time", "meeting_point"]
         widgets = {"date": DateInput(), "start_time": TimeInput(), "end_time": TimeInput()}
+
+    def __init__(self, *args, organization=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setup_periods(organization)
 
 
 JobFormSet = inlineformset_factory(

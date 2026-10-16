@@ -29,3 +29,8 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 - Kategorien (Owner, Admins) und Status-Werte (Owner) mit fester Palette aus 12 Farben verwalten
 - Dashboard „Was steht an?“ mit nächster Produktion, Kacheln und „Meine Jobs“
 - Formulare öffnen sich auf dem Handy im Bottom-Sheet; Entwürfe werden im Browser zwischengespeichert
+- Kalender mit Monats-, Wochen- und Agenda-Ansicht, Filter „Alle“/„Meine“, Tagesdetail und „+ Termin an diesem Tag“
+- Termine, auch als Serie (wöchentlich, alle 2 Wochen, monatlich) mit Enddatum; einzelne Termine verschieben oder absagen; Leute einteilen oder anfragen
+- Stundenraster (Owner); Zeiten bei Jobs, Terminen und „Nicht verfügbar“ wahlweise als Schulstunde
+- „Nicht verfügbar“ für alle Mitglieder, sichtbar im Kalender; Konfliktwarnung beim Einteilen
+- Export einzelner Einträge als .ics („In Kalender übernehmen“)

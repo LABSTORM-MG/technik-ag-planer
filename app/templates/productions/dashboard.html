@@ -39,8 +39,31 @@
     {% if view == "jobs" %}
       {% if my_assignments %}
         <ul class="list">{% for a in my_assignments %}{% include "productions/includes/assignment.html" %}{% endfor %}</ul>
-      {% else %}
+      {% elif not my_events %}
         <p class="muted">Du bist gerade für keinen Job eingeteilt oder angefragt.</p>
+      {% endif %}
+      {% if my_events %}
+        <h2 class="section-title">Termine</h2>
+        <ul class="list">
+          {% for a in my_events %}
+            <li class="list__item">
+              <span class="datetile datetile--small"><span class="datetile__day">{{ a.event.date|date:"j" }}</span><span class="datetile__month">{{ a.event.date|date:"M" }}</span></span>
+              <div class="list__main">
+                <a class="list__link list__title{% if a.event.cancelled %} todo__text--done{% endif %}" href="{% url 'scheduling:event_detail' a.event_id %}">{{ a.event.title }}</a>
+                <span class="list__subtitle">{{ a.event.date|date:"D., d.m." }}{% if not a.event.all_day %} · {{ a.event.start_time|time:"H:i" }}–{{ a.event.end_time|time:"H:i" }} Uhr{% endif %}{% if a.event.location %} · {{ a.event.location }}{% endif %}{% if a.event.cancelled %} · abgesagt{% endif %}</span>
+              </div>
+              {% if a.is_confirmed %}
+                <span class="tag tag--success">zugesagt</span>
+              {% elif not a.event.cancelled %}
+                <form method="post" action="{% url 'scheduling:attendee_respond' a.pk %}" class="list__actions">
+                  {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+                  <button type="submit" name="antwort" value="ja" class="button button--primary button--small">Annehmen</button>
+                  <button type="submit" name="antwort" value="nein" class="button button--secondary button--small">Ablehnen</button>
+                </form>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
       {% endif %}
     {% else %}
       {% if upcoming %}

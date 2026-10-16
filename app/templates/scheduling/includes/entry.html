@@ -1,0 +1,11 @@
+{% comment %}Eintrag in Tagesliste/Agenda. Parameter: e (calendar.Entry){% endcomment %}
+<li class="list__item cal-entry cal-entry--{{ e.kind }}{% if e.color %} color-{{ e.color }}{% endif %}{% if e.cancelled %} cal-entry--cancelled{% endif %}">
+  <span class="cal-entry__marker" aria-hidden="true"></span>
+  <div class="list__main">
+    {% if e.url %}<a class="list__link list__title" href="{{ e.url }}">{{ e.title }}</a>{% else %}<span class="list__title">{{ e.title }}</span>{% endif %}
+    <span class="list__subtitle">
+      {% if e.start_time %}{{ e.start_time|time:"H:i" }}{% if e.end_time %}–{{ e.end_time|time:"H:i" }}{% endif %} Uhr{% elif e.detail %}{{ e.detail }}{% elif e.is_multi_day %}{{ e.start_date|date:"d.m." }}–{{ e.end_date|date:"d.m." }}{% else %}ganztägig{% endif %}{% if e.location %} · {{ e.location }}{% endif %}{% if e.suffix %} · {{ e.suffix }}{% endif %}
+    </span>
+  </div>
+  {% if e.ics_url %}<a class="button button--secondary button--small" href="{{ e.ics_url }}" title="In Kalender übernehmen" aria-label="{{ e.title }} in Kalender übernehmen">.ics</a>{% endif %}
+</li>

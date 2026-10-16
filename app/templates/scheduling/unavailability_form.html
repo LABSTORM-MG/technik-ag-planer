@@ -1,0 +1,20 @@
+{% extends layout %}
+{% block title %}Nicht verfügbar – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Nicht verfügbar{% endblock %}
+{% block content %}
+  <h1 class="page-title sheet-title">Nicht verfügbar</h1>
+  <form method="post" action="{% if entry %}{% url 'scheduling:unavailability_edit' entry.pk %}{% else %}{% url 'scheduling:unavailability_create' %}{% endif %}" class="form" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<ul class="form-errors" role="alert">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    <div class="form-row">
+      {% include "includes/field.html" with field=form.start_date %}
+      {% include "includes/field.html" with field=form.end_date %}
+    </div>
+    {% include "includes/time_or_period.html" %}
+    {% include "includes/field.html" with field=form.note %}
+    <div class="form-actions">
+      <a class="button button--secondary" href="{% url 'scheduling:unavailability_list' %}">Abbrechen</a>
+      <button type="submit" class="button button--primary">Speichern</button>
+    </div>
+  </form>
+{% endblock %}
