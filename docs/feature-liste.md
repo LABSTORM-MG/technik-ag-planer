@@ -430,7 +430,7 @@ Der Quellcode wird öffentlich unter der **PolyForm Noncommercial License 1.0.0*
 - Bezeichnung nach außen: „quelloffen“ (source-available), nicht „Open Source“, weil kommerzielle Nutzung ausgeschlossen ist
 - Die Lizenzdatei (LICENSE) liegt im Hauptverzeichnis des Repositorys
 - Der Code wird vom Projektinhaber selbst mit Unterstützung von Claude Code entwickelt; der Projektinhaber legt die Lizenz fest und kann bei Bedarf einzelnen Dritten gesondert eine kommerzielle Nutzung erlauben
-- Beiträge Dritter (Pull Requests) werden nur angenommen, wenn die beitragende Person zustimmt, dass ihr Beitrag unter denselben Bedingungen genutzt und gesondert lizenziert werden darf (Regelung in CONTRIBUTING.md)
+- Beiträge Dritter (Pull Requests) werden nur angenommen, wenn die beitragende Person zustimmt, dass ihr Beitrag unter denselben Bedingungen genutzt und gesondert lizenziert werden darf (Zustimmung in der Pull-Request-Vorlage)
 
 ## 14. Repository-Struktur (Monorepo)
 
@@ -442,8 +442,6 @@ technik-ag-planer/
 ├── CLAUDE.md                  Projektregeln für Claude Code (siehe Abschnitt 15)
 ├── LICENSE                    PolyForm Noncommercial 1.0.0
 ├── CHANGELOG.md               Versionsverlauf (auch in der App verlinkt)
-├── CONTRIBUTING.md            Regeln für Beiträge, Branches, Commits
-├── SECURITY.md                Wie Sicherheitslücken gemeldet werden
 ├── Makefile                   Kurzbefehle: make dev, make test, make lint
 ├── .env.example               Alle Konfigurationswerte ohne echte Geheimnisse
 ├── .gitignore / .editorconfig
@@ -597,6 +595,7 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | Serien | Eine Serie erzeugt einzelne Termine; Rhythmus und Enddatum lassen sich nachträglich nicht ändern (stattdessen „alle folgenden“ löschen und neu anlegen) | Einzeln geänderte Termine bleiben verlässlich erhalten, passt zu einzelnen Google-Terminen | ADR 0006 |
 | Termine | Abgesagte Serientermine bleiben durchgestrichen sichtbar; Termine ohne Uhrzeit sind ganztägig; Termine haben die Akzentfarbe | Absagen sollen auffallen; Termine haben keine Kategorie | ADR 0006 |
 | Nicht verfügbar | Von–Bis ist ein durchgehender Zeitraum (z. B. Di. 8:00 bis Mi. 13:00) | Einfach einzugeben, eindeutig für Konfliktwarnungen | ADR 0006 |
+| Repository | Kein `CONTRIBUTING.md` und kein `SECURITY.md`: Die Zustimmung zur Lizenz steht in der Pull-Request-Vorlage, Sicherheitslücken werden privat über GitHub gemeldet | Entscheidung des Projektinhabers, weniger Dateien | Abschnitt 13 |
 
 **Offene Punkte für spätere Meilensteine**
 

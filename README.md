@@ -71,4 +71,4 @@ Django 5.2 (Python 3.13), PostgreSQL, Redis, Celery, Docker, Caddy – Details i
 
 ## Lizenz
 
-Quelloffen (source-available) unter der [PolyForm Noncommercial License 1.0.0](LICENSE). Nutzung, Änderung und Weitergabe für nicht-kommerzielle Zwecke sind erlaubt – Schulen und andere Bildungseinrichtungen ausdrücklich eingeschlossen. Kommerzielle Nutzung ist nicht erlaubt. Beiträge siehe [CONTRIBUTING.md](CONTRIBUTING.md), Sicherheitslücken bitte nach [SECURITY.md](SECURITY.md) melden.
+Quelloffen (source-available) unter der [PolyForm Noncommercial License 1.0.0](LICENSE). Nutzung, Änderung und Weitergabe für nicht-kommerzielle Zwecke sind erlaubt – Schulen und andere Bildungseinrichtungen ausdrücklich eingeschlossen. Kommerzielle Nutzung ist nicht erlaubt. Für Beiträge gilt die Zustimmung in der Pull-Request-Vorlage. Sicherheitslücken bitte nicht als öffentliches Issue, sondern [privat über GitHub](https://github.com/LABSTORM-MG/technik-ag-planer/security/advisories/new) melden.
