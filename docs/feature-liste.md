@@ -558,3 +558,49 @@ Im Hauptverzeichnis liegt eine kurze `CLAUDE.md`, die Claude Code bei jeder Sitz
 - Die Google-Anbindung (Meilenstein 10) wird bewusst spät gebaut und mit einem echten Google-Konto getestet
 - Push-Mitteilungen früh auf einem echten iPhone ausprobieren: Web Push funktioniert dort nur, wenn die App auf dem Home-Bildschirm installiert ist
 - Vor dem Start einen gezielten Sicherheits-Review durchführen (Rechteprüfung in jeder View, Mandantentrennung, öffentlicher Anfrage-Link); idealerweise schaut zusätzlich eine erfahrene Person drüber, weil die App von Minderjährigen genutzt wird
+
+## 16. Umsetzungsstand und Entscheidungen
+
+Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablauf oben). Die Abschnitte 1–15 bleiben die Spezifikation; hier steht, was davon umgesetzt ist und wo bewusst ergänzt oder abgewichen wurde.
+
+**Stand der Meilensteine**
+
+| Nr. | Meilenstein | Stand | Pull Request |
+| --- | --- | --- | --- |
+| 1 | Grundgerüst | fertig | #1 |
+| 2 | Konten und Organisationen | fertig | #2 |
+| 3 | Produktionen | fertig | #3, #4 |
+| 4 | Kalender und Zeiten | fertig | #5 |
+| 5 | Board | offen | |
+| 6 | Material | offen | |
+| 7 | Technik-Anfragen | offen | |
+| 8 | PDFs | offen | |
+| 9 | Team-Funktionen | offen | |
+| 10 | Google-Anbindung | offen | |
+| 11 | PWA und Push | offen | |
+| 12 | Abschluss | offen | |
+
+**Ergänzungen und Abweichungen**
+
+| Bereich | Entscheidung | Begründung | Festgehalten in |
+| --- | --- | --- | --- |
+| Struktur | Zusätzliche App `apps/core/` für Grundlayout, Navigation, Platzhalter und Health-Check | Gemeinsames gehört in keine Fach-App | ADR 0003 |
+| Mitglieder | Der Owner kann Mitglieder aus der AG entfernen | Sonst bliebe nur das Sperren des ganzen Kontos durch den Betreiber | ADR 0004 |
+| 2FA | Keine Wiederherstellungscodes; bei verlorenem Handy setzt der Betreiber die 2FA im Django-Admin zurück | Einfacher für Schülerinnen und Schüler | ADR 0004 |
+| Django-Admin | Im Betrieb nur mit bestätigter Zwei-Faktor-Anmeldung | Zugang zu allen Daten aller AGs | ADR 0004, `docs/betrieb/django-admin.md` |
+| Ownership | Lehrkräfte können nicht Owner werden | „Owner und Admins sind bewusst Schülerinnen bzw. Schüler“ (Abschnitt 2) | ADR 0004 |
+| Farben | Kategorien und Status wählen aus einer festen Palette mit 12 Farben, keine freie Farbwahl | Kontrast auf dunklem Grund, alle Farben als Design-Tokens, eindeutige Zuordnung zu Google-Kalender-Farben | ADR 0005 |
+| Status | „In Planung“ und „Bestätigt“ sind System-Status: umbenennbar, nicht löschbar. Wird ein eigener Status gelöscht, fallen seine Produktionen auf „In Planung“ zurück | Kalender und Dashboard brauchen sie | ADR 0005 |
+| To-dos | Alle Mitglieder dürfen To-dos anlegen, abhaken und löschen | Entscheidung des Projektinhabers (die Rechte-Tabelle regelt To-dos nicht) | ADR 0005 |
+| Crew | Ablehnen einer Anfrage entfernt den Eintrag | Status je Person ist laut Abschnitt 5 nur „angefragt“ oder „zugesagt“ | ADR 0005 |
+| Entwürfe | Entwürfe werden im Browser gespeichert (nicht auf dem Server) | Daten bleiben auf dem Gerät | ADR 0005 |
+| Serien | Eine Serie erzeugt einzelne Termine; Rhythmus und Enddatum lassen sich nachträglich nicht ändern (stattdessen „alle folgenden“ löschen und neu anlegen) | Einzeln geänderte Termine bleiben verlässlich erhalten, passt zu einzelnen Google-Terminen | ADR 0006 |
+| Termine | Abgesagte Serientermine bleiben durchgestrichen sichtbar; Termine ohne Uhrzeit sind ganztägig; Termine haben die Akzentfarbe | Absagen sollen auffallen; Termine haben keine Kategorie | ADR 0006 |
+| Nicht verfügbar | Von–Bis ist ein durchgehender Zeitraum (z. B. Di. 8:00 bis Mi. 13:00) | Einfach einzugeben, eindeutig für Konfliktwarnungen | ADR 0006 |
+
+**Offene Punkte für spätere Meilensteine**
+
+- M5: Board-Systemmeldung „Neue Produktion“ beim Anlegen; der Schalter „Eigener Chat“ wird schon gespeichert
+- M8: Die betroffenen Schulstunden für die Freistellungsliste werden schon berechnet (`apps/scheduling/periods.py`)
+- M11: App-Icon (schlicht, ohne Schullogo; Entwürfe zur Auswahl) und Vollbild ohne Adressleiste beim Hinzufügen zum Home-Bildschirm (`display: standalone`). Testen nur über HTTPS möglich – auf dem eigenen Server oder über einen Tunnel
+- Vor dem Start: Test auf echten Handys (Android und iPhone)

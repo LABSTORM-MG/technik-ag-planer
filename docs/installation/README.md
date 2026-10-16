@@ -1,0 +1,65 @@
+# Installation auf dem eigenen Server
+
+Diese Anleitung beschreibt den aktuellen Stand. Backups, Google-Anbindung und Push-Mitteilungen kommen in späteren Meilensteinen dazu (10–12); die vollständige Betriebsdoku folgt in Meilenstein 12.
+
+## Voraussetzungen
+
+- Ein eigener Server (z. B. ein kleiner Rechner oder eine VM) mit Docker und Docker Compose
+- Eine eigene Domain, deren DNS-Eintrag auf den Server zeigt (z. B. `planer.example.org`)
+- Die Ports 80 und 443 sind aus dem Internet erreichbar – Caddy holt darüber automatisch das HTTPS-Zertifikat. HTTPS ist Pflicht, u. a. für die Nutzung als App auf dem Handy
+- Ein Postfach für ausgehende Mails (SMTP), z. B. `noreply@…` der eigenen Domain oder ein EU-Mailanbieter. Die App verschickt nur Einladungen und „Passwort vergessen“
+
+## 1. Code holen und konfigurieren
+
+```sh
+git clone https://github.com/LABSTORM-MG/technik-ag-planer.git
+cd technik-ag-planer
+cp .env.example .env
+```
+
+In der `.env` mindestens eintragen:
+
+| Wert | Hinweis |
+| --- | --- |
+| `DJANGO_SECRET_KEY` | Langer Zufallswert, z. B. `python3 -c "import secrets; print(secrets.token_urlsafe(50))"` |
+| `DJANGO_ALLOWED_HOSTS`, `DOMAIN`, `SITE_URL` | Die eigene Domain |
+| `ACME_EMAIL` | Kontakt für Let's Encrypt |
+| `POSTGRES_PASSWORD` und `DATABASE_URL` | Dasselbe sichere Passwort an beiden Stellen |
+| `EMAIL_…`, `DEFAULT_FROM_EMAIL` | Zugangsdaten des Mail-Postfachs |
+| `DJANGO_ADMIN_URL` | Am besten ein schwer zu erratender Pfad statt `admin/` |
+
+Die `.env` enthält Geheimnisse – sie gehört nie ins Repository (steht in `.gitignore`).
+
+## 2. Starten
+
+```sh
+docker compose -f deploy/docker-compose.yml up -d --build
+docker compose -f deploy/docker-compose.yml ps        # alle Dienste „healthy“ bzw. „running“
+```
+
+Beim Start des Web-Containers laufen die Datenbank-Migrationen automatisch. Die Dienste: `web` (Django), `worker` (Hintergrundaufgaben), `db` (PostgreSQL), `cache` (Redis), `caddy` (HTTPS).
+
+## 3. Betreiber-Konto und erste AG
+
+```sh
+docker compose -f deploy/docker-compose.yml exec web python manage.py createsuperuser
+```
+
+Danach Zwei-Faktor-Anmeldung einrichten und die erste AG mit Owner anlegen – Schritt für Schritt in [../betrieb/django-admin.md](../betrieb/django-admin.md).
+
+## 4. Updates
+
+Solange es noch keine veröffentlichte Version gibt:
+
+```sh
+git pull
+docker compose -f deploy/docker-compose.yml up -d --build
+```
+
+Ab der ersten Version (Git-Tag `vX.Y.Z`) gibt es fertige Images unter `ghcr.io/labstorm-mg/technik-ag-planer`; dann reichen `APP_VERSION=X.Y.Z docker compose -f deploy/docker-compose.yml pull` und `up -d`. Migrationen laufen in beiden Fällen automatisch.
+
+## Probleme
+
+- **Logs ansehen:** `docker compose -f deploy/docker-compose.yml logs -f web`
+- **Kein Zertifikat:** DNS-Eintrag und Ports 80/443 prüfen, Logs von `caddy` ansehen
+- **Keine Mails:** `EMAIL_…`-Werte prüfen; Fehler stehen in den Logs von `web`
