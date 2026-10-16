@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Produktionen – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Produktionen{% endblock %}
+{% block content %}
+  <header class="page-header page-header--actions">
+    <h1 class="page-title">Produktionen</h1>
+    {% if org_perms.MANAGE_PRODUCTIONS %}
+      <a class="button button--primary" href="{% url 'productions:create' %}" data-sheet-url>{% include "includes/icon.html" with name="plus" %} Produktion</a>
+    {% endif %}
+  </header>
+
+  <div class="stack">
+    <form method="get" class="search" role="search">
+      {% if active_category %}<input type="hidden" name="kategorie" value="{{ active_category }}">{% endif %}
+      <label class="visually-hidden" for="q">Produktion suchen</label>
+      <input class="input" type="search" id="q" name="q" value="{{ query }}" placeholder="Produktion suchen …">
+    </form>
+
+    <nav class="chips" aria-label="Kategorie">
+      <a class="chip" href="?{% if query %}q={{ query|urlencode }}{% endif %}" {% if not active_category %}aria-current="true"{% endif %}>Alle</a>
+      {% for c in categories %}
+        <a class="chip color-{{ c.color }}" href="?kategorie={{ c.pk }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" {% if active_category == c.pk|stringformat:"s" %}aria-current="true"{% endif %}><span class="dot" aria-hidden="true"></span>{{ c.name }}</a>
+      {% endfor %}
+    </nav>
+
+    {% if upcoming %}
+      <div class="cards">{% for p in upcoming %}{% include "productions/includes/card.html" %}{% endfor %}</div>
+    {% else %}
+      <p class="muted">Keine kommenden Produktionen gefunden.</p>
+    {% endif %}
+
+    {% if past %}
+      <details class="disclosure">
+        <summary>Vergangene Produktionen anzeigen ({{ past|length }})</summary>
+        <div class="cards">{% for p in past %}{% include "productions/includes/card.html" %}{% endfor %}</div>
+      </details>
+    {% endif %}
+  </div>
+{% endblock %}

@@ -54,9 +54,98 @@ class Command(BaseCommand):
                     organization=org, user=user, defaults={"role": role}
                 )
 
+        self._productions(Organization.objects.get(name="Technik-AG Nord"))
+
         self.stdout.write(self.style.SUCCESS("Beispieldaten angelegt."))
         self.stdout.write(f"Passwort für alle Konten: {PASSWORD}")
         for org_name, people in ORGS.items():
             self.stdout.write(f"\n{org_name}:")
             for email, _name, _grade, role in people:
                 self.stdout.write(f"  {Role(role).label:<11} {email}")
+
+    def _productions(self, org):
+        from datetime import time, timedelta
+
+        from django.utils import timezone
+
+        from apps.productions.models import Category, Job, Production, ProductionStatus, Todo
+        from apps.productions.services import assign
+
+        if Production.all_objects.for_org(org).exists():
+            return
+        today = timezone.localdate()
+        categories = {c.name: c for c in Category.objects.for_org(org)}
+        planning = ProductionStatus.planning_for(org)
+        confirmed = ProductionStatus.objects.for_org(org).get(system_key="confirmed")
+        members = {m.user.email: m for m in Membership.objects.for_org(org).select_related("user")}
+
+        plans = [
+            (
+                "Schulkonzert",
+                "Konzert",
+                2,
+                2,
+                confirmed,
+                "Aula",
+                "Schulstraße 1, 50667 Köln",
+                [
+                    ("Aufbau", 0, time(14), time(17), "Bühneneingang"),
+                    ("Show", 1, time(18), time(21), "Technikpult"),
+                    ("Abbau", 1, time(21), time(22, 30), "Aula"),
+                ],
+            ),
+            (
+                "Theater-Premiere",
+                "Theater",
+                9,
+                1,
+                planning,
+                "Aula",
+                "",
+                [
+                    ("Aufbau", 0, time(13), time(16), "Bühneneingang"),
+                    ("Show", 0, time(19), time(21, 30), "Technikpult"),
+                ],
+            ),
+            (
+                "Sommerfest 2025",
+                "Schulfest",
+                -120,
+                1,
+                confirmed,
+                "Schulhof",
+                "",
+                [("Aufbau", 0, time(9), time(11), "Hausmeisterei")],
+            ),
+        ]
+        for name, cat, ahead, length, status, location, address, jobs in plans:
+            start = today + timedelta(days=ahead)
+            production = Production.objects.create(
+                organization=org,
+                name=name,
+                category=categories[cat],
+                start_date=start,
+                end_date=start + timedelta(days=length - 1),
+                status=status,
+                location_name=location,
+                address=address,
+            )
+            for i, (job_name, offset, begin, end, meeting) in enumerate(jobs):
+                Job.objects.create(
+                    organization=org,
+                    production=production,
+                    name=job_name,
+                    date=start + timedelta(days=offset),
+                    start_time=begin,
+                    end_time=end,
+                    meeting_point=meeting,
+                    position=i,
+                )
+        concert = Production.objects.for_org(org).get(name="Schulkonzert")
+        setup, show = concert.jobs.get(name="Aufbau"), concert.jobs.get(name="Show")
+        assign(setup, members["emma@nord.example"], status="requested", role_label="Bühne")
+        assign(setup, members["ben@nord.example"], status="confirmed", role_label="Licht")
+        assign(show, members["admin@nord.example"], status="confirmed", role_label="FOH")
+        assign(show, members["emma@nord.example"], status="confirmed", role_label="Monitor")
+        for text in ["Funkmikros laden", "Bühnenplan drucken"]:
+            Todo.objects.create(organization=org, production=concert, text=text)

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Löschen – {{ production.name }}{% endblock %}
+{% block content %}
+  <section class="card">
+    <h1 class="page-title">„{{ production.name }}“ löschen?</h1>
+    <p>Die Produktion landet unter „Kürzlich gelöscht“ und lässt sich dort 7 Tage lang wiederherstellen. Danach wird sie endgültig entfernt.</p>
+    <form method="post" class="form-actions">
+      {% csrf_token %}
+      <a class="button button--secondary" href="{% url 'productions:detail' production.pk %}">Abbrechen</a>
+      <button type="submit" class="button button--danger">Löschen</button>
+    </form>
+  </section>
+{% endblock %}

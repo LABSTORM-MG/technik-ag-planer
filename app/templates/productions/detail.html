@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}{{ production.name }} – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Produktion{% endblock %}
+{% block content %}
+<article class="stack">
+  <header class="page-header{% if production.category %} color-{{ production.category.color }}{% endif %}">
+    <p class="eyebrow"><a href="{% url 'productions:list' %}">← Produktionen</a>{% if production.category %} · <span class="dot" aria-hidden="true"></span> {{ production.category.name }}{% endif %}</p>
+    <h1 class="page-title">{{ production.name }}</h1>
+    <p class="muted">{% if production.is_multi_day %}{{ production.start_date|date:"D., d.m." }} – {{ production.end_date|date:"D., d.m.Y" }}{% else %}{{ production.start_date|date:"l, j. F Y" }}{% endif %}</p>
+    <div class="toolbar">
+      {% if org_perms.MANAGE_PRODUCTIONS %}
+        <form method="post" action="{% url 'productions:status' production.pk %}" data-auto-submit class="status-select color-{{ production.status.color }}">
+          {% csrf_token %}
+          <label class="visually-hidden" for="id_status">Status</label>
+          {{ status_form.status }}
+          <noscript><button type="submit" class="button button--secondary button--small">Ändern</button></noscript>
+        </form>
+        <form method="post" action="{% url 'productions:copy' production.pk %}">
+          {% csrf_token %}<button type="submit" class="button button--secondary button--small">Kopieren</button>
+        </form>
+        <a class="button button--secondary button--small" href="{% url 'productions:edit' production.pk %}" data-sheet-url>Bearbeiten</a>
+        <a class="button button--secondary button--small" href="{% url 'productions:delete' production.pk %}">Löschen</a>
+      {% else %}
+        {% include "productions/includes/status.html" with status=production.status %}
+      {% endif %}
+    </div>
+  </header>
+
+  {% if production.location_name or production.address %}
+    <section class="card">
+      <h2 class="section-title">Ort</h2>
+      <p class="list__title">{{ production.location_name|default:production.address }}</p>
+      {% if production.location_name and production.address %}<p class="muted">{{ production.address }}</p>{% endif %}
+      {% if production.address %}
+        <a class="button button--secondary button--small" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ production.address|urlencode }}" target="_blank" rel="noopener noreferrer">Navigation starten</a>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  {% if production.notes %}
+    <section class="card">
+      <h2 class="section-title">Notizen</h2>
+      <p class="prewrap">{{ production.notes }}</p>
+    </section>
+  {% endif %}
+
+  <section>
+    <div class="section-head">
+      <h2 class="section-title">Jobs</h2>
+      {% if org_perms.MANAGE_PRODUCTIONS %}<a class="button button--secondary button--small" href="{% url 'productions:job_create' production.pk %}" data-sheet-url>+ Job</a>{% endif %}
+    </div>
+    {% for job in production.jobs.all %}
+      <div class="card job">
+        <div class="job__head">
+          <div>
+            <h3 class="list__title">{{ job.name }}</h3>
+            <p class="list__subtitle">{{ job.date|date:"D., d.m." }} · {{ job.start_time|time:"H:i" }}–{{ job.end_time|time:"H:i" }} Uhr{% if job.meeting_point %} · Treffpunkt: {{ job.meeting_point }}{% endif %}</p>
+          </div>
+          <div class="list__actions">
+            {% if org_perms.MANAGE_CREW %}<a class="button button--primary button--small" href="{% url 'productions:job_crew' job.pk %}" data-sheet-url>Crew</a>{% endif %}
+            {% if org_perms.MANAGE_PRODUCTIONS %}
+              <a class="button button--secondary button--small" href="{% url 'productions:job_edit' job.pk %}" data-sheet-url>Bearbeiten</a>
+              <form method="post" action="{% url 'productions:job_delete' job.pk %}" data-confirm="Job „{{ job.name }}“ löschen?">
+                {% csrf_token %}<button type="submit" class="icon-button" aria-label="Job löschen">{% include "includes/icon.html" with name="close" %}</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+        {% if job.crew.all %}
+          <ul class="crew">
+            {% for a in job.crew.all %}
+              <li class="crew__item">
+                <span class="crew__name">{{ a.membership.user }}{% if a.role_label %} <span class="muted">· {{ a.role_label }}</span>{% endif %}</span>
+                <span class="tag {% if a.is_confirmed %}tag--success{% else %}tag--warning{% endif %}">{{ a.get_status_display }}</span>
+                {% if a.membership_id == current_membership.pk and not a.is_confirmed %}
+                  <form method="post" action="{% url 'productions:crew_respond' a.pk %}">
+                    {% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" name="antwort" value="ja" class="button button--primary button--small">Annehmen</button>
+                    <button type="submit" name="antwort" value="nein" class="button button--secondary button--small">Ablehnen</button>
+                  </form>
+                {% endif %}
+                {% if org_perms.MANAGE_CREW %}
+                  <form method="post" action="{% url 'productions:crew_remove' a.pk %}">
+                    {% csrf_token %}<button type="submit" class="icon-button" aria-label="{{ a.membership.user }} entfernen">{% include "includes/icon.html" with name="close" %}</button>
+                  </form>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">Noch keine Crew.</p>
+        {% endif %}
+      </div>
+    {% empty %}
+      <p class="muted">Noch keine Jobs.</p>
+    {% endfor %}
+  </section>
+
+  <section id="todos">
+    <h2 class="section-title">To-dos</h2>
+    <ul class="list">
+      {% for todo in production.todos.all %}
+        <li class="list__item{% if todo.done %} list__item--muted{% endif %}">
+          <form method="post" action="{% url 'productions:todo_toggle' todo.pk %}" class="todo">
+            {% csrf_token %}
+            <button type="submit" class="todo__check{% if todo.done %} todo__check--done{% endif %}" aria-label="{% if todo.done %}Als offen markieren{% else %}Abhaken{% endif %}: {{ todo.text }}" aria-pressed="{{ todo.done|yesno:'true,false' }}"></button>
+            <span class="list__title{% if todo.done %} todo__text--done{% endif %}">{{ todo.text }}</span>
+          </form>
+          {% if org_perms.MANAGE_PRODUCTIONS %}
+            <form method="post" action="{% url 'productions:todo_delete' todo.pk %}">
+              {% csrf_token %}<button type="submit" class="icon-button" aria-label="To-do löschen">{% include "includes/icon.html" with name="close" %}</button>
+            </form>
+          {% endif %}
+        </li>
+      {% empty %}
+        <li class="list__item muted">Keine To-dos.</li>
+      {% endfor %}
+      {% if org_perms.MANAGE_PRODUCTIONS %}
+        <li class="list__item">
+          <form method="post" action="{% url 'productions:todo_create' production.pk %}" class="inline-form">
+            {% csrf_token %}
+            <label class="visually-hidden" for="id_text">Neues To-do</label>
+            <input class="input" type="text" name="text" id="id_text" maxlength="200" placeholder="+ To-do" required>
+            <button type="submit" class="button button--secondary button--small">Hinzufügen</button>
+          </form>
+        </li>
+      {% endif %}
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Aufsicht</h2>
+    {% if supervisors %}
+      <p>{% for s in supervisors %}{{ s.user }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+    {% else %}
+      <p class="muted">Noch keine Lehrkraft als Aufsicht eingetragen.</p>
+    {% endif %}
+    {% if org_perms.BE_SUPERVISOR %}
+      <form method="post" action="{% url 'productions:supervise' production.pk %}">
+        {% csrf_token %}<button type="submit" class="button button--secondary button--small">{% if is_supervisor %}Als Aufsicht austragen{% else %}Als Aufsicht eintragen{% endif %}</button>
+      </form>
+    {% endif %}
+  </section>
+</article>
+{% endblock %}

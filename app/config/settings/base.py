@@ -23,12 +23,14 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
+    "django.forms",
     "django_otp",
     "django_otp.plugins.otp_totp",
     "apps.core",
     "apps.audit",
     "apps.accounts",
     "apps.organizations",
+    "apps.productions",
 ]
 
 MIDDLEWARE = [
@@ -66,6 +68,9 @@ TEMPLATES = [
     },
 ]
 
+# Formular-Widgets dürfen eigene Templates aus templates/ nutzen
+FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
+
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
@@ -89,7 +94,7 @@ CACHES = {
 # Konten und Anmeldung
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "accounts:login"
-LOGIN_REDIRECT_URL = "core:dashboard"
+LOGIN_REDIRECT_URL = "productions:dashboard"
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 Tage – angemeldet bleiben auf dem Handy
 LOGIN_MAX_ATTEMPTS = 5
 LOGIN_BLOCK_SECONDS = 15 * 60
@@ -150,7 +155,12 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(hour=3, minute=15),
     },
 }
+CELERY_BEAT_SCHEDULE["produktionen-endgueltig-loeschen"] = {
+    "task": "apps.productions.tasks.purge_deleted_productions",
+    "schedule": crontab(hour=3, minute=30),
+}
 AUDIT_RETENTION_DAYS = 7
+PRODUCTION_TRASH_DAYS = 7  # „Kürzlich gelöscht“
 
 LOGGING = {
     "version": 1,

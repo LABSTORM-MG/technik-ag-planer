@@ -80,15 +80,27 @@
     <ul class="menu-list">
       {% for item in nav_new_items %}
         <li>
-          <button type="button" class="menu-item" disabled aria-disabled="true">
-            {% include "includes/icon.html" with name=item.icon %}
-            <span>{{ item.label }}<span class="menu-item__hint">{{ item.hint }} – folgt in einem späteren Meilenstein</span></span>
-          </button>
+          {% if item.url_name %}
+            <a class="menu-item" href="{% url item.url_name %}" data-sheet-url>
+              {% include "includes/icon.html" with name=item.icon %}
+              <span>{{ item.label }}<span class="menu-item__hint">{{ item.hint }}</span></span>
+            </a>
+          {% else %}
+            <button type="button" class="menu-item" disabled aria-disabled="true">
+              {% include "includes/icon.html" with name=item.icon %}
+              <span>{{ item.label }}<span class="menu-item__hint">{{ item.hint }} – folgt in einem späteren Meilenstein</span></span>
+            </button>
+          {% endif %}
         </li>
       {% empty %}
         <li class="muted">Hier gibt es für dich nichts anzulegen.</li>
       {% endfor %}
     </ul>
+  {% include "includes/sheet_end.html" %}
+
+  {# Formulare im Bottom-Sheet (Inhalt wird per JS geladen, siehe data-sheet-url) #}
+  {% include "includes/sheet_start.html" with sheet_id="sheet-form" title="" %}
+    <div data-sheet-body></div>
   {% include "includes/sheet_end.html" %}
 
   {% include "includes/sheet_start.html" with sheet_id="sheet-more" title="Mehr" %}

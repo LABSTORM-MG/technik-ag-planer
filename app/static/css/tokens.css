@@ -29,6 +29,17 @@
   --color-backdrop: rgb(0 0 0 / 0.55);
   --color-qr-bg: #FFFFFF;          /* heller Hintergrund, damit Authenticator-Apps den QR-Code lesen */
 
+  /* Palette für Kategorien und Status (Schlüssel in apps/productions/palette.py) */
+  --palette-green: #3FB97A;
+  --palette-orange: #F0A33A;
+  --palette-blue: #4C9AFF;
+  --palette-lilac: #8787FF;
+  --palette-red: #EF5B5B;
+  --palette-teal: #2EC4B6;
+  --palette-pink: #F06BB4;
+  --palette-yellow: #E8C547;
+  --palette-grey: #9AA0AC;
+
   /* Schrift */
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --text-xs: 0.75rem;

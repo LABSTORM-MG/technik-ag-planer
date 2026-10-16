@@ -1,0 +1,23 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Kürzlich gelöscht{% endblock %}
+{% block page_title %}Kürzlich gelöscht{% endblock %}
+{% block page_content %}
+  <p class="muted">Gelöschte Produktionen bleiben 7 Tage wiederherstellbar.</p>
+  {% if deleted %}
+    <ul class="list">
+      {% for p in deleted %}
+        <li class="list__item">
+          <div class="list__main">
+            <span class="list__title">{{ p.name }}</span>
+            <span class="list__subtitle">{{ p.start_date|date:"d.m.Y" }} · gelöscht am {{ p.deleted_at|date:"d.m.Y, H:i" }} Uhr · endgültig weg ab {{ p.purge_at|date:"d.m.Y" }}</span>
+          </div>
+          <form method="post" action="{% url 'productions:restore' p.pk %}">
+            {% csrf_token %}<button type="submit" class="button button--secondary button--small">Wiederherstellen</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Nichts gelöscht.</p>
+  {% endif %}
+{% endblock %}

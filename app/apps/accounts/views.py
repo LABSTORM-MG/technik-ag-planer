@@ -41,7 +41,7 @@ def _safe_next(request, value):
         value, allowed_hosts={request.get_host()}, require_https=request.is_secure()
     ):
         return value
-    return reverse("core:dashboard")
+    return reverse("productions:dashboard")
 
 
 def confirmed_device(user):
@@ -108,7 +108,7 @@ def login_2fa_view(request):
         else:
             device = confirmed_device(user)
             if device is not None and device.verify_token(form.cleaned_data["token"]):
-                next_url = request.session.get(PENDING_NEXT_KEY) or reverse("core:dashboard")
+                next_url = request.session.get(PENDING_NEXT_KEY) or reverse("productions:dashboard")
                 _clear_pending(request)
                 user.backend = "django.contrib.auth.backends.ModelBackend"
                 auth_login(request, user)

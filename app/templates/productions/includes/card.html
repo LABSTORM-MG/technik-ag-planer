@@ -1,0 +1,15 @@
+{% comment %}Produktionskarte: Datumskachel, Name, Zeitraum, Jobs, Ort, Status. Parameter: p{% endcomment %}
+<a class="pcard{% if p.category %} color-{{ p.category.color }}{% endif %}" href="{% url 'productions:detail' p.pk %}">
+  <span class="datetile">
+    <span class="datetile__day">{{ p.start_date|date:"j" }}</span>
+    <span class="datetile__month">{{ p.start_date|date:"M" }}</span>
+  </span>
+  <span class="pcard__main">
+    <span class="pcard__title">{{ p.name }}</span>
+    <span class="pcard__meta">
+      {% if p.is_multi_day %}{{ p.start_date|date:"d.m." }}–{{ p.end_date|date:"d.m.Y" }}{% else %}{{ p.start_date|date:"D., d.m.Y" }}{% endif %}
+      · {{ p.job_count }} Job{{ p.job_count|pluralize:"s" }}{% if p.location_name %} · {{ p.location_name }}{% endif %}
+    </span>
+  </span>
+  {% include "productions/includes/status.html" with status=p.status %}
+</a>

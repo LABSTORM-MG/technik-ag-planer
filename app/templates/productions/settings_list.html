@@ -1,0 +1,38 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_content %}
+<div class="stack">
+  <ul class="list">
+    {% for item in items %}
+      <li class="list__item color-{{ item.color }}">
+        <span class="dot" aria-hidden="true"></span>
+        <div class="list__main">
+          <a class="list__link list__title" href="{% if kind == 'categories' %}{% url 'productions:category_edit' item.pk %}{% else %}{% url 'productions:status_edit' item.pk %}{% endif %}">{{ item.name }}</a>
+          {% if item.is_system %}<span class="list__subtitle">System-Status – umbenennbar, nicht löschbar</span>{% endif %}
+        </div>
+        <div class="list__actions">
+          <form method="post" action="{% if kind == 'categories' %}{% url 'productions:category_move' item.pk %}{% else %}{% url 'productions:status_move' item.pk %}{% endif %}">
+            {% csrf_token %}
+            <button type="submit" name="richtung" value="-1" class="icon-button" aria-label="Nach oben"{% if forloop.first %} disabled{% endif %}>↑</button>
+            <button type="submit" name="richtung" value="1" class="icon-button" aria-label="Nach unten"{% if forloop.last %} disabled{% endif %}>↓</button>
+          </form>
+          {% if not item.is_system %}
+            <form method="post" action="{% if kind == 'categories' %}{% url 'productions:category_delete' item.pk %}{% else %}{% url 'productions:status_delete' item.pk %}{% endif %}" data-confirm="„{{ item.name }}“ löschen?">
+              {% csrf_token %}<button type="submit" class="icon-button" aria-label="{{ item.name }} löschen">{% include "includes/icon.html" with name="close" %}</button>
+            </form>
+          {% endif %}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+  <section class="card">
+    <h2 class="section-title">Neu</h2>
+    <form method="post" class="form" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <div><button type="submit" class="button button--primary">Anlegen</button></div>
+    </form>
+  </section>
+</div>
+{% endblock %}

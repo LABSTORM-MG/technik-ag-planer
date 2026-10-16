@@ -44,7 +44,9 @@ def export_organization(organization) -> bytes:
     }
     for model, exclude in _registry.items():
         name = f"{model._meta.app_label}_{model._meta.model_name}.json"
-        files[name] = _rows(model.objects.for_org(organization).order_by("pk"), exclude)
+        # _base_manager: auch weich gelöschte Einträge (z. B. „Kürzlich gelöscht“) exportieren
+        queryset = model._base_manager.filter(organization=organization).order_by("pk")
+        files[name] = _rows(queryset, exclude)
 
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:

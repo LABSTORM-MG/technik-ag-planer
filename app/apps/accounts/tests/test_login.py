@@ -12,7 +12,7 @@ PUBLIC_URLS = [
     reverse("core:healthz"),
 ]
 PROTECTED_URLS = [
-    reverse("core:dashboard"),
+    reverse("productions:dashboard"),
     reverse("core:calendar"),
     reverse("organizations:settings"),
     reverse("organizations:members"),
@@ -46,7 +46,7 @@ def test_login_with_email_and_password(client, owner):
     )
 
     assert response.status_code == 302
-    assert client.get(reverse("core:dashboard")).status_code == 200
+    assert client.get(reverse("productions:dashboard")).status_code == 200
 
 
 def test_login_respects_safe_next(client, owner):
@@ -62,7 +62,7 @@ def test_login_ignores_external_next(client, owner):
         reverse("accounts:login"),
         {"email": owner.user.email, "password": PASSWORD, "next": "https://evil.example/"},
     )
-    assert response.url == reverse("core:dashboard")
+    assert response.url == reverse("productions:dashboard")
 
 
 def test_wrong_password_shows_german_error(client, owner):
@@ -83,7 +83,7 @@ def test_login_blocked_after_five_failures(client, owner):
     )
 
     assert "Zu viele Fehlversuche" in response.content.decode()
-    assert client.get(reverse("core:dashboard")).status_code == 302
+    assert client.get(reverse("productions:dashboard")).status_code == 302
 
 
 def test_locked_account_cannot_log_in(client, owner):
@@ -99,7 +99,7 @@ def test_locked_account_cannot_log_in(client, owner):
 def test_logout_requires_post(member_client):
     assert member_client.get(reverse("accounts:logout")).status_code == 405
     member_client.post(reverse("accounts:logout"))
-    assert member_client.get(reverse("core:dashboard")).status_code == 302
+    assert member_client.get(reverse("productions:dashboard")).status_code == 302
 
 
 def test_login_with_2fa_requires_code(client, owner):
@@ -110,7 +110,7 @@ def test_login_with_2fa_requires_code(client, owner):
     )
     assert response.url == reverse("accounts:login_2fa")
     # ohne Code noch nicht angemeldet
-    assert client.get(reverse("core:dashboard")).status_code == 302
+    assert client.get(reverse("productions:dashboard")).status_code == 302
 
     response = client.post(reverse("accounts:login_2fa"), {"token": "000000"})
     assert "Der Code ist falsch" in response.content.decode()
@@ -119,7 +119,7 @@ def test_login_with_2fa_requires_code(client, owner):
 
     response = client.post(reverse("accounts:login_2fa"), {"token": _code(device)})
     assert response.status_code == 302
-    assert client.get(reverse("core:dashboard")).status_code == 200
+    assert client.get(reverse("productions:dashboard")).status_code == 200
 
 
 def test_2fa_step_without_password_step_redirects(client, db):

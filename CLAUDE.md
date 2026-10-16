@@ -1,12 +1,12 @@
 # CLAUDE.md – Projektregeln
 
-Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Aktueller Meilenstein: **2 – Konten und Organisationen** (danach 3 – Produktionen) (siehe Abschnitt 15 der Feature-Liste).
+Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Aktueller Meilenstein: **3 – Produktionen** (danach 4 – Kalender und Zeiten) (siehe Abschnitt 15 der Feature-Liste).
 
 ## Regeln
 
 - **Stack:** Django, PostgreSQL, Redis, Docker, Caddy. Projektstruktur laut Abschnitt 14 der Feature-Liste; Abweichungen begründet als ADR in `docs/architektur/`.
 - **Sprache:** Oberfläche komplett auf Deutsch.
-- **Farben:** ausschließlich über die Design-Tokens (CSS-Variablen) aus Abschnitt 1 – keine Farbwerte direkt in Templates oder CSS-Komponenten.
+- **Farben:** ausschließlich über die Design-Tokens (CSS-Variablen) aus Abschnitt 1 – keine Farbwerte direkt in Templates oder CSS-Komponenten. Farbige Daten (Kategorien, Status) speichern nur einen Palette-Schlüssel (`apps/productions/palette.py`, Klasse `color-<schlüssel>`), ADR 0005.
 - **Mandantentrennung:** Jede Abfrage wird nach Organisation gefiltert (`Model.objects.for_org(request.organization)`, Modelle erben von `OrganizationScopedModel`); jede View prüft Rolle und Recht laut Rechte-Tabelle (`@permission_required_in_org(Perm.X)` aus `apps/organizations/permissions.py`). Tests für neue Views prüfen, dass Daten anderer AGs nicht erreichbar sind (ADR 0004).
 - **Geheimnisse:** nie im Code, nur in `.env` (Vorlage: `.env.example`).
 - **Tests:** Jede neue Funktion bekommt Tests; `make test` und `make lint` müssen grün sein.
@@ -30,3 +30,5 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Aktueller Meilenst
 - Beispieldaten: `make beispieldaten` (Passwort `technik-ag-planer`)
 - Layout: `app/templates/base.html`; Bottom-Sheet über `includes/sheet_start.html` / `sheet_end.html`
 - Farben, Abstände, Radien: `app/static/css/tokens.css`
+- Formulare: Template mit `{% extends layout %}`, Link mit `data-sheet-url` öffnet es im Bottom-Sheet; `<form data-draft="…">` speichert Entwürfe im Browser (ADR 0005)
+- `app/apps/productions/`: Produktionen (weich gelöscht: `objects` vs. `all_objects`), Jobs, Crew, To-dos, Dashboard

@@ -1,0 +1,23 @@
+{% extends layout %}
+{% block title %}Crew – {{ job }}{% endblock %}
+{% block topbar_title %}Crew{% endblock %}
+{% block content %}
+  <p class="eyebrow">{{ job.production.name }}</p>
+  <h1 class="page-title sheet-title">Crew für {{ job.name }}</h1>
+  <p class="muted">{{ job.date|date:"D., d.m." }} · {{ job.start_time|time:"H:i" }}–{{ job.end_time|time:"H:i" }} Uhr</p>
+  {% if conflicts %}
+    <div class="message message--warning" role="alert">
+      <p><strong>Achtung, Überschneidung:</strong> {{ form.cleaned_data.membership.user }} ist zu dieser Zeit schon eingeplant:</p>
+      <ul>{% for c in conflicts %}<li>{{ c.job.production }} – {{ c.job.name }}, {{ c.job.start_time|time:"H:i" }}–{{ c.job.end_time|time:"H:i" }} Uhr ({{ c.get_status_display }})</li>{% endfor %}</ul>
+      <p>Trotzdem eintragen?</p>
+    </div>
+  {% endif %}
+  <form method="post" action="{% url 'productions:job_crew' job.pk %}" class="form" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <div class="form-actions">
+      <a class="button button--secondary" href="{% url 'productions:detail' job.production_id %}">Abbrechen</a>
+      <button type="submit" class="button button--primary">{% if conflicts %}Trotzdem eintragen{% else %}Eintragen{% endif %}</button>
+    </div>
+  </form>
+{% endblock %}

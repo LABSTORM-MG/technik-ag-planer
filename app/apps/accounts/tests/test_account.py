@@ -48,7 +48,7 @@ def test_org_requiring_2fa_redirects_members_without_device(org, make_member, lo
     membership = make_member(org)
     client = login(membership.user, org)
 
-    response = client.get(reverse("core:dashboard"))
+    response = client.get(reverse("productions:dashboard"))
 
     assert response.status_code == 302
     assert response.url.startswith(reverse("accounts:two_factor"))
@@ -106,7 +106,7 @@ def test_password_change_validates(member_client, password):
 def test_user_without_membership_sees_no_org_page(make_user, login):
     client = login(make_user())
 
-    response = client.get(reverse("core:dashboard"), follow=True)
+    response = client.get(reverse("productions:dashboard"), follow=True)
 
     assert "Keine AG" in response.content.decode()
     # Konto-Einstellungen bleiben erreichbar

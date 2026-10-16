@@ -4,9 +4,9 @@ from django.urls import reverse
 from apps.core import navigation
 
 PAGES = [
-    ("core:dashboard", "Dashboard"),
+    ("productions:dashboard", "Dashboard"),
     ("core:calendar", "Kalender"),
-    ("core:productions", "Produktionen"),
+    ("productions:list", "Produktionen"),
     ("core:inventory", "Material"),
     ("core:board", "Board"),
     ("organizations:settings", "Einstellungen"),
@@ -32,7 +32,7 @@ def test_placeholder_pages_render(client, url_name, title):
 
 
 def test_sidebar_contains_all_menu_items_in_order(client):
-    content = client.get(reverse("core:dashboard")).content.decode()
+    content = client.get(reverse("productions:dashboard")).content.decode()
     sidebar = content.split('<aside class="sidebar"', 1)[1].split("</aside>", 1)[0]
 
     positions = [
@@ -44,7 +44,7 @@ def test_sidebar_contains_all_menu_items_in_order(client):
 
 
 def test_mobile_tabbar_items(client):
-    content = client.get(reverse("core:dashboard")).content.decode()
+    content = client.get(reverse("productions:dashboard")).content.decode()
     tabbar = content.split('<nav class="tabbar"', 1)[1].split("</nav>", 1)[0]
 
     for label in ["Home", "Kalender", "Produktionen", "Mehr"]:
@@ -54,7 +54,7 @@ def test_mobile_tabbar_items(client):
 
 
 def test_more_sheet_links_inventory_and_board(client):
-    content = client.get(reverse("core:dashboard")).content.decode()
+    content = client.get(reverse("productions:dashboard")).content.decode()
     sheet = content.split('id="sheet-more"', 1)[1].split("</dialog>", 1)[0]
 
     assert reverse("core:inventory") in sheet
@@ -62,7 +62,7 @@ def test_more_sheet_links_inventory_and_board(client):
 
 
 def _new_sheet(client):
-    content = client.get(reverse("core:dashboard")).content.decode()
+    content = client.get(reverse("productions:dashboard")).content.decode()
     return content.split('id="sheet-new"', 1)[1].split("</dialog>", 1)[0]
 
 

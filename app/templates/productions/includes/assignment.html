@@ -1,0 +1,22 @@
+{% comment %}Eigener Einsatz mit Annehmen/Ablehnen. Parameter: a (CrewAssignment){% endcomment %}
+<li class="list__item">
+  <span class="datetile datetile--small">
+    <span class="datetile__day">{{ a.job.date|date:"j" }}</span>
+    <span class="datetile__month">{{ a.job.date|date:"M" }}</span>
+  </span>
+  <div class="list__main">
+    <a class="list__link list__title" href="{% url 'productions:detail' a.job.production_id %}">{{ a.job.production }} – {{ a.job.name }}</a>
+    <span class="list__subtitle">{{ a.job.date|date:"D., d.m." }} · {{ a.job.start_time|time:"H:i" }}–{{ a.job.end_time|time:"H:i" }} Uhr{% if a.job.meeting_point %} · Treffpunkt: {{ a.job.meeting_point }}{% endif %}{% if a.role_label %} · {{ a.role_label }}{% endif %}</span>
+  </div>
+  {% if a.is_confirmed %}
+    <span class="tag tag--success">zugesagt</span>
+  {% else %}
+    <div class="list__actions">
+      <form method="post" action="{% url 'productions:crew_respond' a.pk %}">
+        {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit" name="antwort" value="ja" class="button button--primary button--small">Annehmen</button>
+        <button type="submit" name="antwort" value="nein" class="button button--secondary button--small">Ablehnen</button>
+      </form>
+    </div>
+  {% endif %}
+</li>
