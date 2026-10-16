@@ -1,0 +1,1 @@
+<label class="chip{% if widget.color %} color-{{ widget.color }}{% endif %}"><input type="radio" name="{{ widget.name }}" value="{{ widget.value|stringformat:'s' }}"{% include "django/forms/widgets/attrs.html" %}>{% if widget.color %}<span class="dot" aria-hidden="true"></span>{% endif %}{{ widget.label }}</label>

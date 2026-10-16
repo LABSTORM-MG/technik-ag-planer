@@ -37,7 +37,7 @@ GROUPS = [
             Entry(
                 "Kategorien",
                 "Produktions-Kategorien verwalten und sortieren",
-                milestone=3,
+                "productions:categories",
                 perm=Perm.MANAGE_CATEGORIES_AND_INQUIRY_LINK,
             ),
             Entry(
@@ -49,7 +49,7 @@ GROUPS = [
             Entry(
                 "Kürzlich gelöscht",
                 "Gelöschte Produktionen 7 Tage lang wiederherstellen",
-                milestone=3,
+                "productions:trash",
                 perm=Perm.MANAGE_PRODUCTIONS,
             ),
             Entry(
@@ -73,7 +73,7 @@ GROUPS = [
             Entry(
                 "Status-Werte",
                 "Status für Produktionen mit Name und Farbe",
-                milestone=3,
+                "productions:statuses",
                 owner_only=True,
             ),
             Entry(

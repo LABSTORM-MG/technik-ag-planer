@@ -1,0 +1,15 @@
+{% extends layout %}
+{% block title %}Job – {{ production.name }}{% endblock %}
+{% block topbar_title %}Job{% endblock %}
+{% block content %}
+  <p class="eyebrow">{{ production.name }}</p>
+  <h1 class="page-title sheet-title">{% if job %}Job bearbeiten{% else %}Neuer Job{% endif %}</h1>
+  <form method="post" action="{% if job %}{% url 'productions:job_edit' job.pk %}{% else %}{% url 'productions:job_create' production.pk %}{% endif %}" class="form" novalidate>
+    {% csrf_token %}
+    {% include "productions/includes/job_fields.html" with jf=form %}
+    <div class="form-actions">
+      <a class="button button--secondary" href="{% url 'productions:detail' production.pk %}">Abbrechen</a>
+      <button type="submit" class="button button--primary">Speichern</button>
+    </div>
+  </form>
+{% endblock %}

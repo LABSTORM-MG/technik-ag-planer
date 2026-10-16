@@ -89,7 +89,7 @@ def test_deactivated_organization_is_not_reachable(org, make_member, login):
     org.is_active = False
     org.save()
 
-    response = login(membership.user, org).get(reverse("core:dashboard"))
+    response = login(membership.user, org).get(reverse("productions:dashboard"))
 
     assert response.status_code == 302
     assert response.url == reverse("organizations:no_organization")

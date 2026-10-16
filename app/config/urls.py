@@ -15,5 +15,6 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     path("", include("apps.accounts.urls")),
     path("", include("apps.organizations.urls")),
+    path("", include("apps.productions.urls")),
     path("", include("apps.core.urls")),
 ]

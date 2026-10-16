@@ -1,0 +1,15 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}{{ item.name }}{% endblock %}
+{% block page_title %}{{ item.name }}{% endblock %}
+{% block page_content %}
+  <section class="card">
+    <form method="post" class="form" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <div class="form-actions">
+        <a class="button button--secondary" href="{{ back }}">Abbrechen</a>
+        <button type="submit" class="button button--primary">Speichern</button>
+      </div>
+    </form>
+  </section>
+{% endblock %}

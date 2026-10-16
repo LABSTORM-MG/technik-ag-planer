@@ -10,6 +10,8 @@ def navigation(request):
         if membership is not None and membership.has_perm(item["perm"])
     ]
     return {
+        # Formulare im Bottom-Sheet: nur den Inhalt ohne Seitenrahmen ausliefern
+        "layout": "fragment.html" if request.headers.get("X-Sheet") else "base.html",
         "theme_color": THEME_COLOR,
         "nav_sidebar": sections.SIDEBAR,
         "nav_mobile_left": sections.MOBILE_LEFT,

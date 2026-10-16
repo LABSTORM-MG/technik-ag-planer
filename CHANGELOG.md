@@ -22,3 +22,10 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 - Django-Admin für den Betreiber: AG mit Owner-Einladung anlegen, Owner wechseln, Konten sperren, 2FA zurücksetzen, Datenexport als ZIP; im Betrieb nur mit 2FA
 - Internes Änderungsprotokoll, Einträge werden nach 7 Tagen gelöscht
 - `make beispieldaten` für lokales Durchklicken
+- Produktionen mit Kategorie, Zeitraum, Status, Ort und Adresse („Navigation starten“), Notizen; Liste mit Suche, Kategorie-Filter und vergangenen Produktionen
+- Jobs mit Datum, Zeiten und Treffpunkt; Crew anfragen oder direkt einteilen mit Position, Konfliktwarnung bei Überschneidungen; Anfragen annehmen oder ablehnen
+- To-dos je Produktion, Lehrkräfte als Aufsicht, Kopieren von Produktionen
+- „Kürzlich gelöscht“: 7 Tage wiederherstellbar, danach automatisch entfernt
+- Kategorien (Owner, Admins) und Status-Werte (Owner) mit fester Farbpalette verwalten
+- Dashboard „Was steht an?“ mit nächster Produktion, Kacheln und „Meine Jobs“
+- Formulare öffnen sich auf dem Handy im Bottom-Sheet; Entwürfe werden im Browser zwischengespeichert

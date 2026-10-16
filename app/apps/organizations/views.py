@@ -27,7 +27,7 @@ def _error(request, error: ValidationError):
 
 def no_organization(request):
     if request.organization is not None:
-        return redirect("core:dashboard")
+        return redirect("productions:dashboard")
     return render(request, "organizations/no_organization.html", {"admin_url": settings.ADMIN_URL})
 
 
@@ -42,7 +42,7 @@ def switch_organization(request):
     else:
         set_active_organization(request, membership.organization)
         messages.success(request, f"Gewechselt zu {membership.organization.name}.")
-    return redirect("core:dashboard")
+    return redirect("productions:dashboard")
 
 
 @org_required
@@ -187,7 +187,7 @@ def leave(request):
         _error(request, error)
         return redirect("organizations:manage")
     messages.success(request, f"Du hast die {name} verlassen.")
-    return redirect("core:dashboard")
+    return redirect("productions:dashboard")
 
 
 @require_POST
@@ -202,7 +202,7 @@ def dissolve(request):
             _error(request, error)
         else:
             messages.success(request, f"Die {name} wurde aufgelöst.")
-            return redirect("core:dashboard")
+            return redirect("productions:dashboard")
     return redirect("organizations:manage")
 
 
@@ -260,10 +260,10 @@ def accept_invitation(request, token):
                     services.accept(invitation, request.user)
                 except ValidationError as err:
                     _error(request, err)
-                    return redirect("core:dashboard")
+                    return redirect("productions:dashboard")
                 set_active_organization(request, invitation.organization)
                 messages.success(request, f"Willkommen in der {invitation.organization.name}!")
-                return redirect("core:dashboard")
+                return redirect("productions:dashboard")
             return render(request, "organizations/invitation_existing.html", context)
         context["login_form"] = LoginForm(initial={"email": existing.email})
         return render(request, "organizations/invitation_existing.html", context)
@@ -291,6 +291,6 @@ def accept_invitation(request, token):
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             set_active_organization(request, invitation.organization)
             messages.success(request, f"Willkommen in der {invitation.organization.name}!")
-            return redirect("core:dashboard")
+            return redirect("productions:dashboard")
     context["form"] = form
     return render(request, "organizations/invitation_accept.html", context)

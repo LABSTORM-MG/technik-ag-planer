@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Was steht an? – Technik-AG Planer{% endblock %}
+{% block topbar_title %}{{ current_organization.name }}{% endblock %}
+{% block content %}
+  <header class="page-header">
+    <p class="eyebrow">{{ today|date:"l, j. F" }}</p>
+    <h1 class="page-title">Was steht an?</h1>
+    <p class="muted">Hallo {{ user }}</p>
+  </header>
+
+  <div class="stack">
+    {% if next_production %}
+      <a class="card next-card{% if next_production.category %} color-{{ next_production.category.color }}{% endif %}" href="{% url 'productions:detail' next_production.pk %}">
+        <p class="eyebrow">Nächste Produktion</p>
+        <h2 class="next-card__title">{{ next_production.name }}</h2>
+        <p>{{ next_production.start_date|date:"l, j. F" }}{% if next_job %} · ab {{ next_job.start_time|time:"H:i" }} Uhr{% endif %}</p>
+        {% if next_job %}
+          <p class="muted">Nächster Job: {{ next_job.name }}{% if next_job.meeting_point %} · Treffpunkt: {{ next_job.meeting_point }}{% endif %}</p>
+        {% endif %}
+      </a>
+    {% endif %}
+
+    <div class="tiles">
+      <a class="tile" href="{% url 'productions:list' %}">
+        <span class="tile__number">{{ upcoming|length }}</span>
+        <span class="tile__label">Kommende Produktionen</span>
+      </a>
+      <a class="tile" href="?ansicht=jobs">
+        <span class="tile__number">{{ open_request_count }}</span>
+        <span class="tile__label">Crew-Anfragen offen</span>
+      </a>
+    </div>
+
+    <nav class="segmented" aria-label="Ansicht">
+      <a href="?" {% if view == "productions" %}aria-current="page"{% endif %}>Produktionen</a>
+      <a href="?ansicht=jobs" {% if view == "jobs" %}aria-current="page"{% endif %}>Meine Jobs</a>
+    </nav>
+
+    {% if view == "jobs" %}
+      {% if my_assignments %}
+        <ul class="list">{% for a in my_assignments %}{% include "productions/includes/assignment.html" %}{% endfor %}</ul>
+      {% else %}
+        <p class="muted">Du bist gerade für keinen Job eingeteilt oder angefragt.</p>
+      {% endif %}
+    {% else %}
+      {% if upcoming %}
+        <div class="cards">{% for p in upcoming %}{% include "productions/includes/card.html" %}{% endfor %}</div>
+      {% else %}
+        <p class="muted">Keine kommenden Produktionen.{% if org_perms.MANAGE_PRODUCTIONS %} <a href="{% url 'productions:create' %}" data-sheet-url>Produktion anlegen</a>{% endif %}</p>
+      {% endif %}
+    {% endif %}
+  </div>
+{% endblock %}

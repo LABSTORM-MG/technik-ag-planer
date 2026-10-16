@@ -80,7 +80,7 @@ def test_accept_creates_account_with_grade(org, client):
     invitation.refresh_from_db()
     assert invitation.accepted_at is not None
     # direkt angemeldet
-    assert client.get(reverse("core:dashboard")).status_code == 200
+    assert client.get(reverse("productions:dashboard")).status_code == 200
 
 
 def test_grade_is_required_for_students(org, client):

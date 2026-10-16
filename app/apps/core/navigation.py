@@ -19,9 +19,11 @@ class Section:
         return self.mobile_label or self.label
 
 
-DASHBOARD = Section("dashboard", "Dashboard", "home", "core:dashboard", 3, mobile_label="Home")
+DASHBOARD = Section(
+    "dashboard", "Dashboard", "home", "productions:dashboard", 3, mobile_label="Home"
+)
 CALENDAR = Section("calendar", "Kalender", "calendar", "core:calendar", 4)
-PRODUCTIONS = Section("productions", "Produktionen", "clapper", "core:productions", 3)
+PRODUCTIONS = Section("productions", "Produktionen", "clapper", "productions:list", 3)
 INVENTORY = Section("inventory", "Material", "box", "core:inventory", 6)
 BOARD = Section("board", "Board", "chat", "core:board", 5)
 SETTINGS = Section("settings", "Einstellungen", "gear", "organizations:settings", 12)
@@ -46,6 +48,7 @@ NEW_ITEMS = [
         "hint": "Veranstaltung mit Jobs und Crew",
         "icon": "clapper",
         "perm": Perm.MANAGE_PRODUCTIONS,
+        "url_name": "productions:create",
     },
     {
         "label": "Nicht verfügbar",
