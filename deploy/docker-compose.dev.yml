@@ -1,0 +1,63 @@
+# Entwicklung mit Live-Reload und Test-Mailserver. Braucht keine .env.
+#   make dev   → App: http://localhost:8000, Mailpit: http://localhost:8025
+
+x-app: &app
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile
+    target: dev
+  user: "${UID:-1000}:${GID:-1000}"
+  volumes:
+    - ../app:/app
+  environment:
+    DJANGO_SETTINGS_MODULE: config.settings.dev
+    DJANGO_READ_ENV_FILE: "false"
+    DATABASE_URL: postgres://technik_ag_planer:technik_ag_planer@db:5432/technik_ag_planer
+    REDIS_URL: redis://cache:6379/0
+    EMAIL_HOST: mailpit
+    EMAIL_PORT: "1025"
+    RUFF_CACHE_DIR: /tmp/ruff-cache
+    PYTHONDONTWRITEBYTECODE: "1"
+  depends_on:
+    db:
+      condition: service_healthy
+    cache:
+      condition: service_started
+
+services:
+  web:
+    <<: *app
+    ports:
+      - "8000:8000"
+
+  worker:
+    <<: *app
+    command: ["celery", "-A", "config", "worker", "--beat", "--loglevel=info",
+              "--schedule=/tmp/celerybeat-schedule"]
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: technik_ag_planer
+      POSTGRES_USER: technik_ag_planer
+      POSTGRES_PASSWORD: technik_ag_planer
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U technik_ag_planer -d technik_ag_planer"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  cache:
+    image: redis:7-alpine
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"
+
+volumes:
+  pgdata-dev:

@@ -1,0 +1,103 @@
+{% load static %}<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="{{ theme_color }}">
+  <meta name="color-scheme" content="dark">
+  <title>{% block title %}Technik-AG Planer{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'js/app.js' %}" defer></script>
+</head>
+<body>
+  <div class="shell">
+    {# Seitenleiste: Tablet quer und Computer #}
+    <aside class="sidebar" aria-label="Hauptmenü">
+      <div class="sidebar__brand">Technik-AG Planer</div>
+      <button type="button" class="button button--primary button--block" data-sheet-open="sheet-new">
+        {% include "includes/icon.html" with name="plus" %} Neu
+      </button>
+      <nav class="sidebar__nav">
+        {% for item in nav_sidebar %}
+          <a class="nav-link" href="{% url item.url_name %}"{% if item.key == active_section %} aria-current="page"{% endif %}>
+            {% include "includes/icon.html" with name=item.icon %}
+            {{ item.label }}
+            {% if item.key == "board" and nav_unread_count %}<span class="badge nav-link__badge" aria-label="{{ nav_unread_count }} ungelesen">{{ nav_unread_count }}</span>{% endif %}
+          </a>
+        {% endfor %}
+      </nav>
+      <div class="sidebar__user">
+        {% block sidebar_user %}
+          <div class="sidebar__user-name">Nicht angemeldet</div>
+          <div class="sidebar__user-mail">Anmeldung folgt in Meilenstein 2</div>
+        {% endblock %}
+      </div>
+    </aside>
+
+    <div class="main">
+      {# Kopfzeile: Handy und Tablet hochkant #}
+      <header class="topbar">
+        <span class="topbar__title">{% block topbar_title %}Technik-AG Planer{% endblock %}</span>
+        <a class="icon-button" href="{% url nav_settings.url_name %}" aria-label="Einstellungen"{% if active_section == nav_settings.key %} aria-current="page"{% endif %}>
+          {% include "includes/icon.html" with name="gear" %}
+        </a>
+      </header>
+
+      <main class="content" id="inhalt">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+    {# Leiste unten: Handy und Tablet hochkant #}
+    <nav class="tabbar" aria-label="Hauptmenü">
+      {% for item in nav_mobile_left %}
+        <a class="tab" href="{% url item.url_name %}"{% if item.key == active_section %} aria-current="page"{% endif %}>
+          {% include "includes/icon.html" with name=item.icon %}{{ item.short_label }}
+        </a>
+      {% endfor %}
+      <div class="tab tab--new">
+        <button type="button" class="fab" data-sheet-open="sheet-new" aria-label="Neu anlegen">
+          {% include "includes/icon.html" with name="plus" %}
+        </button>
+      </div>
+      {% for item in nav_mobile_right %}
+        <a class="tab" href="{% url item.url_name %}"{% if item.key == active_section %} aria-current="page"{% endif %}>
+          {% include "includes/icon.html" with name=item.icon %}{{ item.short_label }}
+        </a>
+      {% endfor %}
+      <button type="button" class="tab" data-sheet-open="sheet-more"{% if active_section == "inventory" or active_section == "board" %} aria-current="page"{% endif %}>
+        {% include "includes/icon.html" with name="more" %}Mehr
+        {% if nav_unread_count %}<span class="badge tab__badge" aria-label="{{ nav_unread_count }} ungelesen">{{ nav_unread_count }}</span>{% endif %}
+      </button>
+    </nav>
+  </div>
+
+  {% include "includes/sheet_start.html" with sheet_id="sheet-new" title="Neu anlegen" %}
+    <ul class="menu-list">
+      {% for item in nav_new_items %}
+        <li>
+          <button type="button" class="menu-item" disabled aria-disabled="true">
+            {% include "includes/icon.html" with name=item.icon %}
+            <span>{{ item.label }}<span class="menu-item__hint">{{ item.hint }} – folgt in einem späteren Meilenstein</span></span>
+          </button>
+        </li>
+      {% endfor %}
+    </ul>
+  {% include "includes/sheet_end.html" %}
+
+  {% include "includes/sheet_start.html" with sheet_id="sheet-more" title="Mehr" %}
+    <ul class="menu-list">
+      {% for item in nav_mobile_more %}
+        <li>
+          <a class="menu-item" href="{% url item.url_name %}">
+            {% include "includes/icon.html" with name=item.icon %}
+            <span>{{ item.label }}</span>
+            {% if item.key == "board" and nav_unread_count %}<span class="badge">{{ nav_unread_count }}</span>{% endif %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% include "includes/sheet_end.html" %}
+</body>
+</html>

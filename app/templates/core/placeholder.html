@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}{{ section.label }} – Technik-AG Planer{% endblock %}
+{% block topbar_title %}{{ section.label }}{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <p class="eyebrow">Technik-AG Planer</p>
+    <h1 class="page-title">{{ section.label }}</h1>
+  </header>
+  <section class="card">
+    <p class="eyebrow">In Arbeit</p>
+    <p>Dieser Bereich folgt in Meilenstein {{ section.milestone }}.</p>
+    <p class="muted">Bis dahin zeigt die Seite nur das Grundlayout.</p>
+  </section>
+{% endblock %}

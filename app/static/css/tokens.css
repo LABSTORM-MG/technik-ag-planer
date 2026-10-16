@@ -1,0 +1,59 @@
+/*
+ * Design-Tokens – die EINZIGE Stelle mit Farbwerten (Feature-Liste, Abschnitt 1).
+ * Alle anderen Dateien verwenden nur var(--…). Ein Test prüft das.
+ */
+:root {
+  color-scheme: dark;
+
+  /* Flächen, von hinten nach vorne */
+  --color-bg: #0F1115;
+  --color-surface: #171A21;
+  --color-surface-raised: #1F232C;
+  --color-line: #2A2F3A;
+
+  /* Akzente */
+  --color-primary: #003397;        /* Dunkelblau: Haupt-Buttons, aktiver Menüpunkt – nur mit heller Schrift */
+  --color-on-primary: #F2F3F5;
+  --color-accent: #8787FF;         /* Hellblau (Flieder): Links, Badges, Icons, „heute“ */
+  --color-on-accent: #0F1115;
+
+  /* Text */
+  --color-text: #F2F3F5;
+  --color-text-muted: #9AA0AC;
+
+  /* Signalfarben für Status – unabhängig von den Akzenten */
+  --color-success: #3FB97A;        /* Bestätigt, zugesagt */
+  --color-warning: #F0A33A;        /* In Planung, angefragt */
+  --color-danger: #EF5B5B;         /* Fehler, defekt */
+  --color-backdrop: rgb(0 0 0 / 0.55);
+
+  /* Schrift */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.625rem;
+  --weight-medium: 500;
+  --weight-bold: 650;
+
+  /* Abstände */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  /* Radien */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  /* Layout */
+  --sidebar-width: 248px;
+  --tabbar-height: 64px;
+  --topbar-height: 56px;
+  --content-max: 1080px;
+}

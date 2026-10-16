@@ -1,0 +1,15 @@
+{
+	email {$ACME_EMAIL}
+}
+
+# Automatisches HTTPS-Zertifikat für die eigene Domain
+{$DOMAIN} {
+	encode zstd gzip
+
+	header {
+		-Server
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+	}
+
+	reverse_proxy web:8000
+}
