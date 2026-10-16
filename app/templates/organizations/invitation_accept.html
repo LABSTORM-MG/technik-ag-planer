@@ -1,0 +1,12 @@
+{% extends "auth_base.html" %}
+{% block title %}Einladung annehmen{% endblock %}
+{% block content %}
+  <p class="eyebrow">Einladung</p>
+  <h1 class="page-title">{{ organization.name }}</h1>
+  <p class="muted">Du wirst als <strong>{{ invitation.get_role_display }}</strong> eingeladen. Dein Konto: {{ invitation.email }}</p>
+  <form method="post" class="form" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <button type="submit" class="button button--primary button--block">Konto anlegen und beitreten</button>
+  </form>
+{% endblock %}

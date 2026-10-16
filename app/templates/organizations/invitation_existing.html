@@ -1,0 +1,26 @@
+{% extends "auth_base.html" %}
+{% block title %}Einladung annehmen{% endblock %}
+{% block content %}
+  <p class="eyebrow">Einladung</p>
+  <h1 class="page-title">{{ organization.name }}</h1>
+  <p class="muted">Du wirst als <strong>{{ invitation.get_role_display }}</strong> eingeladen.</p>
+  {% if wrong_account %}
+    <p>Diese Einladung gilt für {{ invitation.email }}. Du bist aber als {{ user.email }} angemeldet.</p>
+    <form method="post" action="{% url 'accounts:logout' %}">
+      {% csrf_token %}<button type="submit" class="button button--secondary">Abmelden</button>
+    </form>
+  {% elif user.is_authenticated %}
+    <form method="post" class="form">
+      {% csrf_token %}
+      <button type="submit" class="button button--primary button--block">Einladung annehmen</button>
+    </form>
+  {% else %}
+    <p>Für {{ invitation.email }} gibt es schon ein Konto. Melde dich an, um der AG beizutreten.</p>
+    <form method="post" action="{% url 'accounts:login' %}" class="form" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      {% with form=login_form %}{% include "includes/form_fields.html" %}{% endwith %}
+      <button type="submit" class="button button--primary button--block">Anmelden</button>
+    </form>
+  {% endif %}
+{% endblock %}

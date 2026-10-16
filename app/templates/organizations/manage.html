@@ -1,0 +1,47 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Organisation verwalten{% endblock %}
+{% block page_title %}Organisation verwalten{% endblock %}
+{% block page_content %}
+<div class="stack">
+  <section class="card">
+    <p class="list__title">{{ current_organization.name }}</p>
+    <p class="muted">{{ member_count }} Mitglied{{ member_count|pluralize:"er" }} · Owner: {{ current_organization.owner_membership.user|default:"–" }}</p>
+  </section>
+
+  {% if transfer_form %}
+    <section class="card">
+      <h2 class="section-title">Ownership übertragen</h2>
+      <p class="muted">Du wirst danach Admin. Lehrkräfte können nicht Owner werden.</p>
+      <form method="post" action="{% url 'organizations:transfer_ownership' %}" class="form" novalidate data-confirm="Ownership wirklich übertragen?">
+        {% csrf_token %}
+        {% with form=transfer_form %}{% include "includes/form_fields.html" %}{% endwith %}
+        <div><button type="submit" class="button button--primary">Übertragen</button></div>
+      </form>
+    </section>
+  {% endif %}
+
+  <section class="card">
+    <h2 class="section-title">AG verlassen</h2>
+    {% if current_membership.is_owner %}
+      <p class="muted">Als Owner musst du die Ownership zuerst übertragen.</p>
+    {% else %}
+      <form method="post" action="{% url 'organizations:leave' %}" data-confirm="Die AG wirklich verlassen?">
+        {% csrf_token %}<button type="submit" class="button button--secondary">AG verlassen</button>
+      </form>
+    {% endif %}
+  </section>
+
+  {% if dissolve_form %}
+    <section class="card danger-zone">
+      <h2 class="section-title">AG auflösen</h2>
+      <p>Alle Daten der AG werden in der App gelöscht. Das lässt sich nicht rückgängig machen. Dateien im Google Drive der AG bleiben erhalten.</p>
+      <form method="post" action="{% url 'organizations:dissolve' %}" class="form" novalidate>
+        {% csrf_token %}
+        {% with form=dissolve_form %}{% include "includes/form_fields.html" %}{% endwith %}
+        <span class="field__help">Tippe „{{ current_organization.name }}“ ein.</span>
+        <div><button type="submit" class="button button--danger">AG endgültig auflösen</button></div>
+      </form>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

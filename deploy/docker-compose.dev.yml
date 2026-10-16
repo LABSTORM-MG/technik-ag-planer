@@ -9,6 +9,7 @@ x-app: &app
   user: "${UID:-1000}:${GID:-1000}"
   volumes:
     - ../app:/app
+    - ../docs:/docs:ro  # Tests prüfen die Rechte-Tabelle gegen die Feature-Liste
   environment:
     DJANGO_SETTINGS_MODULE: config.settings.dev
     DJANGO_READ_ENV_FILE: "false"

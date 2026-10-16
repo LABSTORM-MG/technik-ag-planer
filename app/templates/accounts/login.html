@@ -1,0 +1,15 @@
+{% extends "auth_base.html" %}
+{% block title %}Anmelden{% endblock %}
+{% block content %}
+  <h1 class="page-title">Anmelden</h1>
+  <p class="muted">Konten gibt es nur auf Einladung.</p>
+  <form method="post" class="form" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {% include "includes/form_fields.html" %}
+    <button type="submit" class="button button--primary button--block">Anmelden</button>
+  </form>
+{% endblock %}
+{% block footer %}
+  <p class="auth__footer"><a href="{% url 'accounts:password_reset' %}">Passwort vergessen?</a></p>
+{% endblock %}

@@ -9,11 +9,19 @@ PAGES = [
     ("core:productions", "Produktionen"),
     ("core:inventory", "Material"),
     ("core:board", "Board"),
-    ("core:settings", "Einstellungen"),
+    ("organizations:settings", "Einstellungen"),
 ]
 
 
-@pytest.mark.parametrize(("url_name", "title"), PAGES)
+PLACEHOLDER_PAGES = [page for page in PAGES if page[0].startswith("core:")]
+
+
+@pytest.fixture
+def client(member_client):
+    return member_client
+
+
+@pytest.mark.parametrize(("url_name", "title"), PLACEHOLDER_PAGES)
 def test_placeholder_pages_render(client, url_name, title):
     response = client.get(reverse(url_name))
 
@@ -53,9 +61,23 @@ def test_more_sheet_links_inventory_and_board(client):
     assert reverse("core:board") in sheet
 
 
-def test_new_menu_lists_entries_from_section_4(client):
+def _new_sheet(client):
     content = client.get(reverse("core:dashboard")).content.decode()
-    sheet = content.split('id="sheet-new"', 1)[1].split("</dialog>", 1)[0]
+    return content.split('id="sheet-new"', 1)[1].split("</dialog>", 1)[0]
+
+
+def test_new_menu_for_students_only_offers_unavailability(client):
+    sheet = _new_sheet(client)
+
+    assert "Nicht verfügbar" in sheet
+    assert "Termin" not in sheet
+    assert "Produktion" not in sheet
+
+
+@pytest.mark.parametrize("role", ["owner", "admin", "teacher"])
+def test_new_menu_lists_all_entries_for_planners(org, make_member, login, role):
+    membership = make_member(org, role)
+    sheet = _new_sheet(login(membership.user, org))
 
     for label in ["Termin", "Produktion", "Nicht verfügbar"]:
         assert label in sheet

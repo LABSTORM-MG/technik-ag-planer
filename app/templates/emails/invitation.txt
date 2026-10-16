@@ -1,0 +1,12 @@
+{% autoescape off %}Hallo,
+
+{% if invited_by %}{{ invited_by }} hat dich{% else %}du wurdest{% endif %} in die {{ organization.name }} im Technik-AG Planer eingeladen{% if invitation.role == "owner" %} – als Owner der AG{% endif %}.
+
+Über diesen Link nimmst du die Einladung an:
+
+{{ url }}
+
+Der Link ist {{ valid_days }} Tage gültig und funktioniert nur einmal.
+
+Wenn du mit dieser Einladung nichts anfangen kannst, ignoriere diese E-Mail einfach.
+{% endautoescape %}

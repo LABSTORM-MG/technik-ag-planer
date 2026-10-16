@@ -28,10 +28,12 @@
         {% endfor %}
       </nav>
       <div class="sidebar__user">
-        {% block sidebar_user %}
-          <div class="sidebar__user-name">Nicht angemeldet</div>
-          <div class="sidebar__user-mail">Anmeldung folgt in Meilenstein 2</div>
-        {% endblock %}
+        {% include "includes/org_switch.html" %}
+        <div class="sidebar__user-name">{{ user }}</div>
+        <div class="sidebar__user-mail">{{ user.email }}</div>
+        <form method="post" action="{% url 'accounts:logout' %}" class="sidebar__logout">
+          {% csrf_token %}<button type="submit" class="link-button">Abmelden</button>
+        </form>
       </div>
     </aside>
 
@@ -45,6 +47,7 @@
       </header>
 
       <main class="content" id="inhalt">
+        {% include "includes/messages.html" %}
         {% block content %}{% endblock %}
       </main>
     </div>
@@ -82,6 +85,8 @@
             <span>{{ item.label }}<span class="menu-item__hint">{{ item.hint }} – folgt in einem späteren Meilenstein</span></span>
           </button>
         </li>
+      {% empty %}
+        <li class="muted">Hier gibt es für dich nichts anzulegen.</li>
       {% endfor %}
     </ul>
   {% include "includes/sheet_end.html" %}
