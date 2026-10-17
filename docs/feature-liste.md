@@ -576,7 +576,7 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | 9 | Team-Funktionen | fertig | #11 |
 | 10 | Google-Anbindung | fertig (echter Test mit Google-Konto steht aus) | #12 |
 | 11 | PWA und Push | fertig (Test auf echten Handys steht aus) | #13 |
-| 12 | Abschluss | offen | |
+| 12 | Abschluss | fertig | #14 |
 
 **Ergänzungen und Abweichungen**
 
@@ -627,13 +627,27 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | Push | Abo je Gerät, Einstellungen je Konto (für alle AGs); jede Art einzeln abschaltbar; wer etwas auslöst, bekommt keine Mitteilung | Ein Handy gehört einer Person; keine Mitteilung über eigene Änderungen | ADR 0013 |
 | Push | Erinnerung standardmäßig am Vorabend um 18 Uhr, alternativ einige Stunden vorher; bei verschobenem Job erneut | Abschnitt 9 | ADR 0013 |
 | Push | Board-Nachrichten an alle, Chat-Nachrichten an Eingeteilte und Aufsicht | Regel wie der Zähler in der Navigation | ADR 0013 |
-| Entwicklung | Beispielkonten mit kurzen Anmeldenamen (`owner`, `lehrer`, `schueler` …, Passwort wie der Name); Login-Feld vorübergehend ohne E-Mail-Prüfung | Schneller durchklicken (Entscheidung des Projektinhabers); in M12 zurück auf E-Mail | README |
+| Startseite | Nicht Angemeldete sehen unter `/` die Landingpage, Angemeldete das Dashboard; Screenshots automatisch aus den Beispieldaten | Gleiche Startadresse für die installierte App | ADR 0014 |
+| Rechtliches | Impressum, Datenschutz, Nutzungsbedingungen trägt der Betreiber im Django-Admin ein; Vorlagen in `docs/rechtliches/` (ohne Rechtsberatung) | Jede Installation hat einen eigenen Betreiber | ADR 0014 |
+| Sicherheit | Content-Security-Policy ohne `unsafe-inline`; Test ordnet jede View als öffentlich, Konto-View oder AG-geprüft ein; Push nur an Push-Dienste der Browser; Anfragen am Proxy höchstens 30 MB | Ergebnis des Sicherheits-Reviews (`docs/sicherheit/review-2026-10.md`) | ADR 0014 |
+| Betrieb | Backup-Skripte für Datenbank und `.env` (14 Tage), Dateien liegen im Drive der AGs | Abschnitt 14 | ADR 0014 |
+| Entwicklung | Beispielkonten `owner@example.org`, `lehrer@…`, `schueler@…` …, Passwort jeweils der Name vor dem @ (M6–M11 mit Login ohne @; seit M12 wieder E-Mail-Eingabe) | Schneller durchklicken (Entscheidung des Projektinhabers) | README |
 | Repository | Kein `CONTRIBUTING.md` und kein `SECURITY.md`: Die Zustimmung zur Lizenz steht in der Pull-Request-Vorlage, Sicherheitslücken werden privat über GitHub gemeldet | Entscheidung des Projektinhabers, weniger Dateien | Abschnitt 13 |
 
-**Offene Punkte für spätere Meilensteine**
+**Vor dem Start**
 
-- M11 nachholen: Test auf echten Handys über HTTPS (Server oder Tunnel) – Android und iPhone (App vom Home-Bildschirm), Push aktivieren, Test-Mitteilung, Crew-Anfrage, Icon und Vollbild; Icon-Entwurf auswählen (`docs/design/app-icon/`)
-- M12: Login-Feld wieder als E-Mail-Eingabe (`EmailField`, `type="email"`) in `apps/accounts/forms.py`; seit M6 vorübergehend ein Textfeld, damit die Beispielkonten kurze Anmeldenamen haben (`owner`, `lehrer`, `schueler`). Die Beispieldaten bekommen dann wieder E-Mail-Adressen
-- Vor dem Start: Test auf echten Handys (Android und iPhone)
-- M10 nachholen: echter Durchlauf mit einem Google-Cloud-Projekt und einem Google-Konto der AG (`docs/installation/google-cloud.md`); bisher nur gegen eine Attrappe getestet
-- Später (optional): Dateien zusätzlich als Drive-Anhang am Google-Termin (Abschnitt 9)
+Alle Meilensteine sind umgesetzt. Vor dem Einsatz an der Schule stehen noch aus:
+
+- Echter Durchlauf der Google-Anbindung mit einem Google-Cloud-Projekt und einem Google-Konto der AG (`docs/installation/google-cloud.md`); bisher nur gegen eine Attrappe getestet
+- Test auf echten Handys über HTTPS (Android und iPhone mit App vom Home-Bildschirm): Installation, Icon und Vollbild, Push aktivieren, Test-Mitteilung, Crew-Anfrage; App-Icon auswählen (`docs/design/app-icon/`)
+- Rechtstexte vervollständigen und im Django-Admin eintragen (`docs/rechtliches/`)
+- Einsatz der App und Nutzung von Google mit Schulleitung und Datenschutzbeauftragter abstimmen; klären, ob für Schülerinnen und Schüler unter 16 eine Einwilligung der Eltern nötig ist (Abschnitt 11)
+- Sicherheits-Review durch eine erfahrene Person (Bericht: `docs/sicherheit/review-2026-10.md`)
+- Server einrichten mit Backups (cron) und Kopie außer Haus (`docs/betrieb/README.md`); erste Version taggen (`v1.0.0`)
+
+**Ideen für später**
+
+- Dateien zusätzlich als Drive-Anhang am Google-Termin (Abschnitt 9, optional)
+- Erinnerungen auch vor Terminen (AG-Treffen)
+- Freistellungsliste an eine Vorlage der Schule anpassen (Abschnitt 9)
+- Abgelaufene Einladungen automatisch löschen

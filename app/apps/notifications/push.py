@@ -9,6 +9,28 @@ logger = logging.getLogger(__name__)
 
 OK, GONE, FAILED = "ok", "gone", "failed"
 
+# Push-Dienste der Browser. Andere Adressen nimmt die App nicht an – sonst könnte ein Konto den
+# Server Anfragen an beliebige Adressen schicken lassen (Sicherheits-Review M12).
+PUSH_HOSTS = (
+    "fcm.googleapis.com",  # Chrome, Edge (Android), Samsung Internet
+    "updates.push.services.mozilla.com",  # Firefox
+    "web.push.apple.com",  # Safari, iPhone
+    ".push.apple.com",
+    ".notify.windows.com",  # Edge (Windows)
+)
+
+
+def is_push_service(endpoint):
+    from urllib.parse import urlsplit
+
+    parts = urlsplit(endpoint)
+    host = (parts.hostname or "").lower()
+    if parts.scheme != "https" or parts.port not in (None, 443):
+        return False
+    return any(
+        host == h.lstrip(".") or (h.startswith(".") and host.endswith(h)) for h in PUSH_HOSTS
+    )
+
 
 def is_enabled():
     return bool(settings.VAPID_PUBLIC_KEY and settings.VAPID_PRIVATE_KEY)

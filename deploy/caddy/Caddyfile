@@ -11,5 +11,10 @@
 		Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
 	}
 
+	# Größte Anfrage: Datei-Uploads bis 25 MB (GOOGLE_UPLOAD_MAX_MB) plus Formular
+	request_body {
+		max_size 30MB
+	}
+
 	reverse_proxy web:8000
 }
