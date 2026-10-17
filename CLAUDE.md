@@ -2,7 +2,7 @@
 
 Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilensteine: Abschnitt 15, Umsetzungsstand und Entscheidungen: Abschnitt 16 (nach jedem Meilenstein fortschreiben).
 
-**Aktueller Meilenstein: 12 – Abschluss.**
+**Stand: Alle 12 Meilensteine umgesetzt – Wartung und Ideen aus Abschnitt 16 („Vor dem Start“, „Ideen für später“).** Weiter mit Branch, Plan, PR wie bisher; neue Entscheidungen als ADR ab 0015.
 
 ## Regeln
 
@@ -19,7 +19,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 
 - `make dev` – Entwicklungsumgebung (App :8000, Mailpit :8025); `make migrate`, `make makemigrations`
 - `make test` / `make lint` / `make format` – laufen im Dev-Container gegen PostgreSQL
-- `make beispieldaten` (Logins `owner`, `admin`, `lehrer`, `schueler`, `ben`, `sued` – Passwort jeweils wie der Name), `make reset-db`, `make superuser`
+- `make beispieldaten` (Logins `owner@example.org`, `admin@…`, `lehrer@…`, `schueler@…`, `ben@…`, `sued@…` – Passwort jeweils der Name vor dem @), `make reset-db`, `make superuser`
 - Abhängigkeiten: `uv add …` in `app/`, danach `make build`
 
 ## Bausteine
@@ -42,7 +42,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 
 | App | Inhalt | ADR |
 | --- | --- | --- |
-| `core` | Navigation, Platzhalterseiten, Health-Check | 0003 |
+| `core` | Navigation, Landingpage, Hilfe & FAQ, Über die App, Rechtstexte (`LegalPage`), CSP-Middleware, Health-Check | 0003, 0014 |
 | `accounts` | Konten, Login, 2FA, Passwort, Profil, Konto löschen | 0004, 0011 |
 | `organizations` | AGs, Rollen und Rechte, Einladungen, Einstellungen, Schuljahreswechsel, Datenexport, `beispieldaten` | 0004, 0011 |
 | `audit` | Änderungsprotokoll (7 Tage) | 0004 |
@@ -62,3 +62,4 @@ Weitere Fach-Apps (Abschnitt 14) entstehen erst in ihrem Meilenstein.
 - Allgemeine Fixtures (`org`, `other_org`, `owner`, `make_member`, `login`, `member_client`): `app/conftest.py`
 - Produktions-Fixtures (`make_production`, `make_job`, `make_assignment`, `concert`, `planner_client`, `student_client`): `app/tests/fixtures_productions.py`
 - Material-Fixtures (`make_material`, `make_kit`, `mics`): `app/apps/inventory/tests/conftest.py`
+- Neue Views in `app/tests/test_security.py` einordnen (öffentlich / Konto / AG-geprüft); keine Inline-Skripte oder -Styles (CSP)

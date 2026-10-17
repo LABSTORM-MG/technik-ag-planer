@@ -54,7 +54,7 @@ def subscribe(request):
         p256dh, auth = keys["p256dh"], keys["auth"]
     except (ValueError, KeyError, TypeError):
         return JsonResponse({"ok": False}, status=400)
-    if not endpoint.startswith("https://") or len(endpoint) > 1000:
+    if not push.is_push_service(endpoint) or len(endpoint) > 1000:
         return JsonResponse({"ok": False}, status=400)
     PushSubscription.objects.update_or_create(
         endpoint=endpoint,

@@ -1,0 +1,21 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Hilfe & FAQ{% endblock %}
+{% block page_title %}Hilfe & FAQ{% endblock %}
+{% block page_content %}
+<div class="stack">
+  {% for title, questions in topics %}
+    <section>
+      <h2 class="section-title">{{ title }}</h2>
+      <div class="faq">
+        {% for q in questions %}
+          <details class="faq__item card">
+            <summary class="faq__question">{{ q.question }}</summary>
+            <p class="faq__answer">{{ q.answer }}</p>
+          </details>
+        {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
+  <p class="muted">Weitere Fragen? Am besten im Board oder beim Owner deiner AG nachfragen. Ausführliche Anleitungen stehen im <a href="https://github.com/LABSTORM-MG/technik-ag-planer/tree/main/docs/handbuch" target="_blank" rel="noopener noreferrer">Handbuch</a>.</p>
+</div>
+{% endblock %}

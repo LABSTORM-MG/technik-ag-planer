@@ -1,0 +1,13 @@
+{% extends "public_base.html" %}
+{% block title %}{{ title }} – Technik-AG Planer{% endblock %}
+{% block content %}
+<article class="public-section prose">
+  <h1 class="page-title">{{ title }}</h1>
+  {% if page %}
+    {{ page.content|urlize|linebreaks }}
+    <p class="muted">Stand: {{ page.updated_at|date:"d.m.Y" }}</p>
+  {% else %}
+    <p class="muted">Noch nicht hinterlegt. Der Betreiber dieser Installation trägt den Text vor dem Start ein.</p>
+  {% endif %}
+</article>
+{% endblock %}

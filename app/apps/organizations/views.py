@@ -9,6 +9,8 @@ from django.views.decorators.http import require_POST
 
 from apps.accounts.forms import AcceptInvitationForm, LoginForm
 from apps.accounts.models import Grade
+from apps.google_sync.services import connection_for
+from apps.inquiries.models import InquiryLink
 
 from . import services
 from .decorators import org_required, owner_required, permission_required_in_org
@@ -58,7 +60,14 @@ def settings_index(request):
     return render(
         request,
         "organizations/settings.html",
-        {**SETTINGS, "groups": visible_groups(request.membership)},
+        {
+            **SETTINGS,
+            "groups": visible_groups(request.membership),
+            "inquiry_link_active": InquiryLink.objects.filter(
+                organization=request.organization, is_active=True
+            ).exists(),
+            "google_connected": connection_for(request.organization) is not None,
+        },
     )
 
 

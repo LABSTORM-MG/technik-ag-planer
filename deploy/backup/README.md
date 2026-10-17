@@ -1,7 +1,6 @@
 # Backups
 
-Skripte für Sicherung und Wiederherstellung folgen in Meilenstein 12. Bis dahin lässt sich die Datenbank so sichern:
+- `backup.sh` sichert die Datenbank (`pg_dump`, komprimiert) und die `.env` nach `backups/` und löscht Sicherungen, die älter als 14 Tage sind.
+- `restore.sh <datei.dump>` spielt eine Sicherung wieder ein (mit Sicherheitsabfrage).
 
-```sh
-docker compose -f deploy/docker-compose.yml exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > backup.sql
-```
+Anleitung, cron-Eintrag und Hinweise zur Aufbewahrung: [docs/betrieb/README.md](../../docs/betrieb/README.md#backups).

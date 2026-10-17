@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "apps.core.middleware.ContentSecurityPolicyMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -209,3 +210,7 @@ GOOGLE_SYNC_DELAY_SECONDS = 15  # Änderungen sammeln, dann einmal abgleichen
 VAPID_PUBLIC_KEY = env("VAPID_PUBLIC_KEY", default="")
 VAPID_PRIVATE_KEY = env("VAPID_PRIVATE_KEY", default="")
 VAPID_ADMIN_EMAIL = env("VAPID_ADMIN_EMAIL", default="")
+
+# „Über die App“: Version (im Docker-Image gesetzt) und Quellcode
+APP_VERSION = env("APP_VERSION", default="Entwicklung")
+SOURCE_URL = "https://github.com/LABSTORM-MG/technik-ag-planer"
