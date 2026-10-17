@@ -1,0 +1,32 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Technik anfragen{% endblock %}
+{% block page_title %}Technik anfragen{% endblock %}
+{% block page_content %}
+  <section class="card stack">
+    <p>Über diesen Link können Lehrkräfte und Schulleitung ohne Konto Technik für eine Veranstaltung anfragen. Die Anfragen erscheinen oben in der Produktionsliste.</p>
+    <p>{% if link.is_active %}<span class="tag tag--success">Link ist aktiv</span>{% else %}<span class="tag">Link ist nicht aktiv</span>{% endif %}</p>
+    {% if link.is_active %}
+      <div class="field">
+        <label class="field__label" for="anfrage-link">Link zum Weitergeben</label>
+        <input class="input" id="anfrage-link" type="url" value="{{ url }}" readonly>
+        <div class="toolbar">
+          <button type="button" class="button button--secondary button--small" data-copy="{{ url }}">Kopieren</button>
+          <a class="button button--secondary button--small" href="{{ url }}" target="_blank" rel="noopener">Formular ansehen</a>
+        </div>
+      </div>
+    {% endif %}
+    <form method="post" class="toolbar">
+      {% csrf_token %}
+      {% if link.is_active %}
+        <button type="submit" name="action" value="deactivate" class="button button--secondary">Deaktivieren</button>
+      {% else %}
+        <button type="submit" name="action" value="activate" class="button button--primary">Aktivieren</button>
+      {% endif %}
+    </form>
+    <form method="post" data-confirm="Neuen Link erzeugen? Der bisherige Link funktioniert dann nicht mehr.">
+      {% csrf_token %}
+      <button type="submit" name="action" value="renew" class="button button--secondary button--small">Neuen Link erzeugen</button>
+      <p class="field__help">Zum Beispiel, wenn der Link in falsche Hände geraten ist oder Spam kommt.</p>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,2 @@
+{% comment %}Feld, mit paste=True zusätzlich mit Einfügen-Button. Parameter: field, paste{% endcomment %}
+{% if paste %}<div class="paste-field">{% include "includes/field.html" %}<button type="button" class="link-button" data-paste="{{ field.id_for_label }}">Einfügen</button></div>{% else %}{% include "includes/field.html" %}{% endif %}

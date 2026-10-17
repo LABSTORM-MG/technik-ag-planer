@@ -1,0 +1,34 @@
+{% comment %}Felder „Produktion anlegen/bearbeiten“ samt Jobs. Parameter: form, formset; paste=True zeigt Einfügen-Buttons (geteilte Ansicht der Technik-Anfragen){% endcomment %}
+{% if form.non_field_errors %}<ul class="form-errors" role="alert">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+{% include "productions/includes/paste_field.html" with field=form.name %}
+{% include "includes/field.html" with field=form.category %}
+{% if org_perms.MANAGE_CATEGORIES_AND_INQUIRY_LINK %}<a class="field__help" href="{% url 'productions:categories' %}">Kategorien bearbeiten</a>{% endif %}
+<div class="form-row">
+  {% include "includes/field.html" with field=form.start_date %}
+  {% include "includes/field.html" with field=form.end_date %}
+</div>
+{% include "includes/field.html" with field=form.status %}
+<details class="disclosure"{% if form.location_name.value or form.address.value %} open{% endif %}>
+  <summary>Ort &amp; Adresse</summary>
+  <div class="form">
+    {% include "productions/includes/paste_field.html" with field=form.location_name %}
+    {% include "productions/includes/paste_field.html" with field=form.address %}
+  </div>
+</details>
+{% include "productions/includes/paste_field.html" with field=form.notes %}
+
+<fieldset class="jobs-fieldset">
+  <legend class="section-title">Jobs</legend>
+  {{ formset.management_form }}
+  {% if formset.non_form_errors %}<ul class="form-errors">{% for e in formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+  <div class="job-forms" data-formset="jobs">
+    {% for job_form in formset %}
+      {% include "productions/includes/job_fields.html" with jf=job_form %}
+    {% endfor %}
+  </div>
+  <template data-formset-template="jobs">{% include "productions/includes/job_fields.html" with jf=formset.empty_form %}</template>
+  <button type="button" class="button button--secondary button--small" data-formset-add="jobs">+ Job</button>
+</fieldset>
+
+{% include "includes/field.html" with field=form.chat_enabled %}
+

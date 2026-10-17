@@ -58,9 +58,13 @@ class Command(BaseCommand):
         self._scheduling(Organization.objects.get(name="Technik-AG Nord"))
         self._board(Organization.objects.get(name="Technik-AG Nord"))
         self._inventory(Organization.objects.get(name="Technik-AG Nord"))
+        link = self._inquiries(Organization.objects.get(name="Technik-AG Nord"))
 
         self.stdout.write(self.style.SUCCESS("Beispieldaten angelegt."))
         self.stdout.write("Anmeldename = Passwort, z. B. owner / owner")
+        self.stdout.write(
+            f"Technik anfragen (AG Nord): http://localhost:8000/anfrage/{link.token}/"
+        )
         for org_name, people in ORGS.items():
             self.stdout.write(f"\n{org_name}:")
             for email, _name, _grade, role in people:
@@ -251,6 +255,63 @@ class Command(BaseCommand):
         services.plan(rehearsal, materials["Funkmikrofon"], 2)
         # Ein offener Defekt: damit fehlen beim Schulkonzert Funkmikrofone
         services.report_defect(materials["Funkmikrofon"], 1, "Kapsel knackt", owner)
+
+    def _inquiries(self, org):
+        from datetime import time, timedelta
+
+        from django.utils import timezone
+
+        from apps.inquiries.models import Inquiry
+        from apps.inquiries.services import link_for, mark_done
+        from apps.productions.models import Category
+
+        link = link_for(org)
+        if not link.is_active:
+            link.is_active = True
+            link.save(update_fields=["is_active"])
+        if Inquiry.objects.for_org(org).exists():
+            return link
+        today = timezone.localdate()
+        categories = {c.name: c for c in Category.objects.for_org(org)}
+        Inquiry.objects.create(
+            organization=org,
+            requester_name="Frau Muster",
+            requester_email="muster@schule.example",
+            requester_role="Klassenleitung 5b",
+            event_name="Elternabend",
+            category=categories["Sonstiges"],
+            date=today + timedelta(days=19),
+            start_time=time(19),
+            end_time=time(21, 30),
+            setup_from=time(17),
+            teardown_until=time(22),
+            location="Aula",
+            tech_needs=["mikrofone", "beamer", "laptop"],
+            tech_notes="Präsentation vom eigenen Laptop (HDMI?), zwei Redner",
+            schedule="19:00 Begrüßung\n19:15 Vortrag Schulleitung\n20:00 Fragen",
+            contact_name="Herr Beispiel (Hausmeister)",
+            contact_phone="0221 123456",
+        )
+        Inquiry.objects.create(
+            organization=org,
+            requester_name="SV Schülervertretung",
+            requester_email="sv@schule.example",
+            requester_role="SV",
+            event_name="Abiball",
+            date=today + timedelta(days=60),
+            tech_notes="Musik und Licht für ca. 300 Gäste",
+        )
+        done = Inquiry.objects.create(
+            organization=org,
+            requester_name="Herr Altmann",
+            requester_email="altmann@schule.example",
+            event_name="Vorlesewettbewerb",
+            date=today - timedelta(days=10),
+            location="Bibliothek",
+            tech_needs=["mikrofone"],
+        )
+        mark_done(done, Membership.objects.for_org(org).get(role=Role.TEACHER).user)
+        return link
 
     def _scheduling(self, org):
         from datetime import date, time, timedelta

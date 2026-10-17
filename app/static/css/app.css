@@ -1723,3 +1723,100 @@ a.icon-button {
 .pack__check:hover {
   background: var(--color-surface-raised);
 }
+
+/* ---------- Technik-Anfragen ---------- */
+
+.auth__box:has(.inquiry-form) {
+  max-width: 560px;
+}
+
+.inquiry-form fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.checklist__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+}
+
+.checklist__item input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-primary);
+}
+
+.split {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.split--js .split__pane:not(.is-active) {
+  display: none;
+}
+
+.split:not(.split--js) .split__switch {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .split__switch {
+    display: none;
+  }
+
+  .split--js .split__pane:not(.is-active) {
+    display: block;
+  }
+
+  .split > #anfrage {
+    position: sticky;
+    top: var(--space-4);
+  }
+}
+
+.copy-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.copy-row dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.copy-row dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.paste-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.paste-field > .link-button {
+  align-self: flex-end;
+}

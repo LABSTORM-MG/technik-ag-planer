@@ -1,0 +1,2 @@
+{% comment %}Kurzform: „Elternabend · Do., 05.11.2026 · 19:00–21:30 Uhr · Aula · von Frau Muster“. Parameter: i{% endcomment %}
+{{ i.title }} · {{ i.date|date:"D., d.m.Y" }}{% if i.start_time %} · {{ i.start_time|time:"H:i" }}{% if i.end_time %}–{{ i.end_time|time:"H:i" }}{% endif %} Uhr{% endif %}{% if i.location %} · {{ i.location }}{% endif %} · von {{ i.requester_name }}
