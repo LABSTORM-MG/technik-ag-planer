@@ -1,6 +1,6 @@
 # Installation auf dem eigenen Server
 
-Diese Anleitung beschreibt den aktuellen Stand. Backups, Google-Anbindung und Push-Mitteilungen kommen in späteren Meilensteinen dazu (10–12); die vollständige Betriebsdoku folgt in Meilenstein 12.
+Diese Anleitung beschreibt den aktuellen Stand. Backups und Push-Mitteilungen kommen in späteren Meilensteinen dazu (11–12); die vollständige Betriebsdoku folgt in Meilenstein 12.
 
 ## Voraussetzungen
 
@@ -47,7 +47,11 @@ docker compose -f deploy/docker-compose.yml exec web python manage.py createsupe
 
 Danach Zwei-Faktor-Anmeldung einrichten und die erste AG mit Owner anlegen – Schritt für Schritt in [../betrieb/django-admin.md](../betrieb/django-admin.md).
 
-## 4. Updates
+## 4. Google-Anbindung (optional, empfohlen)
+
+Für Dateiablage im Google Drive und den Google-Kalender der AGs braucht die Installation einmalig ein Google-Cloud-Projekt: [google-cloud.md](google-cloud.md). Ohne sie funktioniert die App, nur Datei-Uploads und die Kalender-Übertragung fehlen.
+
+## 5. Updates
 
 Solange es noch keine veröffentlichte Version gibt:
 

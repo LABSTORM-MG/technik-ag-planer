@@ -127,3 +127,12 @@ def test_settings_hide_owner_entries_for_students(member_client):
     assert "Schüler/in" in content
     assert "Zwei-Faktor für alle Mitglieder" not in content
     assert "Stundenraster" not in content
+
+
+def test_dissolve_with_productions(org, owner_client, make_production, make_job):
+    """Früher scheiterte das Auflösen am geschützten Status der Produktionen."""
+    from apps.organizations.models import Organization
+
+    make_job(make_production(org))
+    owner_client.post(reverse("organizations:dissolve"), {"confirm_name": org.name})
+    assert not Organization.objects.filter(pk=org.pk).exists()

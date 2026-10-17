@@ -28,6 +28,7 @@ class ProductionsConfig(AppConfig):
             "CrewAssignment",
             "Todo",
             "Skill",
+            "ProductionLink",
         ]:
             model = self.get_model(name)
             audit(model)

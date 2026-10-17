@@ -1,0 +1,14 @@
+{% comment %}Liste von Drive-Dateien. Parameter: attachments, can_delete{% endcomment %}
+{% for a in attachments %}
+  <li class="list__item">
+    <div class="list__main">
+      <a class="list__link list__title" href="{% url 'google_sync:open' a.pk %}" target="_blank" rel="noopener">{{ a.name }}</a>
+      <span class="list__subtitle">{{ a.size|filesizeformat }} · {{ a.uploaded_at|date:"d.m.Y" }}{% if a.uploaded_by %} · {{ a.uploaded_by }}{% endif %}</span>
+    </div>
+    {% if can_delete %}
+      <form method="post" action="{% url 'google_sync:delete' a.pk %}" data-confirm="„{{ a.name }}“ löschen – auch im Google Drive?">
+        {% csrf_token %}<button type="submit" class="icon-button" aria-label="{{ a.name }} löschen">{% include "includes/icon.html" with name="close" %}</button>
+      </form>
+    {% endif %}
+  </li>
+{% endfor %}

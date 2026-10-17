@@ -1,0 +1,19 @@
+{% extends layout %}
+{% block title %}Datei hochladen{% endblock %}
+{% block topbar_title %}Datei{% endblock %}
+{% block content %}
+  <h1 class="page-title sheet-title">{{ title }}</h1>
+  {% if connected %}
+    <form method="post" enctype="multipart/form-data" class="form" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <div class="form-actions">
+        <a class="button button--secondary" href="{{ back }}">Abbrechen</a>
+        <button type="submit" class="button button--primary">Hochladen</button>
+      </div>
+    </form>
+  {% else %}
+    <div class="message message--warning" role="alert">Kein Google-Konto verbunden – bitte den Owner fragen. Dateien speichert die App im Google Drive der AG.</div>
+    <p><a class="button button--secondary" href="{{ back }}">Zurück</a></p>
+  {% endif %}
+{% endblock %}

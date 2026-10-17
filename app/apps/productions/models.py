@@ -129,7 +129,7 @@ class Production(OrganizationScopedModel):
     start_date = models.DateField("Von", default=timezone.localdate)
     end_date = models.DateField("Bis", default=timezone.localdate)
     status = models.ForeignKey(
-        ProductionStatus, verbose_name="Status", on_delete=models.PROTECT, related_name="+"
+        ProductionStatus, verbose_name="Status", on_delete=models.RESTRICT, related_name="+"
     )
     location_name = models.CharField("Ort", max_length=120, blank=True, help_text="z. B. Aula")
     address = models.CharField("Adresse", max_length=200, blank=True)
@@ -339,6 +339,24 @@ class Todo(OrganizationScopedModel):
 
     def __str__(self):
         return self.text
+
+
+class ProductionLink(OrganizationScopedModel):
+    """Link im Abschnitt „Dateien“ (z. B. Bühnenplan in einer Cloud, Ablaufplan)."""
+
+    production = models.ForeignKey(
+        Production, verbose_name="Produktion", on_delete=models.CASCADE, related_name="links"
+    )
+    title = models.CharField("Titel", max_length=120, blank=True, help_text="z. B. Bühnenplan")
+    url = models.URLField("Link", max_length=500)
+
+    class Meta:
+        verbose_name = "Link"
+        verbose_name_plural = "Links"
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.title or self.url
 
 
 class Skill(OrganizationScopedModel):

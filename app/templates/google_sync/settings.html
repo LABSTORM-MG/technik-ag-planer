@@ -1,0 +1,49 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Google-Konto{% endblock %}
+{% block page_title %}Google-Konto{% endblock %}
+{% block page_content %}
+<div class="stack">
+  <p class="muted">Über ein normales Google-Konto der AG speichert die App hochgeladene Dateien im Google Drive und überträgt alle Kalendereinträge in einen eigenen Google-Kalender (nur in eine Richtung: App → Google).</p>
+
+  {% if not configured %}
+    <div class="message message--warning" role="alert">
+      <p>Die Google-Anbindung ist auf diesem Server noch nicht eingerichtet. Der Betreiber braucht dafür einmalig ein Google-Cloud-Projekt – Anleitung im Repository unter <code>docs/installation/google-cloud.md</code>.</p>
+    </div>
+  {% elif connection and connection.is_connected %}
+    <section class="card">
+      <h2 class="section-title">Verbunden</h2>
+      <p class="list__title">{{ connection.account_email }}</p>
+      <p class="muted">seit {{ connection.connected_at|date:"d.m.Y, H:i" }} Uhr{% if connection.connected_by %} · von {{ connection.connected_by }}{% endif %}</p>
+      <p class="muted">{% if connection.last_sync_at %}Zuletzt abgeglichen: {{ connection.last_sync_at|date:"d.m.Y, H:i" }} Uhr · {{ synced_count }} Termin{{ synced_count|pluralize:"e" }} im Google-Kalender{% else %}Der erste Abgleich läuft …{% endif %}</p>
+      {% if connection.last_error %}<div class="message message--error" role="alert">{{ connection.last_error }}</div>{% endif %}
+      <div class="toolbar">
+        <form method="post" action="{% url 'google_sync:sync_now' %}">{% csrf_token %}<button type="submit" class="button button--secondary button--small">Jetzt abgleichen</button></form>
+        <form method="post" action="{% url 'google_sync:connect' %}">{% csrf_token %}<button type="submit" class="button button--secondary button--small">Neu verbinden</button></form>
+        <form method="post" action="{% url 'google_sync:disconnect' %}" data-confirm="Google-Konto trennen? Kalender und Dateien bleiben im Google-Konto erhalten, werden aber nicht mehr aktualisiert.">{% csrf_token %}<button type="submit" class="button button--secondary button--small">Trennen</button></form>
+      </div>
+    </section>
+    {% if subscribe_url %}
+      <section class="card">
+        <h2 class="section-title">Kalender für Mitglieder freigeben</h2>
+        <ol class="bullets">
+          <li>Den Kalender „Technik-AG Planer – {{ current_organization.name }}“ in Google Kalender öffnen (angemeldet mit {{ connection.account_email }}).</li>
+          <li>Einstellungen und Freigabe → „Für bestimmte Personen freigeben“ → Google-Adressen der Mitglieder mit „Alle Termindetails sehen“ eintragen.</li>
+          <li>Danach können Mitglieder den Kalender über den Link in der Kalender-Ansicht der App abonnieren.</li>
+        </ol>
+        <p><a href="{{ subscribe_url }}" target="_blank" rel="noopener noreferrer">Kalender in Google öffnen</a></p>
+      </section>
+    {% endif %}
+  {% else %}
+    {% if connection %}<p class="muted">Zuvor verbunden: {{ connection.account_email }}. Kalender und Dateien sind dort erhalten; beim erneuten Verbinden desselben Kontos werden sie weiter genutzt.</p>{% endif %}
+    <section class="card">
+      <h2 class="section-title">Mit Google verbinden</h2>
+      <ul class="bullets">
+        <li>Bitte ein normales Google-Konto der AG verwenden, kein Schulkonto (Google Workspace for Education).</li>
+        <li>Die App bekommt nur Zugriff auf Dateien und Kalender, die sie selbst anlegt.</li>
+        <li>Erscheint der Hinweis „Google hat diese App nicht überprüft“: „Erweitert“ → „Weiter zu …“ wählen und bei Drive und Kalender das Häkchen setzen.</li>
+      </ul>
+      <form method="post" action="{% url 'google_sync:connect' %}">{% csrf_token %}<button type="submit" class="button button--primary">Mit Google verbinden</button></form>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

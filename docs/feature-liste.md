@@ -574,7 +574,7 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | 7 | Technik-Anfragen | fertig | #9 |
 | 8 | PDFs | fertig (Einsatzübersicht-PDF in M9) | #10 |
 | 9 | Team-Funktionen | fertig | #11 |
-| 10 | Google-Anbindung | offen | |
+| 10 | Google-Anbindung | fertig (echter Test mit Google-Konto steht aus) | #12 |
 | 11 | PWA und Push | offen | |
 | 12 | Abschluss | offen | |
 
@@ -617,15 +617,21 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | Einsatzübersicht | Zählt zugesagte Jobs und Termine bis heute; Korrektur je Einsatz; Schuljahr 1.8.–31.7., 2. Halbjahr ab 1.2. | Nachweis geleisteter Einsätze, z. B. für eine AG-Bescheinigung | ADR 0011 |
 | Fähigkeiten | Vorschläge beim Einteilen: freie Mitglieder mit der Fähigkeit, wer im Schuljahr am wenigsten eingesetzt war zuerst | Arbeit gleichmäßig verteilen | ADR 0011 |
 | Schuljahreswechsel | Je AG und je Konto höchstens einmal in 180 Tagen; Vorschau vor dem Auslösen | Konten in mehreren AGs nicht doppelt hochstufen | ADR 0011 |
+| Google | Nur die Scopes `drive.file` und `calendar.app.created`; den Kalender gibt der Owner in Google selbst frei, die App zeigt den Abo-Link | So wenig Zugriff auf das Google-Konto wie möglich | ADR 0012 |
+| Google | Kalender-Übertragung als Gesamtvergleich (gebündelt nach Änderungen, nach dem Verbinden und nachts) statt einzelner Änderungen | Robust gegen verpasste Änderungen; Änderungen in Google werden überschrieben (Abschnitt 9) | ADR 0012 |
+| Google | Refresh-Token verschlüsselt gespeichert (Schlüssel aus `DJANGO_SECRET_KEY`) | Zugang zum Google-Konto der AG | ADR 0012 |
+| Dateien | Produktionen bekommen den Abschnitt „Dateien“ (Drive-Dateien und Links); Dateien und Links verwalten, wer Produktionen bearbeiten darf; „Kopieren“ übernimmt nur Links | Die Rechte-Tabelle regelt Dateien nicht; Drive-Dateien gehören zur Produktion | ADR 0012 |
+| Dateien | Browser zeigt nur Fotos und PDFs direkt an, alles andere wird heruntergeladen; Anfrage-Formular nimmt nur echte PDFs bis 10 MB | Hochgeladene Dateien dürfen nie als Seite der App laufen; öffentliches Formular | ADR 0012 |
+| Organisation | „Organisation auflösen“ funktioniert jetzt auch mit Produktionen (Status-Schutz `RESTRICT` statt `PROTECT`) | Fehler aus M3 | ADR 0012 |
 | Entwicklung | Beispielkonten mit kurzen Anmeldenamen (`owner`, `lehrer`, `schueler` …, Passwort wie der Name); Login-Feld vorübergehend ohne E-Mail-Prüfung | Schneller durchklicken (Entscheidung des Projektinhabers); in M12 zurück auf E-Mail | README |
 | Repository | Kein `CONTRIBUTING.md` und kein `SECURITY.md`: Die Zustimmung zur Lizenz steht in der Pull-Request-Vorlage, Sicherheitslücken werden privat über GitHub gemeldet | Entscheidung des Projektinhabers, weniger Dateien | Abschnitt 13 |
 
 **Offene Punkte für spätere Meilensteine**
 
-- M10: PDF-Upload für den Ablauf im Anfrage-Formular (Ablage im Drive der AG); bis dahin Freitext und Link
 - M11: Push-Mitteilung bei neuer Technik-Anfrage für Owner, Admins und Lehrkräfte
-- M10: Dateien zum Material und Fotos bei Defektmeldungen im Google Drive (Unterordner „Material“); bis dahin nur Links
 - M11: Push-Mitteilung bei neuer Board- bzw. Chat-Nachricht (Chats nur für Eingeteilte, Regel wie `apps.board.services.my_chat_production_ids`)
 - M11: App-Icon (schlicht, ohne Schullogo; Entwürfe zur Auswahl) und Vollbild ohne Adressleiste beim Hinzufügen zum Home-Bildschirm (`display: standalone`). Testen nur über HTTPS möglich – auf dem eigenen Server oder über einen Tunnel
 - M12: Login-Feld wieder als E-Mail-Eingabe (`EmailField`, `type="email"`) in `apps/accounts/forms.py`; seit M6 vorübergehend ein Textfeld, damit die Beispielkonten kurze Anmeldenamen haben (`owner`, `lehrer`, `schueler`). Die Beispieldaten bekommen dann wieder E-Mail-Adressen
 - Vor dem Start: Test auf echten Handys (Android und iPhone)
+- M10 nachholen: echter Durchlauf mit einem Google-Cloud-Projekt und einem Google-Konto der AG (`docs/installation/google-cloud.md`); bisher nur gegen eine Attrappe getestet
+- Später (optional): Dateien zusätzlich als Drive-Anhang am Google-Termin (Abschnitt 9)

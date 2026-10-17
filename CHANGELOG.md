@@ -6,6 +6,14 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Hinzugefügt
 
+**Meilenstein 10 – Google-Anbindung**
+
+- Einstellungen → Google-Konto (Owner): mit einem Google-Konto der AG verbinden, Status, „Jetzt abgleichen“, trennen
+- Alle Kalendereinträge (Produktionen, Jobs, Termine, „Nicht verfügbar“) werden automatisch in einen eigenen Google-Kalender übertragen – mit Ort, Beschreibung, Crew, Farbe nach Kategorie und Link zurück in die App
+- Abschnitt „Dateien“ in der Produktion mit Drive-Dateien und Links; Dateien zum Material, Fotos bei Defektmeldungen, PDF zum Ablauf im Anfrage-Formular – alles im Google Drive der AG, geöffnet über die App
+- Link zum Abonnieren des Google-Kalenders in der Kalender-Ansicht
+- Anleitung für das Google-Cloud-Projekt (`docs/installation/google-cloud.md`)
+
 **Meilenstein 9 – Team-Funktionen**
 
 - Fähigkeiten: Der Owner legt sie an, benennt sie um, sortiert und löscht sie; jedes Mitglied wählt unter „Meine Fähigkeiten“ seine eigenen; sie erscheinen in der Mitgliederliste
@@ -42,6 +50,7 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Geändert
 
+- „Organisation auflösen“ funktioniert jetzt auch, wenn die AG Produktionen hat
 - Mitglied entfernen und AG verlassen löschen die bisherigen Einsätze nicht mehr; sie bleiben als „Ehemaliges Mitglied“ erhalten
 - Der Datenexport enthält auch Mehrfach-Zuordnungen (Aufsicht, Fähigkeiten)
 - Beispielkonten melden sich mit kurzen Namen an (`owner`/`owner`, `lehrer`/`lehrer`, `schueler`/`schueler` …); das Login-Feld nimmt dafür bis M12 auch Namen ohne @ an

@@ -133,6 +133,10 @@ def copy_production(production, user=None):
             position=job.position,
         )
     copy_plannings(production, copy)
+    for link in production.links.all():  # Links ja, Drive-Dateien nicht (gehören zur Produktion)
+        link.pk = None
+        link.production = copy
+        link.save()
     for todo in todos:
         Todo.objects.create(
             organization=copy.organization,

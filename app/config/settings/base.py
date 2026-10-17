@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "apps.inventory",
     "apps.inquiries",
     "apps.documents",
+    "apps.google_sync",
 ]
 
 MIDDLEWARE = [
@@ -176,6 +177,10 @@ CELERY_BEAT_SCHEDULE["anfragen-aufraeumen"] = {
     "task": "apps.inquiries.tasks.purge_done_inquiries",
     "schedule": crontab(hour=3, minute=45),
 }
+CELERY_BEAT_SCHEDULE["google-kalender-abgleich"] = {
+    "task": "apps.google_sync.tasks.sync_all_calendars",
+    "schedule": crontab(hour=4, minute=0),
+}
 AUDIT_RETENTION_DAYS = 7
 PRODUCTION_TRASH_DAYS = 7  # „Kürzlich gelöscht“
 
@@ -187,3 +192,10 @@ LOGGING = {
     # WeasyPrint meldet jeden Schritt der PDF-Erzeugung
     "loggers": {"weasyprint": {"level": "WARNING"}, "fontTools": {"level": "WARNING"}},
 }
+
+# Google (OAuth 2.0 für Drive und Kalender) – Anleitung: docs/installation/google-cloud.md
+GOOGLE_OAUTH_CLIENT_ID = env("GOOGLE_OAUTH_CLIENT_ID", default="")
+GOOGLE_OAUTH_CLIENT_SECRET = env("GOOGLE_OAUTH_CLIENT_SECRET", default="")
+GOOGLE_UPLOAD_MAX_MB = env.int("GOOGLE_UPLOAD_MAX_MB", default=25)
+GOOGLE_INQUIRY_PDF_MAX_MB = 10
+GOOGLE_SYNC_DELAY_SECONDS = 15  # Änderungen sammeln, dann einmal abgleichen

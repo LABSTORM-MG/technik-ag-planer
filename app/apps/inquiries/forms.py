@@ -1,5 +1,7 @@
 from django import forms
+from django.conf import settings
 
+from apps.google_sync.forms import clean_pdf
 from apps.productions.forms import DateInput, TimeInput
 from apps.productions.models import Category
 
@@ -63,10 +65,25 @@ class InquiryForm(forms.ModelForm):
             "contact_phone": forms.TextInput(attrs={"autocomplete": "tel", "inputmode": "tel"}),
         }
 
-    def __init__(self, *args, organization, **kwargs):
+    schedule_pdf = forms.FileField(
+        label="Ablauf als PDF",
+        required=False,
+        widget=forms.ClearableFileInput(attrs={"accept": "application/pdf"}),
+    )
+
+    def __init__(self, *args, organization, allow_pdf=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["category"].queryset = Category.objects.for_org(organization)
         self.fields["category"].empty_label = "Bitte wählen (optional)"
+        # PDF-Upload nur, wenn die AG ein Google-Konto verbunden hat (Ablage im Drive)
+        if allow_pdf:
+            max_mb = settings.GOOGLE_INQUIRY_PDF_MAX_MB
+            self.fields["schedule_pdf"].help_text = f"Optional, höchstens {max_mb} MB."
+        else:
+            del self.fields["schedule_pdf"]
+
+    def clean_schedule_pdf(self):
+        return clean_pdf(self.cleaned_data.get("schedule_pdf"), settings.GOOGLE_INQUIRY_PDF_MAX_MB)
 
     def clean(self):
         cleaned = super().clean()
