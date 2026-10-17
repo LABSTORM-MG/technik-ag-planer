@@ -7,13 +7,10 @@ PAGES = [
     ("productions:dashboard", "Dashboard"),
     ("scheduling:calendar", "Kalender"),
     ("productions:list", "Produktionen"),
-    ("core:inventory", "Material"),
+    ("inventory:list", "Material"),
     ("board:index", "Board"),
     ("organizations:settings", "Einstellungen"),
 ]
-
-
-PLACEHOLDER_PAGES = [page for page in PAGES if page[0].startswith("core:")]
 
 
 @pytest.fixture
@@ -21,14 +18,14 @@ def client(member_client):
     return member_client
 
 
-@pytest.mark.parametrize(("url_name", "title"), PLACEHOLDER_PAGES)
-def test_placeholder_pages_render(client, url_name, title):
+@pytest.mark.parametrize(("url_name", "title"), PAGES)
+def test_main_pages_render(client, url_name, title):
     response = client.get(reverse(url_name))
 
     assert response.status_code == 200
     content = response.content.decode()
-    assert f'<h1 class="page-title">{title}</h1>' in content
     assert '<html lang="de">' in content
+    assert title in content
 
 
 def test_sidebar_contains_all_menu_items_in_order(client):
@@ -57,7 +54,7 @@ def test_more_sheet_links_inventory_and_board(client):
     content = client.get(reverse("productions:dashboard")).content.decode()
     sheet = content.split('id="sheet-more"', 1)[1].split("</dialog>", 1)[0]
 
-    assert reverse("core:inventory") in sheet
+    assert reverse("inventory:list") in sheet
     assert reverse("board:index") in sheet
 
 

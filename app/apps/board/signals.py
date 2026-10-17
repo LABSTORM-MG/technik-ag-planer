@@ -1,5 +1,5 @@
-"""Systemmeldungen im Board (Abschnitt 8) – ausgelöst über Signale, damit Produktionen und
-Mitgliedschaften das Board nicht kennen müssen."""
+"""Systemmeldungen im Board (Abschnitt 8) – ausgelöst über Signale, damit Produktionen,
+Mitgliedschaften und Material das Board nicht kennen müssen."""
 
 from django.utils.formats import date_format
 
@@ -57,6 +57,33 @@ def announce_production(sender, instance, created, raw=False, **kwargs):
             else f"{instance.name}: kein Ort mehr angegeben"
         )
         services.post_system(org, text, link_production=instance)
+
+
+def remember_defect(sender, instance, raw=False, **kwargs):
+    instance._board_old_status = None
+    if raw or instance._state.adding or instance.pk is None:
+        return
+    instance._board_old_status = (
+        sender.objects.filter(pk=instance.pk).values_list("status", flat=True).first()
+    )
+
+
+def announce_defect(sender, instance, created, raw=False, **kwargs):
+    if raw:
+        return
+    material = instance.material
+    if created:
+        services.post_system(
+            instance.organization,
+            f"Material defekt: {material} (× {instance.quantity})",
+            link_material=material,
+        )
+        return
+    old = getattr(instance, "_board_old_status", None)
+    if old != instance.status and instance.status == sender.Status.REPAIRED:
+        services.post_system(
+            instance.organization, f"Wieder verfügbar: {material}", link_material=material
+        )
 
 
 def announce_member(sender, instance, created, raw=False, **kwargs):

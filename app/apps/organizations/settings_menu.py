@@ -41,6 +41,12 @@ GROUPS = [
                 perm=Perm.MANAGE_CATEGORIES_AND_INQUIRY_LINK,
             ),
             Entry(
+                "Material-Kategorien",
+                "Kategorien für Material verwalten und sortieren",
+                "inventory:categories",
+                perm=Perm.MANAGE_CATEGORIES_AND_INQUIRY_LINK,
+            ),
+            Entry(
                 "Technik anfragen",
                 "Öffentlichen Anfrage-Link verwalten",
                 milestone=7,

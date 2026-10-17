@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Material – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Material{% endblock %}
+{% block content %}
+  <header class="page-header page-header--actions">
+    <h1 class="page-title">Material</h1>
+    {% if org_perms.MANAGE_INVENTORY %}
+      <a class="button button--primary" href="{% url 'inventory:create' %}" data-sheet-url>{% include "includes/icon.html" with name="plus" %} Material</a>
+    {% endif %}
+  </header>
+
+  <div class="stack">
+    {% include "inventory/includes/tabs.html" %}
+
+    <form method="get" class="search" role="search">
+      {% if active_category %}<input type="hidden" name="kategorie" value="{{ active_category }}">{% endif %}
+      {% if active_filter %}<input type="hidden" name="filter" value="{{ active_filter }}">{% endif %}
+      <label class="visually-hidden" for="q">Material suchen</label>
+      <input class="input" type="search" id="q" name="q" value="{{ query }}" placeholder="Material suchen …">
+    </form>
+
+    <nav class="chips" aria-label="Kategorie">
+      <a class="chip" href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}{% if active_filter %}filter={{ active_filter }}{% endif %}" {% if not active_category %}aria-current="true"{% endif %}>Alle</a>
+      {% for c in categories %}
+        <a class="chip color-{{ c.color }}" href="?kategorie={{ c.pk }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}{% if active_filter %}&amp;filter={{ active_filter }}{% endif %}" {% if active_category == c.pk|stringformat:"s" %}aria-current="true"{% endif %}><span class="dot" aria-hidden="true"></span>{{ c.name }}</a>
+      {% endfor %}
+    </nav>
+
+    <nav class="chips" aria-label="Anzeige">
+      {% for key, label in filters.items %}
+        <a class="chip" href="?{% if active_filter != key %}filter={{ key }}{% endif %}{% if active_category %}&amp;kategorie={{ active_category }}{% endif %}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" {% if active_filter == key %}aria-current="true"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>
+
+    {% if materials %}
+      <ul class="list">
+        {% for m in materials %}
+          <li class="list__item{% if m.category %} color-{{ m.category.color }}{% endif %}">
+            <span class="dot" aria-hidden="true"></span>
+            <div class="list__main">
+              <a class="list__link list__title" href="{% url 'inventory:detail' m.pk %}">{{ m.name }}</a>
+              <span class="list__subtitle">{% if m.category %}{{ m.category.name }} · {% endif %}{% include "inventory/includes/stock.html" %}</span>
+            </div>
+            {% if m.defective %}<span class="tag tag--danger">defekt</span>{% endif %}
+            {% if m.is_archived %}<span class="tag">archiviert</span>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">{% if active_filter == "archiviert" %}Kein archiviertes Material.{% elif active_filter == "defekt" %}Kein defektes Material.{% else %}Kein Material gefunden.{% endif %}</p>
+    {% endif %}
+  </div>
+{% endblock %}

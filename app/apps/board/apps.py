@@ -8,6 +8,7 @@ class BoardConfig(AppConfig):
 
     def ready(self):
         from apps.audit.registry import register as audit
+        from apps.inventory.models import DefectReport
         from apps.organizations import export
         from apps.organizations.models import Membership
         from apps.productions.models import Production
@@ -18,6 +19,10 @@ class BoardConfig(AppConfig):
         post_save.connect(
             signals.announce_production, sender=Production, dispatch_uid="board-production"
         )
+        pre_save.connect(
+            signals.remember_defect, sender=DefectReport, dispatch_uid="board-defect-pre"
+        )
+        post_save.connect(signals.announce_defect, sender=DefectReport, dispatch_uid="board-defect")
         post_save.connect(signals.announce_member, sender=Membership, dispatch_uid="board-member")
 
         message = self.get_model("Message")

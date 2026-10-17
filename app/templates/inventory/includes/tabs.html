@@ -1,0 +1,4 @@
+<nav class="segmented" aria-label="Material oder Sätze">
+  <a href="{% url 'inventory:list' %}"{% if tab == "material" %} aria-current="page"{% endif %}>Material</a>
+  <a href="{% url 'inventory:kits' %}"{% if tab == "kits" %} aria-current="page"{% endif %}>Materialsätze</a>
+</nav>

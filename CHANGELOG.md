@@ -6,6 +6,20 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Hinzugefügt
 
+**Meilenstein 6 – Material**
+
+- Materialliste mit Suche, Kategorie-Filter und den Ansichten „Defekt“ und „Archiviert“
+- Material mit Kategorie (eigene Material-Kategorien), Bestand oder „beliebig“, Notizen und Links; archivieren statt löschen
+- Defekt melden (alle Mitglieder) mit Menge und Beschreibung; Status „defekt“ → „in Reparatur“ → „repariert“; defekte Geräte fehlen im verfügbaren Bestand; Systemmeldungen im Board
+- Materialsätze (Owner und Admins): anlegen, bearbeiten, kopieren, löschen; ganzen Satz in eine Produktion übernehmen
+- Material in der Produktion einplanen, Menge ändern, entfernen; Konfliktwarnung nach Spitzenbedarf je Tag; Überbuchungen in Produktion und Material markiert („Geplant“)
+- Packliste je Produktion zum Abhaken von Ausgabe und Rückgabe
+- Beim Kopieren einer Produktion wird das geplante Material übernommen
+
+### Geändert
+
+- Beispielkonten melden sich mit kurzen Namen an (`owner`/`owner`, `lehrer`/`lehrer`, `schueler`/`schueler` …); das Login-Feld nimmt dafür bis M12 auch Namen ohne @ an
+
 **Meilenstein 5 – Board** (#7)
 
 - Board als gemeinsamer Chat der AG: Nachrichten mit farbigem Namen und Uhrzeit, Datumstrenner, eigene Nachrichten rechts; neue Nachrichten erscheinen ohne Neuladen

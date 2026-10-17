@@ -2,7 +2,7 @@
 
 Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender, Material, Board und Technik-Anfragen – als Django-Web-App für Handy, Tablet und Computer (PWA).
 
-> **Stand:** Meilensteine 1–5 von 12 sind fertig – Grundgerüst, Konten und AGs, Produktionen, Kalender und Zeiten, Board. Details: [Umsetzungsstand](docs/feature-liste.md#16-umsetzungsstand-und-entscheidungen).
+> **Stand:** Meilensteine 1–6 von 12 sind fertig – Grundgerüst, Konten und AGs, Produktionen, Kalender und Zeiten, Board, Material. Details: [Umsetzungsstand](docs/feature-liste.md#16-umsetzungsstand-und-entscheidungen).
 
 ## Was die App schon kann
 
@@ -11,6 +11,7 @@ Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender,
 - **Dashboard „Was steht an?“** mit nächster Produktion und „Meine Jobs“
 - **Kalender** (Monat, Woche, Agenda), Termine und Terminserien, Stundenraster, „Nicht verfügbar“, Export als `.ics`
 - **Board** als Chat der AG mit Systemmeldungen, Chats je Produktion, Moderation und Zähler für ungelesene Nachrichten
+- **Material** mit Kategorien, Bestand, Links, Defektmeldungen und Materialsätzen; Planung je Produktion mit Konfliktwarnung und Packliste zum Abhaken
 - **Django-Admin** für den Betreiber: AGs anlegen, Owner einladen, Konten verwalten, Datenexport, Änderungsprotokoll
 
 ## Schnellstart (Entwicklung)
@@ -20,19 +21,20 @@ Voraussetzungen: Docker mit Compose und `make`. Für Arbeit ohne Docker zusätzl
 ```sh
 make dev            # App auf http://localhost:8000, Test-Mails (Mailpit) auf http://localhost:8025
 make migrate        # in einem zweiten Terminal: Datenbank einrichten
-make beispieldaten  # zwei Beispiel-AGs mit Konten, Produktionen, Terminen und Board-Nachrichten
+make beispieldaten  # zwei Beispiel-AGs mit Konten, Produktionen, Terminen, Board und Material
 make superuser      # Betreiber-Konto für den Django-Admin (http://localhost:8000/admin/)
 ```
 
-Beispielkonten (Passwort jeweils `technik-ag-planer`):
+Beispielkonten (Anmeldename = Passwort, z. B. `owner` / `owner`; nach einer Änderung `make reset-db && make beispieldaten`):
 
-| Konto | Rolle |
+| Anmeldung | Rolle |
 | --- | --- |
-| `owner@nord.example` | Owner der Technik-AG Nord |
-| `admin@nord.example` | Admin |
-| `lehrkraft@nord.example` | Lehrkraft |
-| `emma@nord.example` | Schülerin, auch Mitglied der Technik-AG Süd |
-| `ben@nord.example` | Schüler |
+| `owner` | Owner der Technik-AG Nord |
+| `admin` | Admin |
+| `lehrer` | Lehrkraft |
+| `schueler` | Schülerin (Emma), auch Mitglied der Technik-AG Süd |
+| `ben` | Schüler |
+| `sued` | Owner der Technik-AG Süd |
 
 Weitere Befehle:
 

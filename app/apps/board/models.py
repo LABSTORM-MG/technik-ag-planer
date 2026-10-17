@@ -42,6 +42,15 @@ class Message(OrganizationScopedModel):
         on_delete=models.SET_NULL,
         related_name="+",
     )
+    # Systemmeldungen zu Material (Defekt, wieder verfügbar): Antippen öffnet das Material
+    link_material = models.ForeignKey(
+        "inventory.Material",
+        verbose_name="verlinktes Material",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
     # Verhindert doppelte Systemmeldungen (z. B. „noch 2 Plätze frei“ je Job und Tag)
     system_key = models.CharField(max_length=80, blank=True, editable=False)
     created_at = models.DateTimeField("gesendet am", auto_now_add=True)

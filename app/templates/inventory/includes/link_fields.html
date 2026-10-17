@@ -1,0 +1,6 @@
+<div class="job-form form-row">
+  {% for hidden in lf.hidden_fields %}{{ hidden }}{% endfor %}
+  {% include "includes/field.html" with field=lf.title %}
+  {% include "includes/field.html" with field=lf.url %}
+  {% if lf.DELETE %}<div class="field field--checkbox">{{ lf.DELETE }}<label for="{{ lf.DELETE.id_for_label }}">Entfernen</label></div>{% endif %}
+</div>

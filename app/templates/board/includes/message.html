@@ -1,7 +1,7 @@
 {% if m.is_system %}
 <li class="chat__system" id="nachricht-{{ m.pk }}">
   {% include "includes/icon.html" with name="info" %}
-  {% if m.link_production_id and not m.link_production.deleted_at %}<a href="{% url 'productions:detail' m.link_production_id %}">{{ m.text }}</a>{% else %}<span>{{ m.text }}</span>{% endif %}
+  {% if m.link_production_id and not m.link_production.deleted_at %}<a href="{% url 'productions:detail' m.link_production_id %}">{{ m.text }}</a>{% elif m.link_material_id %}<a href="{% url 'inventory:detail' m.link_material_id %}">{{ m.text }}</a>{% else %}<span>{{ m.text }}</span>{% endif %}
   <time class="chat__time" datetime="{{ m.created_at|date:'c' }}">{{ m.created_at|date:"H:i" }}</time>
   {% if m.can_delete %}
     <form method="post" action="{% url 'board:delete' m.pk %}" data-confirm="Systemmeldung löschen?">

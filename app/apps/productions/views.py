@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
+from apps.inventory import services as inventory_services
 from apps.organizations.decorators import org_required, permission_required_in_org
 from apps.organizations.models import Membership
 from apps.organizations.permissions import Perm
@@ -185,6 +186,7 @@ def production_detail(request, pk):
                 organization=request.organization, initial={"status": production.status_id}
             ),
             "todo_form": TodoForm(),
+            "planned_material": inventory_services.production_material(production),
             "supervisors": supervisors,
             "is_supervisor": request.membership in supervisors,
         },

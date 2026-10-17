@@ -49,6 +49,14 @@ def test_login_with_email_and_password(client, owner):
     assert client.get(reverse("productions:dashboard")).status_code == 200
 
 
+def test_login_with_short_sample_name(client, org, make_member, make_user):
+    """Beispielkonten der Entwicklung heißen nur „owner“ usw. (bis M12, siehe Abschnitt 16)."""
+    make_member(org, user=make_user(email="owner", password="owner"))  # noqa: S106
+    response = client.post(reverse("accounts:login"), {"email": "owner", "password": "owner"})
+
+    assert response.status_code == 302
+
+
 def test_login_respects_safe_next(client, owner):
     response = client.post(
         reverse("accounts:login") + "?next=/kalender/",

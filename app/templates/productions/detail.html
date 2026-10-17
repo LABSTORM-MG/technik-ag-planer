@@ -100,6 +100,45 @@
     {% endfor %}
   </section>
 
+  <section id="material">
+    <div class="section-head">
+      <h2 class="section-title">Material</h2>
+      <div class="list__actions">
+        {% if planned_material %}<a class="button button--secondary button--small" href="{% url 'inventory:packing_list' production.pk %}">Packliste</a>{% endif %}
+        {% if org_perms.MANAGE_PRODUCTIONS %}
+          <a class="button button--secondary button--small" href="{% url 'inventory:plan_kit' production.pk %}" data-sheet-url>+ Materialsatz</a>
+          <a class="button button--secondary button--small" href="{% url 'inventory:plan' production.pk %}" data-sheet-url>+ Material</a>
+        {% endif %}
+      </div>
+    </div>
+    {% if planned_material %}
+      <ul class="list">
+        {% for p in planned_material %}
+          <li class="list__item{% if p.material.category %} color-{{ p.material.category.color }}{% endif %}">
+            <span class="dot" aria-hidden="true"></span>
+            <div class="list__main">
+              <a class="list__link list__title" href="{% url 'inventory:detail' p.material_id %}">{{ p.material }} × {{ p.quantity }}</a>
+              {% if p.source_kit or p.shortage %}
+                <span class="list__subtitle">{% if p.source_kit %}aus Satz „{{ p.source_kit }}“{% endif %}{% if p.source_kit and p.shortage %} · {% endif %}{% if p.shortage %}<span class="text-danger">{{ p.shortage.needed }} benötigt, {{ p.shortage.available }} verfügbar</span>{% endif %}</span>
+              {% endif %}
+            </div>
+            {% if p.shortage %}<span class="tag tag--danger">überbucht</span>{% endif %}
+            {% if org_perms.MANAGE_PRODUCTIONS %}
+              <div class="list__actions">
+                <a class="button button--secondary button--small" href="{% url 'inventory:planned_edit' p.pk %}" data-sheet-url aria-label="Menge von {{ p.material }} ändern">Menge</a>
+                <form method="post" action="{% url 'inventory:planned_remove' p.pk %}">
+                  {% csrf_token %}<button type="submit" class="icon-button" aria-label="{{ p.material }} entfernen">{% include "includes/icon.html" with name="close" %}</button>
+                </form>
+              </div>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Noch kein Material eingeplant.</p>
+    {% endif %}
+  </section>
+
   <section id="todos">
     <h2 class="section-title">To-dos</h2>
     <ul class="list">
