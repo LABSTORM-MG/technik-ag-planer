@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Materialsätze – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Material{% endblock %}
+{% block content %}
+  <header class="page-header page-header--actions">
+    <h1 class="page-title">Materialsätze</h1>
+    {% if org_perms.MANAGE_KITS %}
+      <a class="button button--primary" href="{% url 'inventory:kit_create' %}" data-sheet-url>{% include "includes/icon.html" with name="plus" %} Satz</a>
+    {% endif %}
+  </header>
+
+  <div class="stack">
+    {% include "inventory/includes/tabs.html" %}
+    <p class="muted">Sätze für Aufbauten, die sich wiederholen. Beim Planen einer Produktion lässt sich ein ganzer Satz auf einmal einplanen.</p>
+
+    {% for kit in kits %}
+      <section class="card">
+        <div class="section-head">
+          <h2 class="list__title">{{ kit.name }}</h2>
+          {% if org_perms.MANAGE_KITS %}
+            <div class="list__actions">
+              <a class="button button--secondary button--small" href="{% url 'inventory:kit_edit' kit.pk %}" data-sheet-url>Bearbeiten</a>
+              <form method="post" action="{% url 'inventory:kit_copy' kit.pk %}">
+                {% csrf_token %}<button type="submit" class="button button--secondary button--small">Kopieren</button>
+              </form>
+              <form method="post" action="{% url 'inventory:kit_delete' kit.pk %}" data-confirm="Satz „{{ kit.name }}“ löschen? Bereits geplante Produktionen bleiben unverändert.">
+                {% csrf_token %}<button type="submit" class="icon-button" aria-label="Satz {{ kit.name }} löschen">{% include "includes/icon.html" with name="close" %}</button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+        {% if kit.description %}<p class="muted prewrap">{{ kit.description }}</p>{% endif %}
+        {% if kit.items.all %}
+          <ul class="list list--flat">
+            {% for item in kit.items.all %}
+              <li class="list__item"><a class="list__link list__main" href="{% url 'inventory:detail' item.material_id %}">{{ item.material }}</a><span>× {{ item.quantity }}</span>{% if item.material.is_archived %}<span class="tag">archiviert</span>{% endif %}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">Noch keine Positionen.</p>
+        {% endif %}
+      </section>
+    {% empty %}
+      <p class="muted">Noch keine Materialsätze.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

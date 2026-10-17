@@ -1,0 +1,26 @@
+{% extends layout %}
+{% block title %}{% if kit %}{{ kit.name }} bearbeiten{% else %}Neuer Materialsatz{% endif %} – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Materialsatz{% endblock %}
+{% block content %}
+  <h1 class="page-title sheet-title">{% if kit %}Satz bearbeiten{% else %}Neuer Materialsatz{% endif %}</h1>
+  {% if kit %}<p class="muted">Änderungen gelten nur für künftige Planungen.</p>{% endif %}
+  <form method="post" action="{% if kit %}{% url 'inventory:kit_edit' kit.pk %}{% else %}{% url 'inventory:kit_create' %}{% endif %}" class="form" novalidate>
+    {% csrf_token %}
+    {% include "includes/field.html" with field=form.name %}
+    {% include "includes/field.html" with field=form.description %}
+    <fieldset class="jobs-fieldset">
+      <legend class="section-title">Enthaltenes Material</legend>
+      {{ formset.management_form }}
+      {% if formset.non_form_errors %}<ul class="form-errors" role="alert">{% for e in formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      <div class="job-forms" data-formset="items">
+        {% for kf in formset %}{% include "inventory/includes/kit_item_fields.html" %}{% endfor %}
+      </div>
+      <template data-formset-template="items">{% include "inventory/includes/kit_item_fields.html" with kf=formset.empty_form %}</template>
+      <button type="button" class="button button--secondary button--small" data-formset-add="items">+ Material</button>
+    </fieldset>
+    <div class="form-actions">
+      <a class="button button--secondary" href="{% url 'inventory:kits' %}">Abbrechen</a>
+      <button type="submit" class="button button--primary">Speichern</button>
+    </div>
+  </form>
+{% endblock %}

@@ -6,9 +6,20 @@ from .models import Grade, User
 
 
 class LoginForm(forms.Form):
-    email = forms.EmailField(
+    # Vorübergehend Textfeld statt EmailField, damit die Beispielkonten der Entwicklung nur
+    # „owner“ usw. heißen. In M12 wieder auf E-Mail-Eingabe umstellen (Feature-Liste, Abschnitt 16).
+    email = forms.CharField(
         label="E-Mail-Adresse",
-        widget=forms.EmailInput(attrs={"autocomplete": "email", "autofocus": True}),
+        max_length=254,
+        widget=forms.TextInput(
+            attrs={
+                "autocomplete": "username",
+                "inputmode": "email",
+                "autocapitalize": "none",
+                "spellcheck": "false",
+                "autofocus": True,
+            }
+        ),
     )
     password = forms.CharField(
         label="Passwort",
@@ -121,9 +132,20 @@ class GermanSetPasswordForm(SetPasswordForm):
 
 
 class EmailPasswordResetForm(PasswordResetForm):
-    email = forms.EmailField(
+    # Vorübergehend Textfeld statt EmailField, damit die Beispielkonten der Entwicklung nur
+    # „owner“ usw. heißen. In M12 wieder auf E-Mail-Eingabe umstellen (Feature-Liste, Abschnitt 16).
+    email = forms.CharField(
         label="E-Mail-Adresse",
-        widget=forms.EmailInput(attrs={"autocomplete": "email", "autofocus": True}),
+        max_length=254,
+        widget=forms.TextInput(
+            attrs={
+                "autocomplete": "username",
+                "inputmode": "email",
+                "autocapitalize": "none",
+                "spellcheck": "false",
+                "autofocus": True,
+            }
+        ),
     )
 
 

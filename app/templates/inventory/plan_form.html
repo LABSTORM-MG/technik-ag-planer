@@ -1,0 +1,16 @@
+{% extends layout %}
+{% block title %}Material einplanen – {{ production.name }}{% endblock %}
+{% block topbar_title %}Material{% endblock %}
+{% block content %}
+  <p class="eyebrow">{{ production.name }}</p>
+  <h1 class="page-title sheet-title">Material einplanen</h1>
+  {% if shortages %}{% include "inventory/includes/shortages.html" %}{% endif %}
+  <form method="post" action="{% url 'inventory:plan' production.pk %}" class="form" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <div class="form-actions">
+      <a class="button button--secondary" href="{% url 'productions:detail' production.pk %}">Abbrechen</a>
+      <button type="submit" class="button button--primary">{% if shortages %}Trotzdem einplanen{% else %}Einplanen{% endif %}</button>
+    </div>
+  </form>
+{% endblock %}

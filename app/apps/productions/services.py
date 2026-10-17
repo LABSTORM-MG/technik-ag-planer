@@ -3,6 +3,8 @@
 from django.db import transaction
 from django.utils import timezone
 
+from apps.inventory.services import copy_plannings
+
 from .models import CrewAssignment, Job, Production, ProductionStatus, Todo
 
 
@@ -38,7 +40,7 @@ def respond(assignment, accept: bool):
 
 @transaction.atomic
 def copy_production(production, user=None):
-    """Kopiert Produktion, Jobs und offene To-dos – ohne Crew, Status „In Planung“."""
+    """Kopiert Produktion, Jobs, Material und offene To-dos – ohne Crew, Status „In Planung“."""
     jobs = list(production.jobs.all())
     todos = list(production.todos.filter(done=False))
     copy = Production.objects.create(
@@ -66,6 +68,7 @@ def copy_production(production, user=None):
             crew_needed=job.crew_needed,
             position=job.position,
         )
+    copy_plannings(production, copy)
     for todo in todos:
         Todo.objects.create(
             organization=copy.organization,

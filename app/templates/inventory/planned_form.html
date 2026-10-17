@@ -1,0 +1,16 @@
+{% extends layout %}
+{% block title %}Menge ändern – {{ planned.material }}{% endblock %}
+{% block topbar_title %}Material{% endblock %}
+{% block content %}
+  <p class="eyebrow">{{ planned.production.name }}</p>
+  <h1 class="page-title sheet-title">{{ planned.material }}</h1>
+  {% if shortages %}{% include "inventory/includes/shortages.html" %}{% endif %}
+  <form method="post" action="{% url 'inventory:planned_edit' planned.pk %}" class="form" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <div class="form-actions">
+      <a class="button button--secondary" href="{% url 'productions:detail' planned.production_id %}">Abbrechen</a>
+      <button type="submit" class="button button--primary">{% if shortages %}Trotzdem speichern{% else %}Speichern{% endif %}</button>
+    </div>
+  </form>
+{% endblock %}

@@ -114,7 +114,7 @@ function saveDraft(form) {
       if (element.checked) data[element.name] = element.value;
     } else data[element.name] = element.value;
   }
-  data.__jobs = form.querySelectorAll("[data-formset] > .job-form").length;
+  data.__rows = form.querySelector("[data-formset]")?.children.length || 0;
   try {
     storage()?.setItem(DRAFT_PREFIX + form.dataset.draft, JSON.stringify(data));
   } catch {
@@ -131,7 +131,7 @@ function restoreDraft(form) {
   }
   if (!data) return;
   const container = form.querySelector("[data-formset]");
-  while (container && container.children.length < (data.__jobs || 0)) addFormsetRow(form, container.dataset.formset);
+  while (container && container.children.length < (data.__rows || 0)) addFormsetRow(form, container.dataset.formset);
   for (const element of form.elements) {
     if (!element.name || !(element.name in data)) continue;
     if (element.type === "checkbox") element.checked = Boolean(data[element.name]);
@@ -149,7 +149,7 @@ function clearDraft(form) {
   }
 }
 
-// Formset: „+ Job“ fügt eine leere Zeile aus <template data-formset-template> ein.
+// Formset: „+ Job“, „+ Link“ usw. fügt eine leere Zeile aus <template data-formset-template> ein.
 function addFormsetRow(form, prefix) {
   const container = form.querySelector(`[data-formset="${prefix}"]`);
   const template = form.querySelector(`[data-formset-template="${prefix}"]`);

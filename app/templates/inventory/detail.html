@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ material.name }} – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Material{% endblock %}
+{% block content %}
+<article class="stack">
+  <header class="page-header{% if material.category %} color-{{ material.category.color }}{% endif %}">
+    <p class="eyebrow"><a href="{% url 'inventory:list' %}">← Material</a>{% if material.category %} · <span class="dot" aria-hidden="true"></span> {{ material.category.name }}{% endif %}</p>
+    <h1 class="page-title">{{ material.name }}</h1>
+    <p class="muted">{% include "inventory/includes/stock.html" with m=material %}{% if material.is_archived %} · <span class="tag">archiviert</span>{% endif %}</p>
+    <div class="toolbar">
+      {% if org_perms.REPORT_DEFECT and not material.is_archived %}
+        <a class="button button--secondary button--small" href="{% url 'inventory:defect_report' material.pk %}" data-sheet-url>Defekt melden</a>
+      {% endif %}
+      {% if org_perms.MANAGE_INVENTORY %}
+        <a class="button button--secondary button--small" href="{% url 'inventory:edit' material.pk %}" data-sheet-url>Bearbeiten</a>
+        <form method="post" action="{% url 'inventory:archive' material.pk %}"{% if not material.is_archived %} data-confirm="„{{ material.name }}“ archivieren? Es ist dann nicht mehr planbar; bestehende Planungen bleiben."{% endif %}>
+          {% csrf_token %}<button type="submit" class="button button--secondary button--small">{% if material.is_archived %}Aus dem Archiv holen{% else %}Archivieren{% endif %}</button>
+        </form>
+      {% endif %}
+    </div>
+  </header>
+
+  {% if material.notes %}
+    <section class="card">
+      <h2 class="section-title">Notizen</h2>
+      <p class="prewrap">{{ material.notes }}</p>
+    </section>
+  {% endif %}
+
+  {% if links %}
+    <section class="card">
+      <h2 class="section-title">Links</h2>
+      <ul class="list list--flat">
+        {% for link in links %}
+          <li class="list__item"><a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.title|default:link.url }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  <section id="defekte">
+    <h2 class="section-title">Defekte</h2>
+    {% if open_defects %}
+      <ul class="list">
+        {% for d in open_defects %}
+          <li class="list__item">
+            <div class="list__main">
+              <span class="list__title">× {{ d.quantity }} · {{ d.description }}</span>
+              <span class="list__subtitle">{{ d.reported_at|date:"D., d.m.Y" }}{% if d.reported_by %} · gemeldet von {{ d.reported_by }}{% endif %}</span>
+            </div>
+            <span class="tag {% if d.status == 'defect' %}tag--danger{% else %}tag--warning{% endif %}">{{ d.get_status_display }}</span>
+            {% if org_perms.MANAGE_INVENTORY %}
+              <form method="post" action="{% url 'inventory:defect_status' d.pk %}" class="list__actions">
+                {% csrf_token %}
+                {% if d.status == "defect" %}<button type="submit" name="status" value="in_repair" class="button button--secondary button--small">In Reparatur</button>{% endif %}
+                <button type="submit" name="status" value="repaired" class="button button--primary button--small">Repariert</button>
+              </form>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Keine offenen Defekte.</p>
+    {% endif %}
+    {% if repaired %}
+      <details class="disclosure">
+        <summary>Zuletzt repariert</summary>
+        <ul class="list list--flat">
+          {% for d in repaired %}
+            <li class="list__item muted">× {{ d.quantity }} · {{ d.description }} · repariert am {{ d.resolved_at|date:"d.m.Y" }}</li>
+          {% endfor %}
+        </ul>
+      </details>
+    {% endif %}
+  </section>
+
+  <section id="geplant">
+    <h2 class="section-title">Geplant</h2>
+    {% if plannings %}
+      <ul class="list">
+        {% for p in plannings %}
+          <li class="list__item{% if p.production.category %} color-{{ p.production.category.color }}{% endif %}">
+            <span class="dot" aria-hidden="true"></span>
+            <a class="list__link list__main" href="{% url 'productions:detail' p.production_id %}">{{ p.production.name }} · {% if p.production.is_multi_day %}{{ p.production.start_date|date:"d." }}–{{ p.production.end_date|date:"d.m.Y" }}{% else %}{{ p.production.start_date|date:"d.m.Y" }}{% endif %} · × {{ p.quantity }}</a>
+            {% if p.overbooked %}<span class="tag tag--danger">überbucht</span>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">In keiner kommenden Produktion eingeplant.</p>
+    {% endif %}
+  </section>
+</article>
+{% endblock %}

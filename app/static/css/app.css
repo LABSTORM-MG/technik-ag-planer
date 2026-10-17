@@ -734,6 +734,15 @@ a.list__item:hover,
   color: var(--color-warning);
 }
 
+.tag--danger {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.text-danger {
+  color: var(--color-danger);
+}
+
 .qr {
   display: block;
   width: 200px;
@@ -1687,4 +1696,30 @@ a.icon-button {
   .chat-input {
     bottom: 0;
   }
+}
+
+/* ---------- Packliste ---------- */
+
+.pack__checks {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.pack__check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.pack__check:hover {
+  background: var(--color-surface-raised);
 }

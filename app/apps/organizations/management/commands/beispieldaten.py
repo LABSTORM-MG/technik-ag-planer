@@ -2,7 +2,9 @@
 
     make beispieldaten   (bzw. python manage.py beispieldaten)
 
-Alle Konten haben das Passwort „technik-ag-planer“. Nur in der Entwicklung (DEBUG) erlaubt.
+Anmeldename = Passwort (z. B. owner / owner, lehrer / lehrer, schueler / schueler) –
+bewusst keine E-Mail-Adressen, damit das Durchklicken schnell geht. Nur in der Entwicklung
+(DEBUG) erlaubt.
 """
 
 from django.conf import settings
@@ -13,19 +15,17 @@ from apps.accounts.models import User
 from apps.organizations.models import Membership, Organization
 from apps.organizations.permissions import Role
 
-PASSWORD = "technik-ag-planer"  # noqa: S105 – nur lokale Beispieldaten
-
 ORGS = {
     "Technik-AG Nord": [
-        ("owner@nord.example", "Olivia Owner", "Q1", Role.OWNER),
-        ("admin@nord.example", "Ali Admin", "EF", Role.ADMIN),
-        ("lehrkraft@nord.example", "Frau Lehmann", "", Role.TEACHER),
-        ("emma@nord.example", "Emma", "8", Role.STUDENT),
-        ("ben@nord.example", "Ben", "10", Role.STUDENT),
+        ("owner", "Olivia Owner", "Q1", Role.OWNER),
+        ("admin", "Ali Admin", "EF", Role.ADMIN),
+        ("lehrer", "Frau Lehmann", "", Role.TEACHER),
+        ("schueler", "Emma", "8", Role.STUDENT),
+        ("ben", "Ben", "10", Role.STUDENT),
     ],
     "Technik-AG Süd": [
-        ("owner@sued.example", "Sam Süd", "Q2", Role.OWNER),
-        ("emma@nord.example", "Emma", "8", Role.STUDENT),  # Mitglied in zwei AGs
+        ("sued", "Sam Süd", "Q2", Role.OWNER),
+        ("schueler", "Emma", "8", Role.STUDENT),  # Mitglied in zwei AGs
     ],
 }
 
@@ -48,7 +48,7 @@ class Command(BaseCommand):
                     email=email, defaults={"display_name": name, "grade": grade}
                 )
                 if created:
-                    user.set_password(PASSWORD)
+                    user.set_password(email)  # Anmeldename = Passwort
                     user.save()
                 Membership.objects.get_or_create(
                     organization=org, user=user, defaults={"role": role}
@@ -57,9 +57,10 @@ class Command(BaseCommand):
         self._productions(Organization.objects.get(name="Technik-AG Nord"))
         self._scheduling(Organization.objects.get(name="Technik-AG Nord"))
         self._board(Organization.objects.get(name="Technik-AG Nord"))
+        self._inventory(Organization.objects.get(name="Technik-AG Nord"))
 
         self.stdout.write(self.style.SUCCESS("Beispieldaten angelegt."))
-        self.stdout.write(f"Passwort für alle Konten: {PASSWORD}")
+        self.stdout.write("Anmeldename = Passwort, z. B. owner / owner")
         for org_name, people in ORGS.items():
             self.stdout.write(f"\n{org_name}:")
             for email, _name, _grade, role in people:
@@ -149,10 +150,10 @@ class Command(BaseCommand):
                 )
         concert = Production.objects.for_org(org).get(name="Schulkonzert")
         setup, show = concert.jobs.get(name="Aufbau"), concert.jobs.get(name="Show")
-        assign(setup, members["emma@nord.example"], status="requested", role_label="Bühne")
-        assign(setup, members["ben@nord.example"], status="confirmed", role_label="Licht")
-        assign(show, members["admin@nord.example"], status="confirmed", role_label="FOH")
-        assign(show, members["emma@nord.example"], status="confirmed", role_label="Monitor")
+        assign(setup, members["schueler"], status="requested", role_label="Bühne")
+        assign(setup, members["ben"], status="confirmed", role_label="Licht")
+        assign(show, members["admin"], status="confirmed", role_label="FOH")
+        assign(show, members["schueler"], status="confirmed", role_label="Monitor")
         for text in ["Funkmikros laden", "Bühnenplan drucken"]:
             Todo.objects.create(organization=org, production=concert, text=text)
 
@@ -168,13 +169,88 @@ class Command(BaseCommand):
         }
         concert = Production.objects.for_org(org).get(name="Schulkonzert")
         for email, text, production in [
-            ("owner@nord.example", "Willkommen im Board! Hier sprechen wir uns ab.", None),
-            ("ben@nord.example", "Wer hat den Schlüssel für den Technikraum?", None),
-            ("lehrkraft@nord.example", "Liegt im Sekretariat.", None),
-            ("admin@nord.example", "Treffen zum Aufbau am Bühneneingang.", concert),
-            ("emma@nord.example", "Ich bringe die Funkmikros mit.", concert),
+            ("owner", "Willkommen im Board! Hier sprechen wir uns ab.", None),
+            ("ben", "Wer hat den Schlüssel für den Technikraum?", None),
+            ("lehrer", "Liegt im Sekretariat.", None),
+            ("admin", "Treffen zum Aufbau am Bühneneingang.", concert),
+            ("schueler", "Ich bringe die Funkmikros mit.", concert),
         ]:
             post(org, users[email], text, production)
+
+    def _inventory(self, org):
+        from datetime import timedelta
+
+        from apps.inventory import services
+        from apps.inventory.models import Kit, KitItem, Material, MaterialCategory, MaterialLink
+        from apps.productions.models import Production
+
+        if Material.objects.for_org(org).exists():
+            return
+        categories = {c.name: c for c in MaterialCategory.objects.for_org(org)}
+        owner = Membership.objects.for_org(org).get(role=Role.OWNER).user
+        items = [
+            ("Lichtpult", "Licht", 1, "Technikraum, Regal 1. Netzteil liegt in der Kiste."),
+            ("Moving Head", "Licht", 8, "Flightcase im Lager unter der Bühne"),
+            ("LED-Par", "Licht", 12, ""),
+            ("Mischpult", "Audio", 1, "Digitalpult, Tablet zur Fernsteuerung im Schrank"),
+            ("Funkmikrofon", "Audio", 6, "Akkus vor jeder Show laden"),
+            ("Aktivbox", "Audio", 4, ""),
+            ("Monitorbox", "Audio", 4, ""),
+            ("Beamer", "Video", 1, "Fernbedienung im Lehrerzimmer"),
+            ("Podest 2 × 1 m", "Bühne", 6, ""),
+            ("Kabeltrommel", "Strom & Kabel", 6, ""),
+            ("XLR-Kabel 10 m", "Strom & Kabel", 20, ""),
+            ("Gaffa-Tape", "Sonstiges", None, "Verbrauchsmaterial"),
+        ]
+        materials = {}
+        for name, cat, quantity, notes in items:
+            materials[name] = Material.objects.create(
+                organization=org,
+                name=name,
+                category=categories[cat],
+                quantity=quantity,
+                notes=notes,
+                created_by=owner,
+            )
+        MaterialLink.objects.create(
+            organization=org,
+            material=materials["Mischpult"],
+            title="Handbuch",
+            url="https://example.org/handbuch-mischpult.pdf",
+        )
+        kits = {
+            "Große Audioanlage": [
+                ("Mischpult", 1),
+                ("Funkmikrofon", 4),
+                ("Aktivbox", 4),
+                ("Monitorbox", 2),
+                ("XLR-Kabel 10 m", 12),
+            ],
+            "Bühnenlicht Aula": [("Lichtpult", 1), ("Moving Head", 6), ("LED-Par", 8)],
+        }
+        for kit_name, positions in kits.items():
+            kit = Kit.objects.create(organization=org, name=kit_name)
+            for name, quantity in positions:
+                KitItem.objects.create(
+                    organization=org, kit=kit, material=materials[name], quantity=quantity
+                )
+        concert = Production.objects.for_org(org).get(name="Schulkonzert")
+        for kit in Kit.objects.for_org(org):
+            services.apply_kit(concert, kit)
+        services.plan(concert, materials["Gaffa-Tape"], 2)
+        # Überbuchung: Ein zweiter Termin am selben Tag braucht ebenfalls Funkmikrofone
+        rehearsal = Production.objects.create(
+            organization=org,
+            name="Chorprobe Aula",
+            category=concert.category,
+            start_date=concert.start_date + timedelta(days=1),
+            end_date=concert.start_date + timedelta(days=1),
+            status=concert.status,
+            location_name="Musikraum",
+        )
+        services.plan(rehearsal, materials["Funkmikrofon"], 2)
+        # Ein offener Defekt: damit fehlen beim Schulkonzert Funkmikrofone
+        services.report_defect(materials["Funkmikrofon"], 1, "Kapsel knackt", owner)
 
     def _scheduling(self, org):
         from datetime import date, time, timedelta
@@ -214,7 +290,7 @@ class Command(BaseCommand):
         klausur = today + timedelta(days=2)
         Unavailability.objects.create(
             organization=org,
-            membership=members["emma@nord.example"],
+            membership=members["schueler"],
             start_date=klausur,
             end_date=klausur,
             start_time=time(8),
@@ -224,7 +300,7 @@ class Command(BaseCommand):
         trip = today + timedelta(days=5)
         Unavailability.objects.create(
             organization=org,
-            membership=members["ben@nord.example"],
+            membership=members["ben"],
             start_date=trip,
             end_date=trip + timedelta(days=1),
             note="Klassenfahrt",

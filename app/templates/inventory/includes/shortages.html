@@ -1,0 +1,10 @@
+{% comment %}Konfliktwarnung Material. Parameter: shortages{% endcomment %}
+<div class="message message--warning" role="alert">
+  <p><strong>Achtung, Bestand reicht nicht:</strong></p>
+  <ul class="conflicts">
+    {% for s in shortages %}
+      <li><span class="tag tag--danger">− {{ s.missing }}</span> {{ s.material }}: {{ s.needed }} benötigt, {{ s.available }} verfügbar (zusammen mit Produktionen im selben Zeitraum)</li>
+    {% endfor %}
+  </ul>
+  <p>Trotzdem einplanen?</p>
+</div>

@@ -36,7 +36,7 @@ def post(organization, author, text, production=None):
     )
 
 
-def post_system(organization, text, *, link_production=None, key=""):
+def post_system(organization, text, *, link_production=None, link_material=None, key=""):
     """Systemmeldung im Board. Mit `key` wird dieselbe Meldung nur einmal geschrieben."""
     if key and Message.objects.for_org(organization).filter(system_key=key).exists():
         return None
@@ -47,6 +47,7 @@ def post_system(organization, text, *, link_production=None, key=""):
                 kind=Message.Kind.SYSTEM,
                 text=text[:500],
                 link_production=link_production,
+                link_material=link_material,
                 system_key=key,
             )
     except IntegrityError:  # gleichzeitig schon geschrieben

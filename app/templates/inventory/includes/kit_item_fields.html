@@ -1,0 +1,6 @@
+<div class="job-form form-row">
+  {% for hidden in kf.hidden_fields %}{{ hidden }}{% endfor %}
+  {% include "includes/field.html" with field=kf.material %}
+  {% include "includes/field.html" with field=kf.quantity %}
+  {% if kf.DELETE %}<div class="field field--checkbox">{{ kf.DELETE }}<label for="{{ kf.DELETE.id_for_label }}">Entfernen</label></div>{% endif %}
+</div>

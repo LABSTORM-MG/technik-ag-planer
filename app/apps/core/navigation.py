@@ -24,7 +24,7 @@ DASHBOARD = Section(
 )
 CALENDAR = Section("calendar", "Kalender", "calendar", "scheduling:calendar", 4)
 PRODUCTIONS = Section("productions", "Produktionen", "clapper", "productions:list", 3)
-INVENTORY = Section("inventory", "Material", "box", "core:inventory", 6)
+INVENTORY = Section("inventory", "Material", "box", "inventory:list", 6)
 BOARD = Section("board", "Board", "chat", "board:index", 5)
 SETTINGS = Section("settings", "Einstellungen", "gear", "organizations:settings", 12)
 
