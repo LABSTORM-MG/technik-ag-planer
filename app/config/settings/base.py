@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "apps.inquiries",
     "apps.documents",
     "apps.google_sync",
+    "apps.notifications",
 ]
 
 MIDDLEWARE = [
@@ -181,6 +182,10 @@ CELERY_BEAT_SCHEDULE["google-kalender-abgleich"] = {
     "task": "apps.google_sync.tasks.sync_all_calendars",
     "schedule": crontab(hour=4, minute=0),
 }
+CELERY_BEAT_SCHEDULE["push-erinnerungen"] = {
+    "task": "apps.notifications.tasks.send_due_reminders",
+    "schedule": crontab(minute="*/10"),
+}
 AUDIT_RETENTION_DAYS = 7
 PRODUCTION_TRASH_DAYS = 7  # „Kürzlich gelöscht“
 
@@ -199,3 +204,8 @@ GOOGLE_OAUTH_CLIENT_SECRET = env("GOOGLE_OAUTH_CLIENT_SECRET", default="")
 GOOGLE_UPLOAD_MAX_MB = env.int("GOOGLE_UPLOAD_MAX_MB", default=25)
 GOOGLE_INQUIRY_PDF_MAX_MB = 10
 GOOGLE_SYNC_DELAY_SECONDS = 15  # Änderungen sammeln, dann einmal abgleichen
+
+# Web Push (VAPID) – Schlüssel erzeugen: python manage.py vapid_schluessel
+VAPID_PUBLIC_KEY = env("VAPID_PUBLIC_KEY", default="")
+VAPID_PRIVATE_KEY = env("VAPID_PRIVATE_KEY", default="")
+VAPID_ADMIN_EMAIL = env("VAPID_ADMIN_EMAIL", default="")

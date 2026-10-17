@@ -1,6 +1,6 @@
 # Installation auf dem eigenen Server
 
-Diese Anleitung beschreibt den aktuellen Stand. Backups und Push-Mitteilungen kommen in späteren Meilensteinen dazu (11–12); die vollständige Betriebsdoku folgt in Meilenstein 12.
+Diese Anleitung beschreibt den aktuellen Stand. Backups kommen in Meilenstein 12 dazu, ebenso die vollständige Betriebsdoku.
 
 ## Voraussetzungen
 
@@ -51,7 +51,17 @@ Danach Zwei-Faktor-Anmeldung einrichten und die erste AG mit Owner anlegen – S
 
 Für Dateiablage im Google Drive und den Google-Kalender der AGs braucht die Installation einmalig ein Google-Cloud-Projekt: [google-cloud.md](google-cloud.md). Ohne sie funktioniert die App, nur Datei-Uploads und die Kalender-Übertragung fehlen.
 
-## 5. Updates
+## 5. Push-Mitteilungen
+
+Für Push-Mitteilungen braucht der Server ein VAPID-Schlüsselpaar:
+
+```sh
+docker compose -f deploy/docker-compose.yml exec web python manage.py vapid_schluessel
+```
+
+Die drei ausgegebenen Zeilen (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_ADMIN_EMAIL` – dort eine echte Kontaktadresse eintragen) in die `.env` übernehmen und `docker compose -f deploy/docker-compose.yml up -d` ausführen. Danach aktiviert jedes Mitglied Push unter Einstellungen → Benachrichtigungen auf seinem Gerät. Auf dem iPhone geht das nur in der App vom Home-Bildschirm (Safari → Teilen → „Zum Home-Bildschirm“). Werden die Schlüssel später gewechselt, müssen alle Geräte Push neu aktivieren. Erinnerungen verschickt der `worker`-Container.
+
+## 6. Updates
 
 Solange es noch keine veröffentlichte Version gibt:
 
