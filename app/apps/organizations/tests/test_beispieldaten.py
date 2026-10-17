@@ -14,7 +14,9 @@ def test_beispieldaten_with_short_logins_and_material(db, settings):
 
     client = Client()
     for name in ["owner", "lehrer", "schueler"]:
-        response = client.post(reverse("accounts:login"), {"email": name, "password": name})
+        response = client.post(
+            reverse("accounts:login"), {"email": f"{name}@example.org", "password": name}
+        )
         assert response.status_code == 302, name
         client.logout()
 
@@ -36,7 +38,9 @@ def test_beispieldaten_team(db, settings):
 
     settings.DEBUG = True
     call_command("beispieldaten")
-    emma = Membership.objects.get(user__email="schueler", organization__name="Technik-AG Nord")
+    emma = Membership.objects.get(
+        user__email="schueler@example.org", organization__name="Technik-AG Nord"
+    )
     assert Skill.objects.filter(members=emma).count() == 2
     period = hours.periods()[0]
     assert hours.total(hours.entries(emma, period.start, period.end)) > 0

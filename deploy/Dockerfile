@@ -33,7 +33,10 @@ CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
 # ---------- Betrieb ----------
 FROM python:3.13-slim AS prod
-ENV PYTHONDONTWRITEBYTECODE=1 \
+# Version für „Über die App“ – setzt release.yml aus dem Git-Tag
+ARG APP_VERSION=Entwicklung
+ENV APP_VERSION=${APP_VERSION} \
+    PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH=/opt/venv/bin:$PATH \
     DJANGO_SETTINGS_MODULE=config.settings.prod \

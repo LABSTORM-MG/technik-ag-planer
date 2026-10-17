@@ -25,7 +25,7 @@ def device():
         user = getattr(membership_or_user, "user", membership_or_user)
         return PushSubscription.objects.create(
             user=user,
-            endpoint=f"https://push.example.org/{user.pk}/{name}",
+            endpoint=f"https://fcm.googleapis.com/fcm/send/{user.pk}-{name}",
             p256dh="p",
             auth="a",
         )

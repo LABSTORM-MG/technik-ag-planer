@@ -4,10 +4,12 @@
 | --- | --- |
 | [feature-liste.md](feature-liste.md) | Verbindliche Spezifikation (Abschnitte 1–15) und Umsetzungsstand mit allen Entscheidungen (Abschnitt 16) |
 | [architektur/](architektur/) | Architektur-Entscheidungen (ADRs), siehe unten |
-| [installation/](installation/README.md) | Server einrichten, `.env`, Start, Updates |
-| [betrieb/django-admin.md](betrieb/django-admin.md) | Django-Admin für den Betreiber: AGs und Owner anlegen, Konten, Datenexport, Protokoll |
-| [handbuch/](handbuch/README.md) | Anleitungen für Owner und Mitglieder – folgt in Meilenstein 12 |
-| [rechtliches/](rechtliches/README.md) | Datenschutzerklärung, Nutzungsbedingungen, Impressum – vor dem Start |
+| [installation/](installation/README.md) | Server einrichten, `.env`, Start, Google-Cloud-Projekt, Push-Schlüssel |
+| [betrieb/](betrieb/README.md) | Betrieb: Updates, Backups und Wiederherstellung, Logs, typische Aufgaben und Probleme; [Django-Admin](betrieb/django-admin.md) |
+| [handbuch/](handbuch/README.md) | Anleitungen für Owner und Mitglieder |
+| [rechtliches/](rechtliches/README.md) | Vorlagen für Impressum, Datenschutzerklärung, Nutzungsbedingungen |
+| [sicherheit/](sicherheit/review-2026-10.md) | Sicherheits-Review vor dem Start |
+| [design/app-icon/](design/app-icon/) | Entwürfe für das App-Icon |
 
 ## Architektur-Entscheidungen
 
@@ -22,5 +24,10 @@
 | [0007](architektur/0007-board.md) | Board, Produktions-Chats und Systemmeldungen |
 | [0008](architektur/0008-material.md) | Material, Defekte, Materialsätze und Packliste |
 | [0009](architektur/0009-technik-anfragen.md) | Technik-Anfragen über einen öffentlichen Link |
+| [0010](architektur/0010-pdfs.md) | PDFs mit WeasyPrint |
+| [0011](architektur/0011-team-funktionen.md) | Fähigkeiten, Einsatzübersicht, Schuljahreswechsel, Konto löschen |
+| [0012](architektur/0012-google-anbindung.md) | Google-Anbindung: Drive und Kalender |
+| [0013](architektur/0013-pwa-und-push.md) | PWA und Push-Mitteilungen |
+| [0014](architektur/0014-abschluss.md) | Landingpage, Rechtstexte, CSP, Sicherheits-Test, Backups |
 
 Neue Entscheidungen bekommen die nächste Nummer und einen Eintrag in Abschnitt 16 der Feature-Liste.

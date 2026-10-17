@@ -13,16 +13,13 @@
         <h2 class="section-title">{{ title }}</h2>
         <ul class="list">
           {% for entry in entries %}
-            <li class="list__item{% if not entry.url_name %} list__item--muted{% endif %}">
+            <li class="list__item">
               <div class="list__main">
-                {% if entry.url_name %}
-                  <a class="list__link list__title" href="{% url entry.url_name %}">{{ entry.label }}</a>
-                {% else %}
-                  <span class="list__title">{{ entry.label }}</span>
-                {% endif %}
+                <a class="list__link list__title" href="{% url entry.url_name %}">{{ entry.label }}</a>
                 <span class="list__subtitle">{{ entry.subtitle }}</span>
               </div>
-              {% if not entry.url_name %}<span class="tag">folgt in M{{ entry.milestone }}</span>{% endif %}
+              {% if entry.url_name == "inquiries:settings" %}<span class="tag{% if inquiry_link_active %} tag--success{% endif %}">{% if inquiry_link_active %}Link ist aktiv{% else %}aus{% endif %}</span>{% endif %}
+              {% if entry.url_name == "google_sync:settings" and google_connected %}<span class="tag tag--success">verbunden</span>{% endif %}
             </li>
           {% endfor %}
           {% if title == "Konto" %}

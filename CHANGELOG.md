@@ -6,6 +6,15 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Hinzugefügt
 
+**Meilenstein 12 – Abschluss**
+
+- Landingpage unter `/` mit Screenshots, Funktionen, Geräte, Sicherheit, Kosten und „So startest du“
+- Einstellungen → Hilfe & FAQ (je nach Rolle) und „Über die App“ (Funktionen, Version, Lizenz)
+- Impressum, Datenschutz und Nutzungsbedingungen, eingetragen im Django-Admin; Vorlagen in `docs/rechtliches/`
+- Status „Link ist aktiv“ bzw. „verbunden“ in der Einstellungsübersicht
+- Backup- und Wiederherstellungs-Skripte (`deploy/backup/`), Betriebs-Doku und Handbuch für Owner und Mitglieder
+- Sicherheits-Review mit Bericht; Content-Security-Policy; Test, der jede View als öffentlich oder geschützt einordnet
+
 **Meilenstein 11 – PWA und Push**
 
 - Als App auf dem Home-Bildschirm installierbar: Web-App-Manifest, Vollbild ohne Adressleiste, App-Icon (drei Entwürfe zur Auswahl)
@@ -58,6 +67,8 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Geändert
 
+- Anmeldung wieder mit E-Mail-Adresse; Beispielkonten heißen `owner@example.org` usw.
+- Push-Mitteilungen nur noch an die Push-Dienste der Browser; Uploads am Webserver auf 30 MB begrenzt
 - „Organisation auflösen“ funktioniert jetzt auch, wenn die AG Produktionen hat
 - Mitglied entfernen und AG verlassen löschen die bisherigen Einsätze nicht mehr; sie bleiben als „Ehemaliges Mitglied“ erhalten
 - Der Datenexport enthält auch Mehrfach-Zuordnungen (Aufsicht, Fähigkeiten)

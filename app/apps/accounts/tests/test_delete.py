@@ -66,7 +66,8 @@ def test_delete_account(org, owner, student, student_client, login, history):
     assert not Unavailability.objects.exists()
     assert not Invitation.objects.exists()
     assert Message.objects.get(text="Bin dabei!").author_name == FORMER_MEMBER
-    assert student_client.get(reverse("productions:dashboard")).status_code == 302
+    # abgemeldet: „/“ zeigt die Landingpage statt des Dashboards
+    assert "Zur App" in student_client.get(reverse("productions:dashboard")).content.decode()
     _assert_anonymous(history, login(owner.user, org))
 
 
