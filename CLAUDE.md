@@ -2,7 +2,7 @@
 
 Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilensteine: Abschnitt 15, Umsetzungsstand und Entscheidungen: Abschnitt 16 (nach jedem Meilenstein fortschreiben).
 
-**Aktueller Meilenstein: 8 – PDFs.**
+**Aktueller Meilenstein: 9 – Team-Funktionen.**
 
 ## Regeln
 
@@ -31,6 +31,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 - **Systemmeldungen im Board:** `apps.board.services.post_system(org, text, link_production=…, key=…)`
 - **Material-Konflikte:** `apps.inventory.services.check(material, production, menge)` bzw. `production_shortages(production)`
 - **Produktion speichern:** `apps.productions.services.save_production(org, user, form, formset)`; Felder als Include `productions/includes/production_fields.html`
+- **PDFs:** View mit `apps.documents.views._document(...)` (Vorschau + PDF aus einem Template unter `templates/documents/`); Farben nur über die `--print-…`-Tokens
 - **Kalendereinträge:** `apps.scheduling.calendar.calendar_entries(org, start, end, membership=None)`
 
 ## Apps (`app/apps/`)
@@ -46,6 +47,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 | `board` | Board, Produktions-Chats, Systemmeldungen (Signale), Lesestand | 0007 |
 | `inquiries` | Technik-Anfragen: öffentlicher Link, Formular, Spam-Schutz, geteilte Ansicht Anfrage/Produktion | 0009 |
 | `inventory` | Material, Material-Kategorien, Defekte, Materialsätze, Planung je Produktion (Spitzenbedarf), Packliste | 0008 |
+| `documents` | PDFs mit WeasyPrint: Call Sheets, Freistellungsliste, Packliste; Vorschau mit Herunterladen, Teilen, Drucken | 0010 |
 
 Weitere Fach-Apps (Abschnitt 14) entstehen erst in ihrem Meilenstein.
 

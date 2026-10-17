@@ -6,7 +6,8 @@
   <header class="page-header">
     <p class="eyebrow"><a href="{% url 'productions:detail' production.pk %}">← {{ production.name }}</a></p>
     <h1 class="page-title">Packliste</h1>
-    <p class="muted">Zum Abhaken bei Ausgabe und Rückgabe – freiwillig, nichts muss abgehakt werden. PDF folgt.</p>
+    <p class="muted">Zum Abhaken bei Ausgabe und Rückgabe – freiwillig, nichts muss abgehakt werden.</p>
+    {% if planned %}<div class="toolbar"><a class="button button--secondary button--small" href="{% url 'documents:packing_list' production.pk %}">Als PDF</a></div>{% endif %}
   </header>
   {% if planned %}
     <ul class="list">

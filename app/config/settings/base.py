@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "apps.board",
     "apps.inventory",
     "apps.inquiries",
+    "apps.documents",
 ]
 
 MIDDLEWARE = [
@@ -183,4 +184,6 @@ LOGGING = {
     "disable_existing_loggers": False,
     "handlers": {"console": {"class": "logging.StreamHandler"}},
     "root": {"handlers": ["console"], "level": env("DJANGO_LOG_LEVEL", default="INFO")},
+    # WeasyPrint meldet jeden Schritt der PDF-Erzeugung
+    "loggers": {"weasyprint": {"level": "WARNING"}, "fontTools": {"level": "WARNING"}},
 }

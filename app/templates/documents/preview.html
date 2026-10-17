@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/documents.css' %}">{% endblock %}
+{% block title %}{{ doc_title }} – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Vorschau{% endblock %}
+{% block content %}
+<article class="stack">
+  <header class="page-header">
+    <p class="eyebrow"><a href="{{ back_url }}">← {{ back_label }}</a></p>
+    <h1 class="page-title">{{ doc_title }}</h1>
+    {% for hint in hints %}<p class="muted">{{ hint }}</p>{% endfor %}
+    <div class="toolbar">
+      <a class="button button--primary button--small" href="{{ pdf_url }}?download=1" download="{{ pdf_filename }}">PDF herunterladen</a>
+      <button type="button" class="button button--secondary button--small" data-share-pdf="{{ pdf_url }}" data-share-name="{{ pdf_filename }}" data-share-title="{{ doc_title }}" hidden>Teilen</button>
+      <a class="button button--secondary button--small" href="{{ pdf_url }}" target="_blank" rel="noopener">Drucken</a>
+    </div>
+  </header>
+  <div class="paper">{% include body_template %}</div>
+</article>
+{% endblock %}

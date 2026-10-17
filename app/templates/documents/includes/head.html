@@ -1,0 +1,16 @@
+<header class="doc__head">
+  <p class="doc__eyebrow">{{ organization.name }} · {{ kind }}</p>
+  <h1 class="doc__title">{{ production.name }}{% if job %} – {{ job.name }}{% endif %}</h1>
+  <dl class="doc__facts">
+    <dt>Datum</dt>
+    <dd>{% if production.is_multi_day %}{{ production.start_date|date:"D., d.m.Y" }} – {{ production.end_date|date:"D., d.m.Y" }}{% else %}{{ production.start_date|date:"l, j. F Y" }}{% endif %}</dd>
+    {% if production.location_name or production.address %}
+      <dt>Ort</dt>
+      <dd>{{ production.location_name }}{% if production.location_name and production.address %}, {% endif %}{{ production.address }}</dd>
+    {% endif %}
+    {% if production.category %}<dt>Kategorie</dt><dd>{{ production.category.name }}</dd>{% endif %}
+    {% if show_status %}<dt>Status</dt><dd>{{ production.status.name }}</dd>{% endif %}
+    <dt>Aufsicht</dt>
+    <dd>{% for s in supervisors %}{{ s.user }}{% if not forloop.last %}, {% endif %}{% empty %}<span class="doc__muted">noch keine Lehrkraft eingetragen</span>{% endfor %}</dd>
+  </dl>
+</header>

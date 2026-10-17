@@ -572,7 +572,7 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | 5 | Board | fertig | #7 |
 | 6 | Material | fertig | #8 |
 | 7 | Technik-Anfragen | fertig | #9 |
-| 8 | PDFs | offen | |
+| 8 | PDFs | fertig (Einsatzübersicht-PDF folgt in M9) | #10 |
 | 9 | Team-Funktionen | offen | |
 | 10 | Google-Anbindung | offen | |
 | 11 | PWA und Push | offen | |
@@ -609,16 +609,19 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | Anfragen | Spam-Schutz: unsichtbares Feld, höchstens 5 Anfragen pro Stunde je IP und 30 je Link | „Einfacher Spam-Schutz“ (Abschnitt 6) ohne Captcha | ADR 0009 |
 | Anfragen | Uhrzeiten werden als vorgeschlagene Jobs übernommen (Aufbau, Veranstaltung, Abbau) | Eine Produktion selbst hat keine Uhrzeiten | ADR 0009 |
 | Anfragen | Erledigte Anfragen werden nach 180 Tagen endgültig gelöscht | Kontaktdaten von Personen ohne Konto; Datensparsamkeit (Abschnitt 11) | ADR 0009 |
+| PDFs | Erzeugung mit WeasyPrint aus denselben Templates wie die Vorschau; neue App `apps/documents/` ohne eigene Daten; Druck-Tokens für weißes Papier | Kein zusätzlicher Dienst, Vorschau und PDF stimmen überein | ADR 0010 |
+| PDFs | Call Sheets und Packliste als PDF für alle Mitglieder; Freistellungsliste laut Rechte-Tabelle | Die Rechte-Tabelle regelt Call Sheets und Packliste nicht; die Crew braucht ihr Call Sheet | ADR 0010 |
+| PDFs | Freistellungsliste: nur zugesagte Crew ohne Lehrkräfte und „Extern“, eine Zeile je Person und Tag, ohne Wochenenden | Wer nur angefragt ist, ist nicht sicher dabei; Lehrkräfte und Externe werden nicht freigestellt | ADR 0010 |
+| PDFs | Einsatzübersicht als PDF erst in M9 | Die Einsatzübersicht selbst entsteht erst in M9 (Abschnitt 15) | ADR 0010 |
 | Entwicklung | Beispielkonten mit kurzen Anmeldenamen (`owner`, `lehrer`, `schueler` …, Passwort wie der Name); Login-Feld vorübergehend ohne E-Mail-Prüfung | Schneller durchklicken (Entscheidung des Projektinhabers); in M12 zurück auf E-Mail | README |
 | Repository | Kein `CONTRIBUTING.md` und kein `SECURITY.md`: Die Zustimmung zur Lizenz steht in der Pull-Request-Vorlage, Sicherheitslücken werden privat über GitHub gemeldet | Entscheidung des Projektinhabers, weniger Dateien | Abschnitt 13 |
 
 **Offene Punkte für spätere Meilensteine**
 
-- M8: Packliste als PDF aus `PlannedMaterial` (die Checkliste gibt es schon unter `inventory:packing_list`)
 - M10: PDF-Upload für den Ablauf im Anfrage-Formular (Ablage im Drive der AG); bis dahin Freitext und Link
 - M11: Push-Mitteilung bei neuer Technik-Anfrage für Owner, Admins und Lehrkräfte
 - M10: Dateien zum Material und Fotos bei Defektmeldungen im Google Drive (Unterordner „Material“); bis dahin nur Links
-- M8: Die betroffenen Schulstunden für die Freistellungsliste werden schon berechnet (`apps/scheduling/periods.py`)
+- M9: Einsatzübersicht als PDF über `apps/documents/views.py::_document` (nur Template und View ergänzen); gelöschte Konten in Call Sheets als „Ehemaliges Mitglied“
 - M11: Push-Mitteilung bei neuer Board- bzw. Chat-Nachricht (Chats nur für Eingeteilte, Regel wie `apps.board.services.my_chat_production_ids`)
 - M11: App-Icon (schlicht, ohne Schullogo; Entwürfe zur Auswahl) und Vollbild ohne Adressleiste beim Hinzufügen zum Home-Bildschirm (`display: standalone`). Testen nur über HTTPS möglich – auf dem eigenen Server oder über einen Tunnel
 - M12: Login-Feld wieder als E-Mail-Eingabe (`EmailField`, `type="email"`) in `apps/accounts/forms.py`; seit M6 vorübergehend ein Textfeld, damit die Beispielkonten kurze Anmeldenamen haben (`owner`, `lehrer`, `schueler`). Die Beispieldaten bekommen dann wieder E-Mail-Adressen
