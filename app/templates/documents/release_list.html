@@ -1,0 +1,27 @@
+<div class="doc">
+  {% include "documents/includes/head.html" with kind="Freistellungsliste" %}
+
+  {% if rows %}
+    <table class="doc__table">
+      <thead>
+        <tr><th>Veranstaltung</th><th>Datum</th><th>Name</th><th>Jg.</th><th>Betroffene Stunden</th><th>Aufsicht führende Lehrkraft</th></tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>{{ production.name }}</td>
+            <td>{{ row.date|date:"D., d.m.Y" }}</td>
+            <td>{{ row.name }}</td>
+            <td>{{ row.grade|default:"–" }}</td>
+            <td>{{ row.periods_label }}</td>
+            <td>{% for s in supervisors %}{{ s.user }}{% if not forloop.last %}, {% endif %}{% empty %}–{% endfor %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="doc__muted">Niemand muss vom Unterricht freigestellt werden.</p>
+  {% endif %}
+
+  {% include "documents/includes/footer.html" %}
+</div>

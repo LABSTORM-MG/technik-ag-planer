@@ -1820,3 +1820,19 @@ a.icon-button {
 .paste-field > .link-button {
   align-self: flex-end;
 }
+
+/* ---------- Dokument-Vorschau (Inhalt: documents.css) ---------- */
+
+.paper {
+  background: var(--print-paper);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  max-width: 210mm;
+  overflow-x: auto;
+}
+
+@media (max-width: 640px) {
+  .paper { padding: var(--space-4); }
+  .paper .doc { font-size: 9pt; }
+}

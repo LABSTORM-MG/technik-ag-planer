@@ -1,0 +1,37 @@
+<div class="doc">
+  {% include "documents/includes/head.html" with kind="Call Sheet" show_status=True %}
+
+  {% for j in jobs %}
+    <section class="doc__section">
+      <h2 class="doc__section-title">{{ j.name }}</h2>
+      <p class="doc__meta">{{ j.date|date:"D., d.m.Y" }} · {{ j.start_time|time:"H:i" }}–{{ j.end_time|time:"H:i" }} Uhr{% if j.meeting_point %} · Treffpunkt: <strong>{{ j.meeting_point }}</strong>{% endif %}{% if j.crew_needed %} · {{ j.confirmed_count }} von {{ j.crew_needed }} besetzt{% endif %}</p>
+      {% if j.crew.all %}
+        <table class="doc__table doc__table--crew">
+          <thead><tr><th>Name</th><th>Position</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for a in j.crew.all %}
+              <tr>
+                <td>{{ a.membership.user }}</td>
+                <td>{{ a.role_label|default:"–" }}</td>
+                <td class="doc__status--{% if a.is_confirmed %}confirmed{% else %}requested{% endif %}">{{ a.get_status_display }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="doc__muted">Noch keine Crew.</p>
+      {% endif %}
+    </section>
+  {% empty %}
+    <p class="doc__muted">Noch keine Jobs.</p>
+  {% endfor %}
+
+  {% if production.notes %}
+    <section class="doc__section">
+      <h2 class="doc__section-title">Notizen</h2>
+      <p class="doc__prewrap">{{ production.notes }}</p>
+    </section>
+  {% endif %}
+
+  {% include "documents/includes/footer.html" %}
+</div>

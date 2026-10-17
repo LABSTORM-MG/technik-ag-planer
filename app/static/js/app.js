@@ -360,3 +360,25 @@ document.addEventListener("change", (event) => {
     show(split.dataset.split || "anfrage");
   });
 })();
+
+// PDF-Vorschau: „Teilen“ über das Teilen-Menü des Geräts (Web Share API mit Datei).
+// Das PDF wird vorab geladen, weil manche Browser das Teilen nur direkt nach dem Tippen erlauben.
+// Ohne Unterstützung bleibt der Button ausgeblendet; dann helfen „Herunterladen“ und „Drucken“.
+(() => {
+  "use strict";
+
+  const button = document.querySelector("[data-share-pdf]");
+  if (!button || !navigator.canShare) return;
+
+  fetch(button.dataset.sharePdf, { credentials: "same-origin" })
+    .then((response) => (response.ok ? response.blob() : Promise.reject(response.status)))
+    .then((blob) => {
+      const file = new File([blob], button.dataset.shareName, { type: "application/pdf" });
+      if (!navigator.canShare({ files: [file] })) return;
+      button.hidden = false;
+      button.addEventListener("click", () => {
+        navigator.share({ files: [file], title: button.dataset.shareTitle }).catch(() => {});
+      });
+    })
+    .catch(() => {});
+})();

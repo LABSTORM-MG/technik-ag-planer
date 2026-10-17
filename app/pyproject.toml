@@ -12,6 +12,7 @@ dependencies = [
   "whitenoise>=6.9",
   "django-otp>=1.6",
   "qrcode>=8.0",
+  "weasyprint>=70.0",
 ]
 
 [dependency-groups]

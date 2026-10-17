@@ -45,10 +45,15 @@ def affected_periods(organization, start_time, end_time):
 
 
 def describe(periods):
-    """„3.–5. Stunde“ bzw. „4. Stunde“."""
-    if not periods:
+    """„3.–5. Stunde“, „4. Stunde“ bzw. mit Lücke „1.–2., 5. Stunde“."""
+    numbers = sorted({p.number for p in periods})
+    if not numbers:
         return ""
-    numbers = [p.number for p in periods]
-    if len(numbers) == 1:
-        return f"{numbers[0]}. Stunde"
-    return f"{numbers[0]}.–{numbers[-1]}. Stunde"
+    runs = [[numbers[0], numbers[0]]]
+    for n in numbers[1:]:
+        if n == runs[-1][1] + 1:
+            runs[-1][1] = n
+        else:
+            runs.append([n, n])
+    parts = [f"{a}." if a == b else f"{a}.–{b}." for a, b in runs]
+    return ", ".join(parts) + " Stunde"

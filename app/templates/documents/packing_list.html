@@ -1,0 +1,27 @@
+<div class="doc">
+  {% include "documents/includes/head.html" with kind="Packliste" %}
+
+  {% if planned %}
+    <table class="doc__table">
+      <thead><tr><th>Material</th><th class="doc__num">Menge</th><th class="doc__check">Ausgabe</th><th class="doc__check">Rückgabe</th></tr></thead>
+      <tbody>
+        {% regroup planned by material.category as groups %}
+        {% for group in groups %}
+          <tr class="doc__group"><th colspan="4">{{ group.grouper|default:"Ohne Kategorie" }}</th></tr>
+          {% for p in group.list %}
+            <tr>
+              <td>{{ p.material }}</td>
+              <td class="doc__num">{{ p.quantity }}</td>
+              <td class="doc__check"><span class="doc__box" aria-label="{{ p.issued_at|yesno:'ausgegeben,nicht ausgegeben' }}">{% if p.issued_at %}✓{% endif %}</span></td>
+              <td class="doc__check"><span class="doc__box" aria-label="{{ p.returned_at|yesno:'zurückgegeben,nicht zurückgegeben' }}">{% if p.returned_at %}✓{% endif %}</span></td>
+            </tr>
+          {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="doc__muted">Noch kein Material eingeplant.</p>
+  {% endif %}
+
+  {% include "documents/includes/footer.html" %}
+</div>

@@ -43,7 +43,17 @@
   --palette-coral: #FF8A70;
   --palette-grey: #9AA0AC;
 
+  /* Druck (PDFs und Vorschau): dunkle Schrift auf weißem Papier */
+  --print-paper: #FFFFFF;
+  --print-text: #111318;
+  --print-muted: #5B616E;
+  --print-line: #C9CDD4;
+  --print-fill: #EEF0F3;
+  --print-success: #1E7A4C;
+  --print-warning: #A35F00;
+
   /* Schrift */
+  --font-print: "DejaVu Sans", "Helvetica Neue", Arial, sans-serif;
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;

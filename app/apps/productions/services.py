@@ -1,14 +1,30 @@
 """Logik rund um Produktionen: Kopieren, Crew, Konflikte."""
 
 from django.db import transaction
+from django.db.models import Prefetch
 from django.utils import timezone
 
 from apps.inventory.services import copy_plannings
+from apps.organizations.models import Membership
 
 from .models import CrewAssignment, Job, Production, ProductionStatus, Todo
 
 
 @transaction.atomic
+def with_jobs_and_crew(queryset):
+    """Produktionen mit Jobs, Crew und Aufsicht – für Detailansicht und Call Sheets."""
+    return queryset.select_related("category", "status").prefetch_related(
+        Prefetch(
+            "jobs",
+            queryset=Job.objects.prefetch_related(
+                Prefetch("crew", queryset=CrewAssignment.objects.select_related("membership__user"))
+            ),
+        ),
+        "todos",
+        Prefetch("supervisors", queryset=Membership.objects.select_related("user")),
+    )
+
+
 def save_production(organization, user, form, formset):
     """Speichert Produktion und Jobs aus `ProductionForm` und `JobFormSet` (beide gültig)."""
     production = form.save(commit=False)

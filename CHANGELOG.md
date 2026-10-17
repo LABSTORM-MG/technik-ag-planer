@@ -6,6 +6,13 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Hinzugefügt
 
+**Meilenstein 8 – PDFs**
+
+- Call Sheet je Job und „Call Sheet gesamt“ je Produktion mit Ort, Aufsicht, Jobs, Treffpunkt und Crew
+- Freistellungsliste für die Schule (Owner, Admins, Lehrkräfte): Veranstaltung, Datum, Name, Jahrgangsstufe, betroffene Schulstunden laut Stundenraster und Aufsicht
+- Packliste als PDF, nach Material-Kategorie gruppiert, mit Kästchen für Ausgabe und Rückgabe
+- Vorschau vor dem Teilen oder Drucken mit „PDF herunterladen“, „Teilen“ und „Drucken“
+
 **Meilenstein 7 – Technik-Anfragen**
 
 - Öffentlicher Link „Technik anfragen“ je AG, ohne Anmeldung nutzbar; in den Einstellungen aktivieren, deaktivieren und neu erzeugen (Owner, Admins)

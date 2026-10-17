@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -10,7 +10,6 @@ from django.views.decorators.http import require_POST
 from apps.inquiries.models import Inquiry
 from apps.inventory import services as inventory_services
 from apps.organizations.decorators import org_required, permission_required_in_org
-from apps.organizations.models import Membership
 from apps.organizations.permissions import Perm
 from apps.scheduling.models import EventAttendee
 from apps.scheduling.services import find_conflicts
@@ -162,22 +161,7 @@ def production_list(request):
 @org_required
 def production_detail(request, pk):
     production = get_object_or_404(
-        Production.objects.for_org(request.organization)
-        .select_related("category", "status")
-        .prefetch_related(
-            Prefetch(
-                "jobs",
-                queryset=Job.objects.prefetch_related(
-                    Prefetch(
-                        "crew",
-                        queryset=CrewAssignment.objects.select_related("membership__user"),
-                    )
-                ),
-            ),
-            "todos",
-            Prefetch("supervisors", queryset=Membership.objects.select_related("user")),
-        ),
-        pk=pk,
+        services.with_jobs_and_crew(Production.objects.for_org(request.organization)), pk=pk
     )
     supervisors = list(production.supervisors.all())
     return render(
