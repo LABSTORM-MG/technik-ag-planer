@@ -27,3 +27,16 @@ def test_beispieldaten_with_short_logins_and_material(db, settings):
 
     assert InquiryLink.objects.get(organization=concert.organization).is_active
     assert Inquiry.objects.open().count() == 2 and Inquiry.objects.done().count() == 1
+
+
+def test_beispieldaten_team(db, settings):
+    from apps.organizations.models import Membership
+    from apps.productions import hours
+    from apps.productions.models import Skill
+
+    settings.DEBUG = True
+    call_command("beispieldaten")
+    emma = Membership.objects.get(user__email="schueler", organization__name="Technik-AG Nord")
+    assert Skill.objects.filter(members=emma).count() == 2
+    period = hours.periods()[0]
+    assert hours.total(hours.entries(emma, period.start, period.end)) > 0

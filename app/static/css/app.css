@@ -719,6 +719,26 @@ a.list__item:hover,
   white-space: nowrap;
 }
 
+.bullets {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.bullets li + li {
+  margin-top: var(--space-1);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.period-filter .form-row {
+  margin: 0;
+}
+
 .tag--accent {
   border-color: var(--color-accent);
   color: var(--color-accent);

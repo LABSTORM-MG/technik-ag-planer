@@ -1,0 +1,43 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Schuljahreswechsel{% endblock %}
+{% block page_title %}Schuljahreswechsel{% endblock %}
+{% block page_content %}
+<div class="stack">
+  <p class="muted">Alle Jahrgangsstufen rücken eins hoch (5 → 6 … 10 → EF → Q1 → Q2); aus Q2 wird „Extern“. Abgänger behalten ihr Konto und ihre Daten. Lehrkräfte sind nicht betroffen.</p>
+  {% if current_organization.school_year_changed_at %}
+    <p class="muted">Zuletzt ausgelöst am {{ current_organization.school_year_changed_at|date:"d.m.Y" }}.</p>
+  {% endif %}
+
+  <section>
+    <h2 class="section-title">Das ändert sich</h2>
+    <ul class="list">
+      {% for change, users in changes %}
+        <li class="list__item">
+          <div class="list__main">
+            <span class="list__title">{{ change.0 }} → {% if change.1 == "EXT" %}Extern{% else %}{{ change.1 }}{% endif %}</span>
+            <span class="list__subtitle">{% for u in users %}{{ u }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+          </div>
+          <span class="tag">{{ users|length }}</span>
+        </li>
+      {% empty %}
+        <li class="list__item muted">Keine Jahrgangsstufen zu ändern.</li>
+      {% endfor %}
+    </ul>
+    {% if skipped %}
+      <p class="muted">Schon in diesem Schuljahr hochgestuft (z. B. über eine andere AG), deshalb übersprungen: {% for u in skipped %}{{ u }}{% if not forloop.last %}, {% endif %}{% endfor %}.</p>
+    {% endif %}
+  </section>
+
+  {% if locked_until %}
+    <div class="message" role="status">Der Schuljahreswechsel wurde schon ausgelöst. Erneut möglich ab {{ locked_until|date:"d.m.Y" }}.</div>
+  {% elif changes %}
+    <section class="card">
+      <form method="post" class="form" novalidate>
+        {% csrf_token %}
+        {% include "includes/form_fields.html" %}
+        <div><button type="submit" class="button button--primary">Schuljahreswechsel auslösen</button></div>
+      </form>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

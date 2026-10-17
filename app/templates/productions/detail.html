@@ -79,7 +79,7 @@
           <ul class="crew">
             {% for a in job.crew.all %}
               <li class="crew__item">
-                <span class="crew__name">{{ a.membership.user }}{% if a.role_label %} <span class="muted">· {{ a.role_label }}</span>{% endif %}</span>
+                <span class="crew__name">{{ a.person }}{% if a.role_label %} <span class="muted">· {{ a.role_label }}</span>{% endif %}</span>
                 <span class="tag {% if a.is_confirmed %}tag--success{% else %}tag--warning{% endif %}">{{ a.get_status_display }}</span>
                 {% if a.membership_id == current_membership.pk and not a.is_confirmed %}
                   <form method="post" action="{% url 'productions:crew_respond' a.pk %}">
@@ -90,7 +90,7 @@
                 {% endif %}
                 {% if org_perms.MANAGE_CREW %}
                   <form method="post" action="{% url 'productions:crew_remove' a.pk %}">
-                    {% csrf_token %}<button type="submit" class="icon-button" aria-label="{{ a.membership.user }} entfernen">{% include "includes/icon.html" with name="close" %}</button>
+                    {% csrf_token %}<button type="submit" class="icon-button" aria-label="{{ a.person }} entfernen">{% include "includes/icon.html" with name="close" %}</button>
                   </form>
                 {% endif %}
               </li>

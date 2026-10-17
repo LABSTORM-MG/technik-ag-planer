@@ -32,4 +32,5 @@ urlpatterns = [
     path("einstellungen/organisation/verlassen/", views.leave, name="leave"),
     path("einstellungen/organisation/aufloesen/", views.dissolve, name="dissolve"),
     path("einstellungen/zwei-faktor-pflicht/", views.require_2fa, name="require_2fa"),
+    path("einstellungen/schuljahreswechsel/", views.school_year, name="school_year"),
 ]

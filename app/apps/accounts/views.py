@@ -8,7 +8,7 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_not_required
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -18,9 +18,10 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from apps.organizations.permissions import Role
 
-from . import throttle
+from . import services, throttle
 from .forms import (
     ConfirmPasswordForm,
+    DeleteAccountForm,
     EmailPasswordResetForm,
     GermanPasswordChangeForm,
     GermanSetPasswordForm,
@@ -243,3 +244,23 @@ password_reset_complete_view = login_not_required(
         template_name="accounts/password_reset_complete.html"
     )
 )
+
+
+def delete_view(request):
+    user = request.user
+    owned = services.owned_organizations(user)
+    form = DeleteAccountForm(request.POST or None, user=user)
+    if request.method == "POST" and not owned and form.is_valid():
+        try:
+            services.delete_account(user)
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+        else:
+            auth_logout(request)
+            messages.info(request, "Dein Konto wurde gelöscht.")
+            return redirect("accounts:login")
+    return render(
+        request,
+        "accounts/delete.html",
+        {"form": form, "owned": owned, "active_section": "settings"},
+    )

@@ -23,6 +23,9 @@ class Organization(models.Model):
         help_text="Wenn aktiv, müssen alle Mitglieder eine Authenticator-App einrichten.",
     )
     created_at = models.DateTimeField("angelegt am", auto_now_add=True)
+    school_year_changed_at = models.DateTimeField(
+        "Schuljahreswechsel zuletzt am", null=True, blank=True
+    )
 
     class Meta:
         verbose_name = "AG"

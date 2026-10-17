@@ -3,6 +3,8 @@ from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.utils import timezone
 
+FORMER_MEMBER = "Ehemaliges Mitglied"  # Name für Einsätze und Nachrichten gelöschter Konten
+
 
 class Grade(models.TextChoices):
     """Jahrgangsstufen (Abschnitt 2). „Extern“ entsteht beim Schuljahreswechsel aus Q2."""
@@ -63,6 +65,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     is_staff = models.BooleanField("Betreiber", default=False, help_text="Zugang zum Django-Admin.")
     date_joined = models.DateTimeField("registriert am", default=timezone.now)
+    grade_promoted_at = models.DateTimeField(
+        "zuletzt hochgestuft am",
+        null=True,
+        blank=True,
+        help_text="Schuljahreswechsel – verhindert doppeltes Hochstufen über mehrere AGs.",
+    )
 
     objects = UserManager()
 

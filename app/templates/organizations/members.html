@@ -22,6 +22,8 @@
           <div class="list__main">
             <span class="list__title">{{ m.user }}{% if m.user == user %} <span class="muted">(du)</span>{% endif %}</span>
             <span class="list__subtitle">{% if m.user.grade %}Jahrgangsstufe {{ m.user.get_grade_display }} · {% endif %}{{ m.user.email }}</span>
+            {% if m.skills.all %}<span class="tags">{% for s in m.skills.all %}<span class="tag">{{ s.name }}</span>{% endfor %}</span>{% endif %}
+            {% if org_perms.VIEW_ALL_ASSIGNMENTS %}<a class="list__subtitle" href="{% url 'productions:hours_member' m.pk %}">Einsätze ansehen</a>{% endif %}
           </div>
           <span class="tag{% if m.is_owner %} tag--accent{% endif %}">{{ m.get_role_display }}</span>
           {% if org_perms.INVITE_MEMBERS and not m.is_owner %}
@@ -36,7 +38,7 @@
                 </select>
                 <button type="submit" class="button button--secondary button--small">Ändern</button>
               </form>
-              <form method="post" action="{% url 'organizations:member_remove' m.pk %}" data-confirm="{{ m.user }} wirklich aus der AG entfernen?">
+              <form method="post" action="{% url 'organizations:member_remove' m.pk %}" data-confirm="{{ m.user }} wirklich aus der AG entfernen? Bisherige Einsätze bleiben als „Ehemaliges Mitglied“ erhalten.">
                 {% csrf_token %}<button type="submit" class="button button--secondary button--small">Entfernen</button>
               </form>
             </div>

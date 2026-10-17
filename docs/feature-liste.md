@@ -572,8 +572,8 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | 5 | Board | fertig | #7 |
 | 6 | Material | fertig | #8 |
 | 7 | Technik-Anfragen | fertig | #9 |
-| 8 | PDFs | fertig (Einsatzübersicht-PDF folgt in M9) | #10 |
-| 9 | Team-Funktionen | offen | |
+| 8 | PDFs | fertig (Einsatzübersicht-PDF in M9) | #10 |
+| 9 | Team-Funktionen | fertig | #11 |
 | 10 | Google-Anbindung | offen | |
 | 11 | PWA und Push | offen | |
 | 12 | Abschluss | offen | |
@@ -613,6 +613,10 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | PDFs | Call Sheets und Packliste als PDF für alle Mitglieder; Freistellungsliste laut Rechte-Tabelle | Die Rechte-Tabelle regelt Call Sheets und Packliste nicht; die Crew braucht ihr Call Sheet | ADR 0010 |
 | PDFs | Freistellungsliste: nur zugesagte Crew ohne Lehrkräfte und „Extern“, eine Zeile je Person und Tag, ohne Wochenenden | Wer nur angefragt ist, ist nicht sicher dabei; Lehrkräfte und Externe werden nicht freigestellt | ADR 0010 |
 | PDFs | Einsatzübersicht als PDF erst in M9 | Die Einsatzübersicht selbst entsteht erst in M9 (Abschnitt 15) | ADR 0010 |
+| Konto löschen | Konten werden endgültig gelöscht; Einsätze und Termin-Teilnahmen bleiben mit leerer Mitgliedschaft als „Ehemaliges Mitglied“ erhalten – auch beim Entfernen eines Mitglieds und beim Verlassen der AG. Owner übertragen vorher die Ownership | Keine personenbezogenen Reste; vorher löschte das Entfernen alle Einsätze mit | ADR 0011 |
+| Einsatzübersicht | Zählt zugesagte Jobs und Termine bis heute; Korrektur je Einsatz; Schuljahr 1.8.–31.7., 2. Halbjahr ab 1.2. | Nachweis geleisteter Einsätze, z. B. für eine AG-Bescheinigung | ADR 0011 |
+| Fähigkeiten | Vorschläge beim Einteilen: freie Mitglieder mit der Fähigkeit, wer im Schuljahr am wenigsten eingesetzt war zuerst | Arbeit gleichmäßig verteilen | ADR 0011 |
+| Schuljahreswechsel | Je AG und je Konto höchstens einmal in 180 Tagen; Vorschau vor dem Auslösen | Konten in mehreren AGs nicht doppelt hochstufen | ADR 0011 |
 | Entwicklung | Beispielkonten mit kurzen Anmeldenamen (`owner`, `lehrer`, `schueler` …, Passwort wie der Name); Login-Feld vorübergehend ohne E-Mail-Prüfung | Schneller durchklicken (Entscheidung des Projektinhabers); in M12 zurück auf E-Mail | README |
 | Repository | Kein `CONTRIBUTING.md` und kein `SECURITY.md`: Die Zustimmung zur Lizenz steht in der Pull-Request-Vorlage, Sicherheitslücken werden privat über GitHub gemeldet | Entscheidung des Projektinhabers, weniger Dateien | Abschnitt 13 |
 
@@ -621,7 +625,6 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 - M10: PDF-Upload für den Ablauf im Anfrage-Formular (Ablage im Drive der AG); bis dahin Freitext und Link
 - M11: Push-Mitteilung bei neuer Technik-Anfrage für Owner, Admins und Lehrkräfte
 - M10: Dateien zum Material und Fotos bei Defektmeldungen im Google Drive (Unterordner „Material“); bis dahin nur Links
-- M9: Einsatzübersicht als PDF über `apps/documents/views.py::_document` (nur Template und View ergänzen); gelöschte Konten in Call Sheets als „Ehemaliges Mitglied“
 - M11: Push-Mitteilung bei neuer Board- bzw. Chat-Nachricht (Chats nur für Eingeteilte, Regel wie `apps.board.services.my_chat_production_ids`)
 - M11: App-Icon (schlicht, ohne Schullogo; Entwürfe zur Auswahl) und Vollbild ohne Adressleiste beim Hinzufügen zum Home-Bildschirm (`display: standalone`). Testen nur über HTTPS möglich – auf dem eigenen Server oder über einen Tunnel
 - M12: Login-Feld wieder als E-Mail-Eingabe (`EmailField`, `type="email"`) in `apps/accounts/forms.py`; seit M6 vorübergehend ein Textfeld, damit die Beispielkonten kurze Anmeldenamen haben (`owner`, `lehrer`, `schueler`). Die Beispieldaten bekommen dann wieder E-Mail-Adressen

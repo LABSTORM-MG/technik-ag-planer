@@ -4,7 +4,7 @@ from django.forms import inlineformset_factory
 from apps.organizations.models import Membership
 from apps.scheduling.forms import PeriodTimesMixin
 
-from .models import Category, CrewAssignment, Job, Production, ProductionStatus, Todo
+from .models import Category, CrewAssignment, Job, Production, ProductionStatus, Skill, Todo
 from .palette import Color
 
 
@@ -132,19 +132,27 @@ class CrewForm(forms.Form):
     )
     ignore_conflicts = forms.BooleanField(required=False, widget=forms.HiddenInput)
 
-    def __init__(self, *args, job, **kwargs):
+    def __init__(self, *args, job, skill=None, **kwargs):
         super().__init__(*args, **kwargs)
         taken = job.crew.values_list("membership_id", flat=True)
         queryset = (
             Membership.objects.for_org(job.organization)
             .exclude(pk__in=taken)
             .select_related("user")
+            .prefetch_related("skills")
             .order_by("user__display_name")
         )
+        if skill is not None:
+            queryset = queryset.filter(skills=skill)
         self.fields["membership"].queryset = queryset
-        self.fields["membership"].label_from_instance = lambda m: (
-            f"{m.user}" + (f" ({m.user.get_grade_display()})" if m.user.grade else "")
-        )
+        self.fields["membership"].label_from_instance = _member_label
+
+
+def _member_label(m):
+    """„Emma (Q1) – Licht, Ton“"""
+    label = f"{m.user}" + (f" ({m.user.get_grade_display()})" if m.user.grade else "")
+    skills = ", ".join(s.name for s in m.skills.all())
+    return f"{label} – {skills}" if skills else label
 
 
 class TodoForm(forms.ModelForm):
@@ -159,6 +167,38 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = ["name", "color"]
         widgets = {"color": palette_widget()}
+
+
+class SkillForm(forms.ModelForm):
+    class Meta:
+        model = Skill
+        fields = ["name"]
+        help_texts = {"name": "z. B. Licht, Ton, Bühne, Kamera"}
+
+
+class MySkillsForm(forms.Form):
+    skills = forms.ModelMultipleChoiceField(
+        queryset=None,
+        label="Meine Fähigkeiten",
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+    def __init__(self, *args, organization, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["skills"].queryset = Skill.objects.for_org(organization)
+
+
+class HoursForm(forms.Form):
+    corrected_hours = forms.DecimalField(
+        label="Tatsächliche Stunden",
+        required=False,
+        min_value=0,
+        max_value=99,
+        decimal_places=2,
+        help_text="Leer lassen, um die Stunden aus den Zeiten zu berechnen.",
+        widget=forms.NumberInput(attrs={"step": "0.25", "inputmode": "decimal"}),
+    )
 
 
 class StatusForm(forms.ModelForm):

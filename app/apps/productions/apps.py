@@ -20,7 +20,15 @@ class ProductionsConfig(AppConfig):
 
         post_save.connect(_create_defaults, sender=Organization, dispatch_uid="production-defaults")
 
-        for name in ["Category", "ProductionStatus", "Production", "Job", "CrewAssignment", "Todo"]:
+        for name in [
+            "Category",
+            "ProductionStatus",
+            "Production",
+            "Job",
+            "CrewAssignment",
+            "Todo",
+            "Skill",
+        ]:
             model = self.get_model(name)
             audit(model)
             export.register(model)

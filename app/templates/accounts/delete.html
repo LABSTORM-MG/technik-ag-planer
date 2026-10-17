@@ -1,0 +1,28 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Konto löschen{% endblock %}
+{% block page_title %}Konto löschen{% endblock %}
+{% block page_content %}
+<div class="stack">
+  <section class="card">
+    <h2 class="section-title">Was passiert?</h2>
+    <ul class="bullets">
+      <li>Dein Konto ({{ user.email }}) wird endgültig gelöscht – in allen AGs. Das lässt sich nicht rückgängig machen.</li>
+      <li>Deine „Nicht verfügbar“-Einträge, Fähigkeiten und deine Zwei-Faktor-Anmeldung werden gelöscht.</li>
+      <li>Deine Einsätze, Board-Nachrichten und Einträge in Call Sheets bleiben erhalten, aber ohne deinen Namen: Dort steht dann „Ehemaliges Mitglied“.</li>
+    </ul>
+  </section>
+  {% if owned %}
+    <div class="message message--warning" role="alert">
+      <p>Du bist Owner von {% for o in owned %}„{{ o.name }}“{% if not forloop.last %}, {% endif %}{% endfor %}. Bitte übertrage zuerst die Ownership unter <a href="{% url 'organizations:manage' %}">Organisation verwalten</a>.</p>
+    </div>
+  {% else %}
+    <section class="card">
+      <form method="post" class="form" novalidate>
+        {% csrf_token %}
+        {% include "includes/form_fields.html" %}
+        <div><button type="submit" class="button button--danger">Konto endgültig löschen</button></div>
+      </form>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

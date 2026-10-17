@@ -10,7 +10,7 @@
     <h1 class="page-title">{{ doc_title }}</h1>
     {% for hint in hints %}<p class="muted">{{ hint }}</p>{% endfor %}
     <div class="toolbar">
-      <a class="button button--primary button--small" href="{{ pdf_url }}?download=1" download="{{ pdf_filename }}">PDF herunterladen</a>
+      <a class="button button--primary button--small" href="{{ download_url }}" download="{{ pdf_filename }}">PDF herunterladen</a>
       <button type="button" class="button button--secondary button--small" data-share-pdf="{{ pdf_url }}" data-share-name="{{ pdf_filename }}" data-share-title="{{ doc_title }}" hidden>Teilen</button>
       <a class="button button--secondary button--small" href="{{ pdf_url }}" target="_blank" rel="noopener">Drucken</a>
     </div>

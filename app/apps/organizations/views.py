@@ -8,10 +8,18 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from apps.accounts.forms import AcceptInvitationForm, LoginForm
+from apps.accounts.models import Grade
 
 from . import services
 from .decorators import org_required, owner_required, permission_required_in_org
-from .forms import DissolveForm, InviteForm, Require2FAForm, RoleForm, TransferOwnershipForm
+from .forms import (
+    DissolveForm,
+    InviteForm,
+    Require2FAForm,
+    RoleForm,
+    SchoolYearForm,
+    TransferOwnershipForm,
+)
 from .middleware import set_active_organization
 from .models import Invitation, Membership
 from .permissions import Perm, Role
@@ -58,7 +66,10 @@ def settings_index(request):
 def members(request):
     org = request.organization
     memberships = (
-        Membership.objects.for_org(org).select_related("user").order_by("user__display_name")
+        Membership.objects.for_org(org)
+        .select_related("user")
+        .prefetch_related("skills")
+        .order_by("user__display_name")
     )
     context = {**SETTINGS, "memberships": memberships, "role_form": RoleForm()}
     if request.membership.has_perm(Perm.INVITE_MEMBERS):
@@ -294,3 +305,35 @@ def accept_invitation(request, token):
             return redirect("productions:dashboard")
     context["form"] = form
     return render(request, "organizations/invitation_accept.html", context)
+
+
+@permission_required_in_org(Perm.TRIGGER_SCHOOL_YEAR_CHANGE)
+def school_year(request):
+    form = SchoolYearForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        try:
+            count = services.change_school_year(request.organization)
+        except ValidationError as error:
+            _error(request, error)
+        else:
+            messages.success(
+                request, f"Schuljahreswechsel erledigt: {count} Jahrgangsstufen erhöht."
+            )
+        return redirect("organizations:school_year")
+    changes, skipped, locked_until = services.school_year_preview(request.organization)
+    return render(
+        request,
+        "organizations/school_year.html",
+        {
+            **SETTINGS,
+            "form": form,
+            "changes": sorted(changes.items(), key=lambda item: _grade_index(item[0][0])),
+            "skipped": skipped,
+            "locked_until": locked_until,
+        },
+    )
+
+
+def _grade_index(grade):
+    values = [value for value, _label in Grade.choices]
+    return values.index(grade) if grade in values else len(values)

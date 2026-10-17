@@ -36,6 +36,7 @@ def release_rows(production):
     assignments = (
         CrewAssignment.objects.for_org(production.organization)
         .filter(job__production=production, status=CrewAssignment.Status.CONFIRMED)
+        .filter(membership__isnull=False)
         .exclude(membership__role=Role.TEACHER)
         .exclude(membership__user__grade=Grade.EXTERN)
         .select_related("job", "membership__user")

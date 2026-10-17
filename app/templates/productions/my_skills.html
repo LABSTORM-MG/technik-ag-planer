@@ -1,0 +1,22 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Meine Fähigkeiten{% endblock %}
+{% block page_title %}Meine Fähigkeiten{% endblock %}
+{% block page_content %}
+<div class="stack">
+  {% if form.fields.skills.queryset %}
+    <p class="muted">Wähle aus, was du kannst. Die Fähigkeiten erscheinen in der Mitgliederliste und beim Einteilen.</p>
+    <form method="post" class="form">
+      {% csrf_token %}
+      <fieldset class="chips">
+        <legend class="visually-hidden">Meine Fähigkeiten</legend>
+        {% for choice in form.skills %}
+          <label class="chip">{{ choice.tag }} {{ choice.choice_label }}</label>
+        {% endfor %}
+      </fieldset>
+      <div><button type="submit" class="button button--primary">Speichern</button></div>
+    </form>
+  {% else %}
+    <p class="muted">Der Owner hat noch keine Fähigkeiten angelegt.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -299,7 +299,7 @@ def _attendee(request, pk):
 def attendee_remove(request, pk):
     attendee = _attendee(request, pk)
     attendee.delete()
-    messages.success(request, f"{attendee.membership.user} entfernt.")
+    messages.success(request, f"{attendee.person} entfernt.")
     return redirect("scheduling:event_detail", pk=attendee.event_id)
 
 
@@ -456,7 +456,7 @@ def ics_job(request, pk):
         .select_related("production"),
         pk=pk,
     )
-    crew = ", ".join(str(a.membership.user) for a in j.crew.select_related("membership__user"))
+    crew = ", ".join(a.person for a in j.crew.select_related("membership__user"))
     event = ics.IcsEvent(
         uid=_uid(request, "job", j.pk),
         summary=f"{j.production} – {j.name}",

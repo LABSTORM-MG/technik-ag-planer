@@ -2,7 +2,7 @@
 
 Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilensteine: Abschnitt 15, Umsetzungsstand und Entscheidungen: Abschnitt 16 (nach jedem Meilenstein fortschreiben).
 
-**Aktueller Meilenstein: 9 – Team-Funktionen.**
+**Aktueller Meilenstein: 10 – Google-Anbindung.**
 
 ## Regeln
 
@@ -32,6 +32,8 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 - **Material-Konflikte:** `apps.inventory.services.check(material, production, menge)` bzw. `production_shortages(production)`
 - **Produktion speichern:** `apps.productions.services.save_production(org, user, form, formset)`; Felder als Include `productions/includes/production_fields.html`
 - **PDFs:** View mit `apps.documents.views._document(...)` (Vorschau + PDF aus einem Template unter `templates/documents/`); Farben nur über die `--print-…`-Tokens
+- **Namen in Einsätzen:** `assignment.person` / `attendee.person` (leere Mitgliedschaft = „Ehemaliges Mitglied“, `apps.accounts.models.FORMER_MEMBER`)
+- **Stunden:** `apps.productions.hours.entries(membership, start, end)`, Zeiträume über `hours.period_from_request(request.GET)`; Template-Filter `{% load hours %}…|stunden`
 - **Kalendereinträge:** `apps.scheduling.calendar.calendar_entries(org, start, end, membership=None)`
 
 ## Apps (`app/apps/`)
@@ -39,15 +41,15 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 | App | Inhalt | ADR |
 | --- | --- | --- |
 | `core` | Navigation, Platzhalterseiten, Health-Check | 0003 |
-| `accounts` | Konten, Login, 2FA, Passwort, Profil | 0004 |
-| `organizations` | AGs, Rollen und Rechte, Einladungen, Einstellungen, Datenexport, `beispieldaten` | 0004 |
+| `accounts` | Konten, Login, 2FA, Passwort, Profil, Konto löschen | 0004, 0011 |
+| `organizations` | AGs, Rollen und Rechte, Einladungen, Einstellungen, Schuljahreswechsel, Datenexport, `beispieldaten` | 0004, 0011 |
 | `audit` | Änderungsprotokoll (7 Tage) | 0004 |
-| `productions` | Produktionen (weich gelöscht: `objects` / `all_objects`), Jobs, Crew, To-dos, Kategorien, Status, Dashboard | 0005 |
+| `productions` | Produktionen (weich gelöscht: `objects` / `all_objects`), Jobs, Crew, To-dos, Kategorien, Status, Dashboard, Fähigkeiten, Einsatzübersicht | 0005, 0011 |
 | `scheduling` | Kalender, Termine und Serien, „Nicht verfügbar“, Stundenraster, ICS | 0006 |
 | `board` | Board, Produktions-Chats, Systemmeldungen (Signale), Lesestand | 0007 |
 | `inquiries` | Technik-Anfragen: öffentlicher Link, Formular, Spam-Schutz, geteilte Ansicht Anfrage/Produktion | 0009 |
 | `inventory` | Material, Material-Kategorien, Defekte, Materialsätze, Planung je Produktion (Spitzenbedarf), Packliste | 0008 |
-| `documents` | PDFs mit WeasyPrint: Call Sheets, Freistellungsliste, Packliste; Vorschau mit Herunterladen, Teilen, Drucken | 0010 |
+| `documents` | PDFs mit WeasyPrint: Call Sheets, Freistellungsliste, Packliste, Einsatzübersicht; Vorschau mit Herunterladen, Teilen, Drucken | 0010 |
 
 Weitere Fach-Apps (Abschnitt 14) entstehen erst in ihrem Meilenstein.
 
