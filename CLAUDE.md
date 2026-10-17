@@ -2,7 +2,7 @@
 
 Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilensteine: Abschnitt 15, Umsetzungsstand und Entscheidungen: Abschnitt 16 (nach jedem Meilenstein fortschreiben).
 
-**Aktueller Meilenstein: 11 – PWA und Push.**
+**Aktueller Meilenstein: 12 – Abschluss.**
 
 ## Regeln
 
@@ -35,6 +35,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 - **Namen in Einsätzen:** `assignment.person` / `attendee.person` (leere Mitgliedschaft = „Ehemaliges Mitglied“, `apps.accounts.models.FORMER_MEMBER`)
 - **Stunden:** `apps.productions.hours.entries(membership, start, end)`, Zeiträume über `hours.period_from_request(request.GET)`; Template-Filter `{% load hours %}…|stunden`
 - **Google:** Aufrufe nur über `apps.google_sync.google_api` (Tests: Fixtures `google`/`connected` mit Attrappe); Dateien mit `apps.google_sync.drive.upload(org, datei, production=…|material=…|defect=…|inquiry=…)`, Liste per Include `google_sync/includes/attachments.html`. Neue Kalender-Einträge in `calendar_sync.desired_events` und `signals.WATCHED` ergänzen
+- **Push-Mitteilungen:** `apps.notifications.services.notify(org, konten, Kind.X, titel, text, url)` – nur Push, keine E-Mails; neue Auslöser in `apps/notifications/signals.py` (Tests: Fixtures `pushed`, `device`)
 - **Kalendereinträge:** `apps.scheduling.calendar.calendar_entries(org, start, end, membership=None)`
 
 ## Apps (`app/apps/`)
@@ -51,6 +52,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 | `inquiries` | Technik-Anfragen: öffentlicher Link, Formular, Spam-Schutz, geteilte Ansicht Anfrage/Produktion | 0009 |
 | `inventory` | Material, Material-Kategorien, Defekte, Materialsätze, Planung je Produktion (Spitzenbedarf), Packliste | 0008 |
 | `google_sync` | Google-Konto der AG (OAuth, Token verschlüsselt), Drive-Ablage (`Attachment`), Kalender-Übertragung (Gesamtvergleich), Anleitung `docs/installation/google-cloud.md` | 0012 |
+| `notifications` | Web Push (VAPID), Geräte, Benachrichtigungs-Einstellungen, Erinnerungen, Manifest und Service Worker (`/sw.js`), App-Icon (`scripts/app_icon.py`) | 0013 |
 | `documents` | PDFs mit WeasyPrint: Call Sheets, Freistellungsliste, Packliste, Einsatzübersicht; Vorschau mit Herunterladen, Teilen, Drucken | 0010 |
 
 Weitere Fach-Apps (Abschnitt 14) entstehen erst in ihrem Meilenstein.

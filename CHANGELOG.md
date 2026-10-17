@@ -6,6 +6,14 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Hinzugefügt
 
+**Meilenstein 11 – PWA und Push**
+
+- Als App auf dem Home-Bildschirm installierbar: Web-App-Manifest, Vollbild ohne Adressleiste, App-Icon (drei Entwürfe zur Auswahl)
+- Push-Mitteilungen: Crew-Anfragen und Einteilungen, Änderungen an eigenen Jobs, neue Technik-Anfragen (Owner, Admins, Lehrkräfte), Board- und Chat-Nachrichten
+- Erinnerung vor eigenen Jobs mit Uhrzeit und Treffpunkt – standardmäßig am Vorabend um 18 Uhr, einstellbar
+- Einstellungen → Benachrichtigungen: auf diesem Gerät aktivieren, Test-Mitteilung, angemeldete Geräte, jede Art einzeln abschaltbar
+- Befehl `vapid_schluessel` für die Push-Schlüssel des Servers
+
 **Meilenstein 10 – Google-Anbindung**
 
 - Einstellungen → Google-Konto (Owner): mit einem Google-Konto der AG verbinden, Status, „Jetzt abgleichen“, trennen

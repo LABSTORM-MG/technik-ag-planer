@@ -2,7 +2,7 @@
 
 Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender, Material, Board und Technik-Anfragen – als Django-Web-App für Handy, Tablet und Computer (PWA).
 
-> **Stand:** Meilensteine 1–10 von 12 sind fertig – Grundgerüst, Konten und AGs, Produktionen, Kalender und Zeiten, Board, Material, Technik-Anfragen, PDFs, Team-Funktionen, Google-Anbindung. Details: [Umsetzungsstand](docs/feature-liste.md#16-umsetzungsstand-und-entscheidungen).
+> **Stand:** Meilensteine 1–11 von 12 sind fertig – Grundgerüst, Konten und AGs, Produktionen, Kalender und Zeiten, Board, Material, Technik-Anfragen, PDFs, Team-Funktionen, Google-Anbindung, PWA und Push. Details: [Umsetzungsstand](docs/feature-liste.md#16-umsetzungsstand-und-entscheidungen).
 
 ## Was die App schon kann
 
@@ -16,6 +16,7 @@ Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender,
 - **PDFs** mit Vorschau zum Herunterladen, Teilen und Drucken: Call Sheet je Job und je Produktion, Freistellungsliste für die Schule, Packliste, Einsatzübersicht
 - **Team:** Fähigkeiten mit Filter und Vorschlägen beim Einteilen, Einsatzübersicht mit Stundenkorrektur, Schuljahreswechsel, Konto löschen (Einsätze bleiben als „Ehemaliges Mitglied“)
 - **Google-Anbindung:** Dateien (Produktionen, Material, Defektfotos, Anfragen) im Google Drive der AG, alle Kalendereinträge automatisch im Google-Kalender der AG – [Einrichtung](docs/installation/google-cloud.md)
+- **Als App installierbar** (Home-Bildschirm, Vollbild) mit **Push-Mitteilungen** zu Crew-Anfragen, Änderungen, Technik-Anfragen, Board und Chats sowie Erinnerung vor eigenen Jobs
 - **Django-Admin** für den Betreiber: AGs anlegen, Owner einladen, Konten verwalten, Datenexport, Änderungsprotokoll
 
 ## Schnellstart (Entwicklung)

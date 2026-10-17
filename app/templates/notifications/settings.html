@@ -1,0 +1,55 @@
+{% extends "settings/page.html" %}
+{% load static %}
+{% block page_title_text %}Benachrichtigungen{% endblock %}
+{% block page_title %}Benachrichtigungen{% endblock %}
+{% block page_content %}
+<div class="stack">
+  <p class="muted">Benachrichtigungen kommen nur als Push-Mitteilung aufs Handy oder den Computer – nie per E-Mail. Die Einstellungen gelten für alle deine AGs.</p>
+
+  {% if not enabled %}
+    <div class="message message--warning" role="alert">Push-Mitteilungen sind auf diesem Server noch nicht eingerichtet (VAPID-Schlüssel fehlen – siehe Installationsanleitung).</div>
+  {% else %}
+    <section class="card" data-push data-vapid-key="{{ vapid_public_key }}" data-csrf="{{ csrf_token }}" data-subscribe-url="{% url 'notifications:subscribe' %}" data-unsubscribe-url="{% url 'notifications:unsubscribe' %}">
+      <h2 class="section-title">Dieses Gerät</h2>
+      <p data-push-status>Wird geprüft …</p>
+      <div class="toolbar">
+        <button type="button" class="button button--primary button--small" data-push-enable hidden>Auf diesem Gerät aktivieren</button>
+        <button type="button" class="button button--secondary button--small" data-push-disable hidden>Auf diesem Gerät deaktivieren</button>
+        {% if devices %}
+          <form method="post" action="{% url 'notifications:test' %}">{% csrf_token %}<button type="submit" class="button button--secondary button--small">Test-Mitteilung senden</button></form>
+        {% endif %}
+      </div>
+    </section>
+    <script src="{% static 'js/push.js' %}" defer></script>
+
+    {% if devices %}
+      <section>
+        <h2 class="section-title">Angemeldete Geräte</h2>
+        <ul class="list">
+          {% for d in devices %}
+            <li class="list__item">
+              <div class="list__main">
+                <span class="list__title">{{ d.user_agent|truncatechars:60|default:"Gerät" }}</span>
+                <span class="list__subtitle">seit {{ d.created_at|date:"d.m.Y" }}{% if d.last_used_at %} · zuletzt {{ d.last_used_at|date:"d.m.Y, H:i" }} Uhr{% endif %}</span>
+              </div>
+              <form method="post" action="{% url 'notifications:unsubscribe' %}">
+                {% csrf_token %}<input type="hidden" name="endpoint" value="{{ d.endpoint }}">
+                <button type="submit" class="icon-button" aria-label="Gerät abmelden">{% include "includes/icon.html" with name="close" %}</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+  {% endif %}
+
+  <section class="card">
+    <h2 class="section-title">Wofür?</h2>
+    <form method="post" class="form" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <div><button type="submit" class="button button--primary">Speichern</button></div>
+    </form>
+  </section>
+</div>
+{% endblock %}

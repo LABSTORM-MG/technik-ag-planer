@@ -292,6 +292,8 @@ class CrewAssignment(OrganizationScopedModel):
         blank=True,
         help_text="Leer lassen, um die Stunden aus den Zeiten zu berechnen.",
     )
+    # Startzeit, für die schon erinnert wurde – wird der Job verschoben, kommt eine neue Erinnerung
+    reminded_for = models.DateTimeField(null=True, blank=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
