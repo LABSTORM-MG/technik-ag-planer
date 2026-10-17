@@ -37,6 +37,9 @@
       {% include "inquiries/includes/copy_row.html" with label="Sonstiges zur Technik" value=inquiry.tech_notes %}
       {% include "inquiries/includes/copy_row.html" with label="Ablauf" value=inquiry.schedule %}
       {% include "inquiries/includes/copy_row.html" with label="Link zum Ablauf" value=inquiry.schedule_link href=inquiry.schedule_link %}
+      {% for a in inquiry.attachments.all %}
+        <div class="copy-row"><dt>Ablauf (PDF)</dt><dd><a href="{% url 'google_sync:open' a.pk %}" target="_blank" rel="noopener">{{ a.name }}</a></dd></div>
+      {% endfor %}
       {% include "inquiries/includes/copy_row.html" with label="Ansprechperson" value=inquiry.contact_name %}
       {% with "tel:"|add:inquiry.contact_phone as tel %}{% include "inquiries/includes/copy_row.html" with label="Telefon" value=inquiry.contact_phone href=tel %}{% endwith %}
     </dl>

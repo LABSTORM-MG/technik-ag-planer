@@ -94,5 +94,10 @@ def purge_cutoff(now=None):
 
 def purge_done(now=None):
     """Löscht erledigte Anfragen endgültig (Datensparsamkeit: Daten von Personen ohne Konto)."""
-    deleted, _ = Inquiry.objects.filter(done_at__lt=purge_cutoff(now)).delete()
+    from apps.google_sync import drive
+    from apps.google_sync.models import Attachment
+
+    old = Inquiry.objects.filter(done_at__lt=purge_cutoff(now))
+    drive.delete_all(Attachment.objects.filter(inquiry__in=old))  # PDFs auch im Drive löschen
+    deleted, _ = old.delete()
     return deleted

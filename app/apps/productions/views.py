@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
+from apps.google_sync.services import connection_for
 from apps.inquiries.models import Inquiry
 from apps.inventory import services as inventory_services
 from apps.organizations.decorators import org_required, permission_required_in_org
@@ -24,12 +25,22 @@ from .forms import (
     JobFormSet,
     MySkillsForm,
     ProductionForm,
+    ProductionLinkForm,
     SkillForm,
     StatusChangeForm,
     StatusForm,
     TodoForm,
 )
-from .models import Category, CrewAssignment, Job, Production, ProductionStatus, Skill, Todo
+from .models import (
+    Category,
+    CrewAssignment,
+    Job,
+    Production,
+    ProductionLink,
+    ProductionStatus,
+    Skill,
+    Todo,
+)
 
 PRODUCTIONS = {"active_section": "productions"}
 SETTINGS = {"active_section": "settings"}
@@ -181,6 +192,9 @@ def production_detail(request, pk):
             "planned_material": inventory_services.production_material(production),
             "supervisors": supervisors,
             "is_supervisor": request.membership in supervisors,
+            "links": production.links.all(),
+            "attachments": production.attachments.select_related("uploaded_by"),
+            "google_connected": connection_for(request.organization) is not None,
         },
     )
 
@@ -558,6 +572,41 @@ def status_move(request, pk):
         ProductionStatus.objects.for_org(request.organization),
     )
     return redirect("productions:statuses")
+
+
+# ---------- Links im Abschnitt „Dateien“ (Dateien selbst: apps/google_sync) ----------
+
+
+@permission_required_in_org(Perm.MANAGE_PRODUCTIONS)
+def link_create(request, pk):
+    production = _production(request, pk)
+    form = ProductionLinkForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        link = form.save(commit=False)
+        link.organization = request.organization
+        link.production = production
+        link.save()
+        messages.success(request, "Link hinzugefügt.")
+        return redirect(reverse("productions:detail", args=[pk]) + "#dateien")
+    return render(
+        request,
+        "productions/link_form.html",
+        {**PRODUCTIONS, "form": form, "production": production},
+    )
+
+
+@require_POST
+@permission_required_in_org(Perm.MANAGE_PRODUCTIONS)
+def link_delete(request, pk):
+    link = get_object_or_404(
+        ProductionLink.objects.for_org(request.organization).filter(
+            production__deleted_at__isnull=True
+        ),
+        pk=pk,
+    )
+    link.delete()
+    messages.success(request, "Link entfernt.")
+    return redirect(reverse("productions:detail", args=[link.production_id]) + "#dateien")
 
 
 # ---------- Fähigkeiten ----------

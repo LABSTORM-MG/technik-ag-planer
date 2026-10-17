@@ -3,7 +3,7 @@
 {% block content %}
   <h1 class="page-title">Technik anfragen</h1>
   <p class="muted">bei der {{ organization.name }}. Nur Name, E-Mail und Datum sind Pflicht – alles andere gern in eigenen Worten. Wir melden uns per E-Mail.</p>
-  <form method="post" class="form inquiry-form" novalidate>
+  <form method="post" class="form inquiry-form" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}<ul class="form-errors" role="alert">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
 
@@ -52,6 +52,7 @@
       <legend class="section-title">Ablauf</legend>
       {% include "includes/field.html" with field=form.schedule %}
       {% include "includes/field.html" with field=form.schedule_link %}
+      {% if form.schedule_pdf %}{% include "includes/field.html" with field=form.schedule_pdf %}{% endif %}
     </fieldset>
 
     <fieldset class="form">

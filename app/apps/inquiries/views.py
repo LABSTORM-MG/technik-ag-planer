@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_not_required
@@ -6,6 +8,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from apps.google_sync import drive
+from apps.google_sync.google_api import GoogleError
+from apps.google_sync.services import connection_for
 from apps.organizations.decorators import permission_required_in_org
 from apps.organizations.permissions import Perm
 from apps.productions import services as production_services
@@ -15,6 +20,8 @@ from apps.productions.models import Job, Production
 from . import services
 from .forms import InquiryForm, InquiryLinkForm
 from .models import Inquiry
+
+logger = logging.getLogger(__name__)
 
 PRODUCTIONS = {"active_section": "productions"}
 SETTINGS = {"active_section": "settings"}
@@ -33,7 +40,10 @@ def public_form(request, token):
     if link is None:
         return _inactive(request)
     organization = link.organization
-    form = InquiryForm(request.POST or None, organization=organization)
+    allow_pdf = connection_for(organization) is not None
+    form = InquiryForm(
+        request.POST or None, request.FILES or None, organization=organization, allow_pdf=allow_pdf
+    )
     limited = request.method == "POST" and services.is_limited(link, request)
     if limited:
         form.is_valid()
@@ -46,6 +56,17 @@ def public_form(request, token):
             inquiry = form.save(commit=False)
             inquiry.organization = organization
             inquiry.save()
+            pdf = form.cleaned_data.get("schedule_pdf")
+            if pdf:
+                try:
+                    drive.upload(
+                        organization,
+                        pdf,
+                        inquiry=inquiry,
+                        max_mb=settings.GOOGLE_INQUIRY_PDF_MAX_MB,
+                    )
+                except GoogleError:
+                    logger.warning("PDF zur Anfrage %s nicht hochgeladen", inquiry.pk)
         services.count_submission(link, request)
         return redirect("inquiries:public_thanks", token=token)
     return render(

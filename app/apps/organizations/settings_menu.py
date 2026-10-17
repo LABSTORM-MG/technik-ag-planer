@@ -66,7 +66,7 @@ GROUPS = [
             Entry(
                 "Google-Konto",
                 "Google-Konto der AG für Drive und Kalender verbinden",
-                milestone=10,
+                "google_sync:settings",
                 owner_only=True,
             ),
             Entry(

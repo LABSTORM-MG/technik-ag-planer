@@ -1,0 +1,15 @@
+{% extends layout %}
+{% block title %}Link – {{ production.name }}{% endblock %}
+{% block topbar_title %}Link{% endblock %}
+{% block content %}
+  <p class="eyebrow">{{ production.name }}</p>
+  <h1 class="page-title sheet-title">Link hinzufügen</h1>
+  <form method="post" action="{% url 'productions:link_create' production.pk %}" class="form" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <div class="form-actions">
+      <a class="button button--secondary" href="{% url 'productions:detail' production.pk %}">Abbrechen</a>
+      <button type="submit" class="button button--primary">Hinzufügen</button>
+    </div>
+  </form>
+{% endblock %}

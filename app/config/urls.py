@@ -21,5 +21,6 @@ urlpatterns = [
     path("", include("apps.inventory.urls")),
     path("", include("apps.inquiries.urls")),
     path("", include("apps.documents.urls")),
+    path("", include("apps.google_sync.urls")),
     path("", include("apps.core.urls")),
 ]

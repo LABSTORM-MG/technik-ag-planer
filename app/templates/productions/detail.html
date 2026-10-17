@@ -144,6 +144,38 @@
     {% endif %}
   </section>
 
+  <section id="dateien">
+    <div class="section-head">
+      <h2 class="section-title">Dateien</h2>
+      {% if org_perms.MANAGE_PRODUCTIONS %}
+        <div class="list__actions">
+          <a class="button button--secondary button--small" href="{% url 'productions:link_create' production.pk %}" data-sheet-url>+ Link</a>
+          <a class="button button--secondary button--small" href="{% url 'google_sync:production_upload' production.pk %}" data-sheet-url>+ Datei</a>
+        </div>
+      {% endif %}
+    </div>
+    {% if links or attachments %}
+      <ul class="list">
+        {% include "google_sync/includes/attachments.html" with can_delete=org_perms.MANAGE_PRODUCTIONS %}
+        {% for link in links %}
+          <li class="list__item">
+            <div class="list__main">
+              <a class="list__link list__title" href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.title|default:link.url }}</a>
+              <span class="list__subtitle">Link</span>
+            </div>
+            {% if org_perms.MANAGE_PRODUCTIONS %}
+              <form method="post" action="{% url 'productions:link_delete' link.pk %}">
+                {% csrf_token %}<button type="submit" class="icon-button" aria-label="Link entfernen">{% include "includes/icon.html" with name="close" %}</button>
+              </form>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Noch keine Dateien oder Links{% if not google_connected %} – Dateien lassen sich hochladen, sobald der Owner ein Google-Konto verbunden hat{% endif %}.</p>
+    {% endif %}
+  </section>
+
   <section id="todos">
     <h2 class="section-title">To-dos</h2>
     <ul class="list">

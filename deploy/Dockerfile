@@ -50,4 +50,5 @@ COPY --chmod=755 deploy/entrypoint.sh /usr/local/bin/entrypoint.sh
 USER app
 EXPOSE 8000
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["gunicorn", "config.wsgi", "--bind", "0.0.0.0:8000", "--workers", "3", "--access-logfile", "-"]
+# Längere Zeitgrenze: Datei-Uploads gehen während der Anfrage weiter ins Google Drive
+CMD ["gunicorn", "config.wsgi", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "--access-logfile", "-"]

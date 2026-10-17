@@ -56,6 +56,12 @@ def _add_months(day, months):
 # ---------- Kalender ----------
 
 
+def _google_subscribe_url(organization):
+    from apps.google_sync.services import connection_for, subscribe_url
+
+    return subscribe_url(connection_for(organization))
+
+
 @org_required
 def calendar_view(request):
     today = timezone.localdate()
@@ -136,6 +142,7 @@ def calendar_view(request):
             "selected": selected,
             "selected_entries": [e for e in entries if e.on(selected)],
             "weekdays": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
+            "google_subscribe_url": _google_subscribe_url(request.organization),
             "links": {
                 "prev": link(datum=prev_anchor.isoformat()),
                 "next": link(datum=next_anchor.isoformat()),

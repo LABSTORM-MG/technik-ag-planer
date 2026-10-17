@@ -5,6 +5,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from apps.google_sync import drive
+from apps.google_sync.google_api import GoogleError
+from apps.google_sync.services import connection_for
 from apps.organizations.decorators import org_required, permission_required_in_org
 from apps.organizations.permissions import Perm
 from apps.productions import services as production_services
@@ -115,9 +118,10 @@ def material_detail(request, pk):
             **INVENTORY,
             "material": material,
             "links": material.links.all(),
-            "open_defects": material.defects.filter(status__in=DefectReport.OPEN).select_related(
-                "reported_by"
-            ),
+            "attachments": material.attachments.select_related("uploaded_by"),
+            "open_defects": material.defects.filter(status__in=DefectReport.OPEN)
+            .select_related("reported_by")
+            .prefetch_related("attachments"),
             "repaired": material.defects.filter(status=DefectReport.Status.REPAIRED)[:5],
             "plannings": services.material_plannings(material),
             "statuses": DefectReport.Status,
@@ -180,15 +184,26 @@ def material_archive(request, pk):
 @permission_required_in_org(Perm.REPORT_DEFECT)
 def defect_report(request, pk):
     material = _material(request, pk)
-    form = DefectForm(request.POST or None, material=material)
+    form = DefectForm(
+        request.POST or None,
+        request.FILES or None,
+        material=material,
+        allow_photo=connection_for(request.organization) is not None,
+    )
     if request.method == "POST" and form.is_valid():
-        services.report_defect(
+        defect = services.report_defect(
             material,
             form.cleaned_data["quantity"],
             form.cleaned_data["description"],
             request.user,
         )
         messages.success(request, "Defekt gemeldet – danke!")
+        photo = form.cleaned_data.get("photo")
+        if photo:
+            try:
+                drive.upload(request.organization, photo, defect=defect, user=request.user)
+            except GoogleError as error:
+                messages.warning(request, f"Das Foto wurde nicht gespeichert: {error.message}")
         return redirect("inventory:detail", pk=pk)
     return render(
         request, "inventory/defect_form.html", {**INVENTORY, "form": form, "material": material}
