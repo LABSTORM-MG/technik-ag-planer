@@ -43,7 +43,7 @@ Der Technik-AG Planer dient der Organisation von Technik-AGs an Schulen: Planung
 | Gelöschte Produktionen | 7 Tage im Papierkorb, danach endgültig (inkl. Dateien im Drive) |
 | Internes Änderungsprotokoll | 7 Tage |
 | Erledigte Technik-Anfragen | 180 Tage nach „Erledigt“, danach endgültig (inkl. PDF im Drive) |
-| Abgelaufene Einladungen | [Frist] |
+| Einladungen (E-Mail-Adresse, Rolle) | bis 30 Tage nach Annahme, Ablauf oder Rückzug |
 | Sicherungen (Backups) | 14 Tage [anpassen] |
 | Server-Logs | [Anzahl] Tage |
 

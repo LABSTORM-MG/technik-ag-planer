@@ -9,7 +9,7 @@ class Kind(models.TextChoices):
 
     CREW = "crew", "Crew-Anfragen und Einteilungen"
     CHANGES = "changes", "Änderungen an meinen Jobs"
-    REMINDERS = "reminders", "Erinnerung vor meinen Jobs"
+    REMINDERS = "reminders", "Erinnerung vor meinen Jobs und Terminen"
     INQUIRIES = "inquiries", "Neue Technik-Anfragen"
     BOARD = "board", "Neue Nachrichten im Board"
     CHATS = "chats", "Neue Nachrichten in Chats meiner Produktionen"

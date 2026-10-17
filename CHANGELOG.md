@@ -6,6 +6,11 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Hinzugefügt
 
+**Wartung 1**
+
+- Push-Erinnerung auch vor zugesagten Terminen mit Uhrzeit (z. B. AG-Treffen), mit Ort
+- Erledigte Einladungen werden nach 30 Tagen automatisch gelöscht
+
 **Meilenstein 12 – Abschluss**
 
 - Landingpage unter `/` mit Screenshots, Funktionen, Geräte, Sicherheit, Kosten und „So startest du“
