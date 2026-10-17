@@ -2,7 +2,7 @@
 
 Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender, Material, Board und Technik-Anfragen – als Django-Web-App für Handy, Tablet und Computer (PWA).
 
-> **Stand:** Meilensteine 1–6 von 12 sind fertig – Grundgerüst, Konten und AGs, Produktionen, Kalender und Zeiten, Board, Material. Details: [Umsetzungsstand](docs/feature-liste.md#16-umsetzungsstand-und-entscheidungen).
+> **Stand:** Meilensteine 1–7 von 12 sind fertig – Grundgerüst, Konten und AGs, Produktionen, Kalender und Zeiten, Board, Material, Technik-Anfragen. Details: [Umsetzungsstand](docs/feature-liste.md#16-umsetzungsstand-und-entscheidungen).
 
 ## Was die App schon kann
 
@@ -12,6 +12,7 @@ Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender,
 - **Kalender** (Monat, Woche, Agenda), Termine und Terminserien, Stundenraster, „Nicht verfügbar“, Export als `.ics`
 - **Board** als Chat der AG mit Systemmeldungen, Chats je Produktion, Moderation und Zähler für ungelesene Nachrichten
 - **Material** mit Kategorien, Bestand, Links, Defektmeldungen und Materialsätzen; Planung je Produktion mit Konfliktwarnung und Packliste zum Abhaken
+- **Technik anfragen** über einen öffentlichen Link ohne Konto; Anfragen erscheinen in der Produktionsliste und werden in einer geteilten Ansicht zur Produktion
 - **Django-Admin** für den Betreiber: AGs anlegen, Owner einladen, Konten verwalten, Datenexport, Änderungsprotokoll
 
 ## Schnellstart (Entwicklung)
@@ -21,7 +22,7 @@ Voraussetzungen: Docker mit Compose und `make`. Für Arbeit ohne Docker zusätzl
 ```sh
 make dev            # App auf http://localhost:8000, Test-Mails (Mailpit) auf http://localhost:8025
 make migrate        # in einem zweiten Terminal: Datenbank einrichten
-make beispieldaten  # zwei Beispiel-AGs mit Konten, Produktionen, Terminen, Board und Material
+make beispieldaten  # zwei Beispiel-AGs mit Konten, Produktionen, Terminen, Board, Material und Anfragen (gibt den Anfrage-Link aus)
 make superuser      # Betreiber-Konto für den Django-Admin (http://localhost:8000/admin/)
 ```
 

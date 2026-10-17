@@ -22,3 +22,8 @@ def test_beispieldaten_with_short_logins_and_material(db, settings):
     assert Kit.objects.count() == 2
     concert = Production.objects.get(name="Schulkonzert")
     assert services.production_shortages(concert)  # Beispiel für eine Überbuchung
+
+    from apps.inquiries.models import Inquiry, InquiryLink
+
+    assert InquiryLink.objects.get(organization=concert.organization).is_active
+    assert Inquiry.objects.open().count() == 2 and Inquiry.objects.done().count() == 1

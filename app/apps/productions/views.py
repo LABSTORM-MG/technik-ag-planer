@@ -1,6 +1,5 @@
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from django.db import transaction
 from django.db.models import Count, Prefetch, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -8,6 +7,7 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
+from apps.inquiries.models import Inquiry
 from apps.inventory import services as inventory_services
 from apps.organizations.decorators import org_required, permission_required_in_org
 from apps.organizations.models import Membership
@@ -140,6 +140,9 @@ def production_list(request):
     active_category = request.GET.get("kategorie", "")
     if active_category:
         productions = productions.filter(category_id=active_category)
+    inquiries = None
+    if request.membership.has_perm(Perm.HANDLE_INQUIRIES):
+        inquiries = Inquiry.objects.for_org(request.organization).open()
 
     return render(
         request,
@@ -151,6 +154,7 @@ def production_list(request):
             "categories": categories,
             "active_category": active_category,
             "query": query,
+            "inquiries": inquiries,
         },
     )
 
@@ -193,27 +197,6 @@ def production_detail(request, pk):
     )
 
 
-def _save_production(request, production, form, formset):
-    with transaction.atomic():
-        production = form.save(commit=False)
-        production.organization = request.organization
-        if production.created_by_id is None:
-            production.created_by = request.user
-        production.save()
-        for job_form in formset.forms:
-            if not job_form.has_changed() and not job_form.instance.pk:
-                continue
-            if formset.can_delete and formset._should_delete_form(job_form):
-                if job_form.instance.pk:
-                    job_form.instance.delete()
-                continue
-            job = job_form.save(commit=False)
-            job.production = production
-            job.organization = request.organization
-            job.save()
-    return production
-
-
 def _production_form(request, production=None):
     instance = production or Production(organization=request.organization)
     form = ProductionForm(
@@ -229,7 +212,7 @@ def _production_form(request, production=None):
         # Jobs gegen die (neuen) Daten der Produktion prüfen
         formset.instance = form.instance
         if formset.is_valid():
-            saved = _save_production(request, instance, form, formset)
+            saved = services.save_production(request.organization, request.user, form, formset)
             messages.success(request, f"„{saved.name}“ gespeichert.")
             return redirect("productions:detail", pk=saved.pk)
     elif request.method == "POST":

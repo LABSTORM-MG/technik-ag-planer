@@ -1,0 +1,72 @@
+{% extends "auth_base.html" %}
+{% block title %}Technik anfragen{% endblock %}
+{% block content %}
+  <h1 class="page-title">Technik anfragen</h1>
+  <p class="muted">bei der {{ organization.name }}. Nur Name, E-Mail und Datum sind Pflicht – alles andere gern in eigenen Worten. Wir melden uns per E-Mail.</p>
+  <form method="post" class="form inquiry-form" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<ul class="form-errors" role="alert">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+    <fieldset class="form">
+      <legend class="section-title">Wer fragt an?</legend>
+      {% include "includes/field.html" with field=form.requester_name %}
+      {% include "includes/field.html" with field=form.requester_email %}
+      {% include "includes/field.html" with field=form.requester_role %}
+    </fieldset>
+
+    <fieldset class="form">
+      <legend class="section-title">Was?</legend>
+      {% include "includes/field.html" with field=form.event_name %}
+      {% include "includes/field.html" with field=form.category %}
+    </fieldset>
+
+    <fieldset class="form">
+      <legend class="section-title">Wann?</legend>
+      {% include "includes/field.html" with field=form.date %}
+      <div class="form-row">
+        {% include "includes/field.html" with field=form.start_time %}
+        {% include "includes/field.html" with field=form.end_time %}
+      </div>
+      <div class="form-row">
+        {% include "includes/field.html" with field=form.setup_from %}
+        {% include "includes/field.html" with field=form.teardown_until %}
+      </div>
+    </fieldset>
+
+    <fieldset class="form">
+      <legend class="section-title">Wo?</legend>
+      {% include "includes/field.html" with field=form.location %}
+    </fieldset>
+
+    <fieldset class="form">
+      <legend class="section-title">{{ form.tech_needs.label }}</legend>
+      <div class="checklist">
+        {% for option in form.tech_needs %}
+          <label class="checklist__item">{{ option.tag }} {{ option.choice_label }}</label>
+        {% endfor %}
+      </div>
+      {% include "includes/field.html" with field=form.tech_notes %}
+    </fieldset>
+
+    <fieldset class="form">
+      <legend class="section-title">Ablauf</legend>
+      {% include "includes/field.html" with field=form.schedule %}
+      {% include "includes/field.html" with field=form.schedule_link %}
+    </fieldset>
+
+    <fieldset class="form">
+      <legend class="section-title">Ansprechperson am Tag</legend>
+      <div class="form-row">
+        {% include "includes/field.html" with field=form.contact_name %}
+        {% include "includes/field.html" with field=form.contact_phone %}
+      </div>
+    </fieldset>
+
+    {# Unsichtbares Feld gegen Spam-Programme #}
+    <div class="visually-hidden" aria-hidden="true">
+      <label for="{{ form.website.id_for_label }}">{{ form.website.label }}</label>{{ form.website }}
+    </div>
+
+    <button type="submit" class="button button--primary button--block">Anfrage senden</button>
+  </form>
+{% endblock %}

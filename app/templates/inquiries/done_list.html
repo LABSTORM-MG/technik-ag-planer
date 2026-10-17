@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Erledigte Anfragen – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Anfragen{% endblock %}
+{% block content %}
+<header class="page-header">
+  <p class="eyebrow"><a href="{% url 'productions:list' %}">← Produktionen</a></p>
+  <h1 class="page-title">Erledigte Anfragen</h1>
+  <p class="muted">Erledigte Anfragen werden nach {{ keep_days }} Tagen endgültig gelöscht – sie enthalten Kontaktdaten von Personen ohne Konto.</p>
+</header>
+{% if inquiries %}
+  <ul class="list">
+    {% for i in inquiries %}
+      <li class="list__item">
+        <div class="list__main">
+          <a class="list__link list__title" href="{% url 'inquiries:detail' i.pk %}">{% include "inquiries/includes/summary.html" %}</a>
+          <span class="list__subtitle">erledigt am {{ i.done_at|date:"d.m.Y" }}{% if i.done_by %} von {{ i.done_by }}{% endif %}{% if i.production_id %} · Produktion „{{ i.production.name }}“{% endif %}</span>
+        </div>
+        <form method="post" action="{% url 'inquiries:done' i.pk %}">
+          {% csrf_token %}<button type="submit" class="button button--secondary button--small">Wieder öffnen</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="muted">Keine erledigten Anfragen.</p>
+{% endif %}
+{% endblock %}

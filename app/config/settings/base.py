@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "apps.scheduling",
     "apps.board",
     "apps.inventory",
+    "apps.inquiries",
 ]
 
 MIDDLEWARE = [
@@ -103,6 +104,10 @@ LOGIN_MAX_ATTEMPTS = 5
 LOGIN_BLOCK_SECONDS = 15 * 60
 TRUST_X_FORWARDED_FOR = env.bool("DJANGO_TRUST_X_FORWARDED_FOR", default=False)
 INVITATION_VALID_DAYS = 7
+# Technik-Anfragen: Spam-Schutz und Aufbewahrung erledigter Anfragen
+INQUIRY_MAX_PER_IP_HOUR = 5
+INQUIRY_MAX_PER_LINK_HOUR = 30
+INQUIRY_KEEP_DONE_DAYS = 180
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 1 Tag
 OTP_TOTP_ISSUER = "Technik-AG Planer"
 # Django-Admin nur mit bestätigter Zwei-Faktor-Anmeldung
@@ -165,6 +170,10 @@ CELERY_BEAT_SCHEDULE["produktionen-endgueltig-loeschen"] = {
 CELERY_BEAT_SCHEDULE["board-offene-jobs"] = {
     "task": "apps.board.tasks.announce_open_jobs",
     "schedule": crontab(hour=7, minute=0),
+}
+CELERY_BEAT_SCHEDULE["anfragen-aufraeumen"] = {
+    "task": "apps.inquiries.tasks.purge_done_inquiries",
+    "schedule": crontab(hour=3, minute=45),
 }
 AUDIT_RETENTION_DAYS = 7
 PRODUCTION_TRASH_DAYS = 7  # „Kürzlich gelöscht“

@@ -1,0 +1,10 @@
+{% comment %}Zeile der Anfrage mit Kopieren-Button. Parameter: label, value, href (optional){% endcomment %}
+{% if value %}
+<div class="copy-row">
+  <dt>{{ label }}</dt>
+  <dd>
+    <span class="prewrap">{% if href %}<a href="{{ href }}">{{ value }}</a>{% else %}{{ value }}{% endif %}</span>
+    <button type="button" class="link-button" data-copy="{{ value }}" aria-label="{{ label }} kopieren">Kopieren</button>
+  </dd>
+</div>
+{% endif %}

@@ -291,3 +291,72 @@ document.addEventListener("change", (event) => {
   });
   if (!window.location.hash || window.location.hash === "#ende") scrollToEnd();
 })();
+
+// Technik-Anfragen: „Kopieren“ (data-copy="Text") und „Einfügen“ (data-paste="feld-id").
+// Einfügen nimmt den zuletzt auf der Seite kopierten Text – das klappt in jedem Browser –,
+// sonst die Zwischenablage (nicht überall erlaubt).
+(() => {
+  let lastCopied = null;
+
+  const flash = (button, text) => {
+    const original = button.textContent;
+    button.textContent = text;
+    setTimeout(() => {
+      button.textContent = original;
+    }, 1200);
+  };
+
+  document.addEventListener("click", async (event) => {
+    const copy = event.target.closest("[data-copy]");
+    if (copy) {
+      lastCopied = copy.dataset.copy;
+      try {
+        await navigator.clipboard.writeText(lastCopied);
+      } catch {
+        /* Zwischenablage gesperrt – „Einfügen“ funktioniert trotzdem */
+      }
+      flash(copy, "Kopiert ✓");
+      return;
+    }
+    const paste = event.target.closest("[data-paste]");
+    if (!paste) return;
+    let text = lastCopied;
+    if (text === null) {
+      try {
+        text = await navigator.clipboard.readText();
+      } catch {
+        text = null;
+      }
+    }
+    const field = document.getElementById(paste.dataset.paste);
+    if (text === null || !field) {
+      flash(paste, "Erst kopieren");
+      return;
+    }
+    field.value = text;
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    field.focus();
+  });
+
+  // Geteilte Ansicht: auf schmalen Bildschirmen Umschalter „Anfrage | Produktion“
+  document.querySelectorAll("[data-split]").forEach((split) => {
+    split.classList.add("split--js");
+    const links = split.querySelectorAll("[data-split-switch] [data-show]");
+    const show = (name) => {
+      split.querySelectorAll("[data-pane]").forEach((pane) => {
+        pane.classList.toggle("is-active", pane.dataset.pane === name);
+      });
+      links.forEach((link) => {
+        if (link.dataset.show === name) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
+      });
+    };
+    links.forEach((link) =>
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        show(link.dataset.show);
+      }),
+    );
+    show(split.dataset.split || "anfrage");
+  });
+})();

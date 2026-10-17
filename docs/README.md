@@ -21,5 +21,6 @@
 | [0006](architektur/0006-kalender-und-zeiten.md) | Kalender, Serien, Schulstunden und ICS |
 | [0007](architektur/0007-board.md) | Board, Produktions-Chats und Systemmeldungen |
 | [0008](architektur/0008-material.md) | Material, Defekte, Materialsätze und Packliste |
+| [0009](architektur/0009-technik-anfragen.md) | Technik-Anfragen über einen öffentlichen Link |
 
 Neue Entscheidungen bekommen die nächste Nummer und einen Eintrag in Abschnitt 16 der Feature-Liste.

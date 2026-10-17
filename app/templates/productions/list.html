@@ -10,6 +10,8 @@
   </header>
 
   <div class="stack">
+    {% if inquiries is not None %}{% include "inquiries/includes/open_list.html" %}{% endif %}
+
     <form method="get" class="search" role="search">
       {% if active_category %}<input type="hidden" name="kategorie" value="{{ active_category }}">{% endif %}
       <label class="visually-hidden" for="q">Produktion suchen</label>

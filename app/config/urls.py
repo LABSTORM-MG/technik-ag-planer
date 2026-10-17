@@ -19,5 +19,6 @@ urlpatterns = [
     path("", include("apps.scheduling.urls")),
     path("", include("apps.board.urls")),
     path("", include("apps.inventory.urls")),
+    path("", include("apps.inquiries.urls")),
     path("", include("apps.core.urls")),
 ]

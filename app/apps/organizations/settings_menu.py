@@ -49,7 +49,7 @@ GROUPS = [
             Entry(
                 "Technik anfragen",
                 "Öffentlichen Anfrage-Link verwalten",
-                milestone=7,
+                "inquiries:settings",
                 perm=Perm.MANAGE_CATEGORIES_AND_INQUIRY_LINK,
             ),
             Entry(

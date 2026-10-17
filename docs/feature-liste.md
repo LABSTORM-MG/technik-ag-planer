@@ -571,7 +571,7 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | 4 | Kalender und Zeiten | fertig | #5 |
 | 5 | Board | fertig | #7 |
 | 6 | Material | fertig | #8 |
-| 7 | Technik-Anfragen | offen | |
+| 7 | Technik-Anfragen | fertig | #9 |
 | 8 | PDFs | offen | |
 | 9 | Team-Funktionen | offen | |
 | 10 | Google-Anbindung | offen | |
@@ -605,12 +605,18 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | Material | Material-Kategorien verwalten Owner und Admins (wie Produktions-Kategorien); die Packliste dürfen alle abhaken | Die Rechte-Tabelle nennt nur „Kategorien“ bzw. regelt die Packliste nicht | ADR 0008 |
 | Material | Dateien und Fotos (Material, Defektmeldung) erst mit der Google-Drive-Anbindung (M10); bis dahin Links | Uploads landen laut Abschnitt 2 nur im Drive der AG | ADR 0008 |
 | Material | „Produktion kopieren“ übernimmt das geplante Material (ohne Packlisten-Haken) | Wiederkehrende Veranstaltungen brauchen meist dieselbe Technik | ADR 0008 |
+| Anfragen | Token des Anfrage-Links im Klartext gespeichert; unbekannte und deaktivierte Links zeigen dieselbe Seite | Der Link muss immer wieder angezeigt werden; nicht erkennbar, ob ein Token existiert | ADR 0009 |
+| Anfragen | Spam-Schutz: unsichtbares Feld, höchstens 5 Anfragen pro Stunde je IP und 30 je Link | „Einfacher Spam-Schutz“ (Abschnitt 6) ohne Captcha | ADR 0009 |
+| Anfragen | Uhrzeiten werden als vorgeschlagene Jobs übernommen (Aufbau, Veranstaltung, Abbau) | Eine Produktion selbst hat keine Uhrzeiten | ADR 0009 |
+| Anfragen | Erledigte Anfragen werden nach 180 Tagen endgültig gelöscht | Kontaktdaten von Personen ohne Konto; Datensparsamkeit (Abschnitt 11) | ADR 0009 |
 | Entwicklung | Beispielkonten mit kurzen Anmeldenamen (`owner`, `lehrer`, `schueler` …, Passwort wie der Name); Login-Feld vorübergehend ohne E-Mail-Prüfung | Schneller durchklicken (Entscheidung des Projektinhabers); in M12 zurück auf E-Mail | README |
 | Repository | Kein `CONTRIBUTING.md` und kein `SECURITY.md`: Die Zustimmung zur Lizenz steht in der Pull-Request-Vorlage, Sicherheitslücken werden privat über GitHub gemeldet | Entscheidung des Projektinhabers, weniger Dateien | Abschnitt 13 |
 
 **Offene Punkte für spätere Meilensteine**
 
 - M8: Packliste als PDF aus `PlannedMaterial` (die Checkliste gibt es schon unter `inventory:packing_list`)
+- M10: PDF-Upload für den Ablauf im Anfrage-Formular (Ablage im Drive der AG); bis dahin Freitext und Link
+- M11: Push-Mitteilung bei neuer Technik-Anfrage für Owner, Admins und Lehrkräfte
 - M10: Dateien zum Material und Fotos bei Defektmeldungen im Google Drive (Unterordner „Material“); bis dahin nur Links
 - M8: Die betroffenen Schulstunden für die Freistellungsliste werden schon berechnet (`apps/scheduling/periods.py`)
 - M11: Push-Mitteilung bei neuer Board- bzw. Chat-Nachricht (Chats nur für Eingeteilte, Regel wie `apps.board.services.my_chat_production_ids`)

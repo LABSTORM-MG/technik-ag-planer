@@ -1,0 +1,16 @@
+{% comment %}Bereich „Anfragen“ oben in der Produktionsliste (Owner, Admins, Lehrkräfte). Parameter: inquiries{% endcomment %}
+<section class="inquiries" aria-labelledby="anfragen-titel">
+  <div class="section-head">
+    <h2 class="section-title" id="anfragen-titel">Anfragen <span class="badge">{{ inquiries|length }}</span></h2>
+    <a class="link-button" href="{% url 'inquiries:done_list' %}">Erledigte</a>
+  </div>
+  {% if inquiries %}
+    <ul class="list">
+      {% for i in inquiries %}
+        <li><a class="list__item list__link" href="{% url 'inquiries:detail' i.pk %}"><span class="list__main">{% include "inquiries/includes/summary.html" %}</span>{% if i.production_id %}<span class="tag tag--success">Produktion angelegt</span>{% endif %}</a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">Keine offenen Technik-Anfragen.</p>
+  {% endif %}
+</section>

@@ -2,7 +2,7 @@
 
 Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilensteine: Abschnitt 15, Umsetzungsstand und Entscheidungen: Abschnitt 16 (nach jedem Meilenstein fortschreiben).
 
-**Aktueller Meilenstein: 7 – Technik-Anfragen.**
+**Aktueller Meilenstein: 8 – PDFs.**
 
 ## Regeln
 
@@ -30,6 +30,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 - **Konflikte:** `apps.scheduling.services.find_conflicts(membership, start, end)`
 - **Systemmeldungen im Board:** `apps.board.services.post_system(org, text, link_production=…, key=…)`
 - **Material-Konflikte:** `apps.inventory.services.check(material, production, menge)` bzw. `production_shortages(production)`
+- **Produktion speichern:** `apps.productions.services.save_production(org, user, form, formset)`; Felder als Include `productions/includes/production_fields.html`
 - **Kalendereinträge:** `apps.scheduling.calendar.calendar_entries(org, start, end, membership=None)`
 
 ## Apps (`app/apps/`)
@@ -43,6 +44,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 | `productions` | Produktionen (weich gelöscht: `objects` / `all_objects`), Jobs, Crew, To-dos, Kategorien, Status, Dashboard | 0005 |
 | `scheduling` | Kalender, Termine und Serien, „Nicht verfügbar“, Stundenraster, ICS | 0006 |
 | `board` | Board, Produktions-Chats, Systemmeldungen (Signale), Lesestand | 0007 |
+| `inquiries` | Technik-Anfragen: öffentlicher Link, Formular, Spam-Schutz, geteilte Ansicht Anfrage/Produktion | 0009 |
 | `inventory` | Material, Material-Kategorien, Defekte, Materialsätze, Planung je Produktion (Spitzenbedarf), Packliste | 0008 |
 
 Weitere Fach-Apps (Abschnitt 14) entstehen erst in ihrem Meilenstein.

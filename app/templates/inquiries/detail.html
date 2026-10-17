@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Anfrage: {{ inquiry.title }} – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Anfrage{% endblock %}
+{% block content %}
+<header class="page-header">
+  <p class="eyebrow"><a href="{% url 'productions:list' %}">← Produktionen</a></p>
+  <h1 class="page-title">{{ inquiry.title }}</h1>
+  <p class="muted">Eingegangen am {{ inquiry.created_at|date:"d.m.Y, H:i" }} Uhr{% if inquiry.is_done %} · erledigt am {{ inquiry.done_at|date:"d.m.Y" }}{% endif %}</p>
+  <div class="toolbar">
+    <form method="post" action="{% url 'inquiries:done' inquiry.pk %}">
+      {% csrf_token %}<button type="submit" class="button button--secondary button--small">{% if inquiry.is_done %}Wieder öffnen{% else %}Erledigt{% endif %}</button>
+    </form>
+    {% if inquiry.production_id %}<a class="button button--secondary button--small" href="{% url 'productions:detail' inquiry.production_id %}">Produktion „{{ inquiry.production.name }}“</a>{% endif %}
+  </div>
+</header>
+
+<div class="split" data-split="{% if form.errors or formset.total_error_count %}produktion{% else %}anfrage{% endif %}">
+  <nav class="segmented split__switch" aria-label="Ansicht" data-split-switch>
+    <a href="#anfrage" data-show="anfrage">Anfrage</a>
+    <a href="#produktion" data-show="produktion">Produktion</a>
+  </nav>
+
+  <section class="card split__pane" id="anfrage" data-pane="anfrage">
+    <h2 class="section-title">Anfrage</h2>
+    <dl class="copy-list">
+      {% include "inquiries/includes/copy_row.html" with label="Name" value=inquiry.requester_name %}
+      {% with "mailto:"|add:inquiry.requester_email as mail %}{% include "inquiries/includes/copy_row.html" with label="E-Mail" value=inquiry.requester_email href=mail %}{% endwith %}
+      {% include "inquiries/includes/copy_row.html" with label="Funktion" value=inquiry.requester_role %}
+      {% include "inquiries/includes/copy_row.html" with label="Veranstaltung" value=inquiry.event_name %}
+      {% include "inquiries/includes/copy_row.html" with label="Art" value=inquiry.category.name %}
+      <div class="copy-row">
+        <dt>Wann</dt>
+        <dd><span>{{ inquiry.date|date:"l, j. F Y" }}{% if inquiry.start_time %}, {{ inquiry.start_time|time:"H:i" }}{% if inquiry.end_time %}–{{ inquiry.end_time|time:"H:i" }}{% endif %} Uhr{% endif %}{% if inquiry.setup_from %}<br>Aufbau ab {{ inquiry.setup_from|time:"H:i" }} Uhr{% endif %}{% if inquiry.teardown_until %}<br>Abbau bis {{ inquiry.teardown_until|time:"H:i" }} Uhr{% endif %}</span> <span class="muted">wird übernommen</span></dd>
+      </div>
+      {% include "inquiries/includes/copy_row.html" with label="Ort" value=inquiry.location %}
+      {% if inquiry.tech_labels %}{% include "inquiries/includes/copy_row.html" with label="Technik" value=inquiry.tech_labels|join:", " %}{% endif %}
+      {% include "inquiries/includes/copy_row.html" with label="Sonstiges zur Technik" value=inquiry.tech_notes %}
+      {% include "inquiries/includes/copy_row.html" with label="Ablauf" value=inquiry.schedule %}
+      {% include "inquiries/includes/copy_row.html" with label="Link zum Ablauf" value=inquiry.schedule_link href=inquiry.schedule_link %}
+      {% include "inquiries/includes/copy_row.html" with label="Ansprechperson" value=inquiry.contact_name %}
+      {% with "tel:"|add:inquiry.contact_phone as tel %}{% include "inquiries/includes/copy_row.html" with label="Telefon" value=inquiry.contact_phone href=tel %}{% endwith %}
+    </dl>
+    <p class="field__help">Rückmeldungen an die anfragende Person bitte per E-Mail.</p>
+  </section>
+
+  <section class="split__pane" id="produktion" data-pane="produktion">
+    <div class="card">
+      <h2 class="section-title">Neue Produktion</h2>
+      <form method="post" action="{% url 'inquiries:detail' inquiry.pk %}" class="form" novalidate>
+        {% csrf_token %}
+        {% include "productions/includes/production_fields.html" with paste=True %}
+        <div class="form-actions">
+          <button type="submit" class="button button--primary">Produktion anlegen</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

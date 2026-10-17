@@ -1,0 +1,7 @@
+{% extends "auth_base.html" %}
+{% block title %}Anfrage gesendet{% endblock %}
+{% block content %}
+  <h1 class="page-title">Danke!</h1>
+  <p>Ihre Anfrage ist bei der {{ organization.name }} angekommen. Wir melden uns per E-Mail.</p>
+  <p><a href="{% url 'inquiries:public' token %}">Weitere Anfrage stellen</a></p>
+{% endblock %}

@@ -8,6 +8,28 @@ from apps.inventory.services import copy_plannings
 from .models import CrewAssignment, Job, Production, ProductionStatus, Todo
 
 
+@transaction.atomic
+def save_production(organization, user, form, formset):
+    """Speichert Produktion und Jobs aus `ProductionForm` und `JobFormSet` (beide gültig)."""
+    production = form.save(commit=False)
+    production.organization = organization
+    if production.created_by_id is None:
+        production.created_by = user
+    production.save()
+    for job_form in formset.forms:
+        if not job_form.has_changed() and not job_form.instance.pk:
+            continue
+        if formset.can_delete and formset._should_delete_form(job_form):
+            if job_form.instance.pk:
+                job_form.instance.delete()
+            continue
+        job = job_form.save(commit=False)
+        job.production = production
+        job.organization = organization
+        job.save()
+    return production
+
+
 def assign(job, membership, *, status, role_label="", requested_by=None):
     """Fragt an oder teilt ein. Bestehender Eintrag wird aktualisiert."""
     assignment, created = CrewAssignment.objects.get_or_create(

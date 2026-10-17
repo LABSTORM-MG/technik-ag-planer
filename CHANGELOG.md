@@ -6,6 +6,15 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Hinzugefügt
 
+**Meilenstein 7 – Technik-Anfragen**
+
+- Öffentlicher Link „Technik anfragen“ je AG, ohne Anmeldung nutzbar; in den Einstellungen aktivieren, deaktivieren und neu erzeugen (Owner, Admins)
+- Anfrage-Formular in Alltagssprache: Name, E-Mail und Datum Pflicht, sonst Freitext, Art aus den Kategorien der AG, Ankreuzliste für Technik
+- Spam-Schutz mit unsichtbarem Feld und Begrenzung pro Stunde je IP und je Link
+- Bereich „Anfragen“ mit Zähler oben in der Produktionsliste (Owner, Admins, Lehrkräfte)
+- Geteilte Ansicht Anfrage | neue Produktion: Datum und Zeiten werden übernommen (Jobs Aufbau, Veranstaltung, Abbau), alles andere per Kopieren und Einfügen; Umschalter auf dem Handy
+- „Erledigt“ archiviert Anfragen; erledigte Anfragen lassen sich wieder öffnen und werden nach 180 Tagen gelöscht
+
 **Meilenstein 6 – Material**
 
 - Materialliste mit Suche, Kategorie-Filter und den Ansichten „Defekt“ und „Archiviert“
