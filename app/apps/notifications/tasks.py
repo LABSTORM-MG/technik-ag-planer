@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from apps.organizations.models import Membership, Organization
 from apps.productions.models import CrewAssignment
+from apps.scheduling.models import EventAttendee
 
 from . import push
 from .models import Kind, NotificationSettings, PushSubscription
@@ -46,58 +47,92 @@ def reminder_due(job_start, settings_obj):
     return timezone.make_aware(datetime.combine(day_before, settings_obj.reminder_time))
 
 
-def reminder_text(job, now):
+def _day_label(day, now):
     today = timezone.localtime(now).date()
-    day = (
-        "Heute"
-        if job.date == today
-        else "Morgen"
-        if job.date == today + timedelta(1)
-        else (f"{job.date:%d.%m.}")
+    if day == today:
+        return "Heute"
+    if day == today + timedelta(days=1):
+        return "Morgen"
+    return f"{day:%d.%m.}"
+
+
+def reminder_text(job, now):
+    title = (
+        f"{_day_label(job.date, now)} {job.start_time:%H:%M} Uhr: {job.name} {job.production.name}"
     )
-    title = f"{day} {job.start_time:%H:%M} Uhr: {job.name} {job.production.name}"
     body = f"Treffpunkt: {job.meeting_point}" if job.meeting_point else ""
     return title, body
 
 
+def event_reminder_text(event, now):
+    title = f"{_day_label(event.date, now)} {event.start_time:%H:%M} Uhr: {event.title}"
+    body = f"Ort: {event.location}" if event.location else ""
+    return title, body
+
+
+def _remind(item, start, user, now, text, url):
+    """Erinnert einmal je Startzeit, sobald der Zeitpunkt laut Einstellungen erreicht ist."""
+    from .services import notify
+
+    if start <= now or item.reminded_for == start:
+        return False
+    if reminder_due(start, NotificationSettings.for_user(user)) > now:
+        return False
+    title, body = text
+    notify(
+        item.organization,
+        [user],
+        Kind.REMINDERS,
+        title,
+        body,
+        url,
+        actor=_nobody,
+        tag=f"reminder-{item._meta.model_name}-{item.pk}",
+    )
+    item.reminded_for = start
+    item.save(update_fields=["reminded_for"])
+    return True
+
+
 @shared_task
 def send_due_reminders(now=None):
-    """Alle 10 Minuten: Erinnerungen an eigene zugesagte Jobs (Standard: Vorabend 18 Uhr)."""
+    """Alle 10 Minuten: Erinnerungen an eigene zugesagte Jobs und Termine mit Uhrzeit
+    (Standard: Vorabend 18 Uhr)."""
     from django.urls import reverse
-
-    from .services import notify
 
     now = now or timezone.now()
     today = timezone.localtime(now).date()
+    window = (today, today + timedelta(days=3))
+    sent = 0
     assignments = CrewAssignment.objects.filter(
         status=CrewAssignment.Status.CONFIRMED,
         membership__isnull=False,
         job__production__deleted_at__isnull=True,
-        job__date__range=(today, today + timedelta(days=3)),
+        job__date__range=window,
     ).select_related("job", "job__production", "membership__user", "organization")
-    sent = 0
     for a in assignments:
-        start = a.job.start_datetime
-        if start <= now or a.reminded_for == start:
-            continue
-        settings_obj = NotificationSettings.for_user(a.membership.user)
-        if reminder_due(start, settings_obj) > now:
-            continue
-        title, body = reminder_text(a.job, now)
         url = reverse("productions:detail", args=[a.job.production_id])
-        notify(
-            a.organization,
-            [a.membership.user],
-            Kind.REMINDERS,
-            title,
-            body,
-            url,
-            actor=_nobody,
-            tag=f"reminder-{a.pk}",
+        sent += _remind(
+            a, a.job.start_datetime, a.membership.user, now, reminder_text(a.job, now), url
         )
-        a.reminded_for = start
-        a.save(update_fields=["reminded_for"])
-        sent += 1
+    # Ganztägige Termine haben keine Startzeit und bekommen keine Erinnerung
+    attendances = EventAttendee.objects.filter(
+        status=EventAttendee.Status.CONFIRMED,
+        membership__isnull=False,
+        event__cancelled=False,
+        event__start_time__isnull=False,
+        event__date__range=window,
+    ).select_related("event", "membership__user", "organization")
+    for a in attendances:
+        url = reverse("scheduling:event_detail", args=[a.event_id])
+        sent += _remind(
+            a,
+            a.event.start_datetime,
+            a.membership.user,
+            now,
+            event_reminder_text(a.event, now),
+            url,
+        )
     return sent
 
 

@@ -108,6 +108,7 @@ LOGIN_MAX_ATTEMPTS = 5
 LOGIN_BLOCK_SECONDS = 15 * 60
 TRUST_X_FORWARDED_FOR = env.bool("DJANGO_TRUST_X_FORWARDED_FOR", default=False)
 INVITATION_VALID_DAYS = 7
+INVITATION_KEEP_DAYS = 30  # danach werden erledigte Einladungen gelöscht
 # Technik-Anfragen: Spam-Schutz und Aufbewahrung erledigter Anfragen
 INQUIRY_MAX_PER_IP_HOUR = 5
 INQUIRY_MAX_PER_LINK_HOUR = 30
@@ -182,6 +183,10 @@ CELERY_BEAT_SCHEDULE["anfragen-aufraeumen"] = {
 CELERY_BEAT_SCHEDULE["google-kalender-abgleich"] = {
     "task": "apps.google_sync.tasks.sync_all_calendars",
     "schedule": crontab(hour=4, minute=0),
+}
+CELERY_BEAT_SCHEDULE["einladungen-aufraeumen"] = {
+    "task": "apps.organizations.tasks.purge_invitations",
+    "schedule": crontab(hour=3, minute=50),
 }
 CELERY_BEAT_SCHEDULE["push-erinnerungen"] = {
     "task": "apps.notifications.tasks.send_due_reminders",

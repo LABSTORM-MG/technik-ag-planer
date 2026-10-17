@@ -34,4 +34,4 @@ Wer etwas auslöst, bekommt dazu keine Mitteilung (über den Auslöser aus `apps
 
 ## Später
 
-- Erinnerungen auch vor Terminen (AG-Treffen) – bisher nur vor Jobs, wie in Abschnitt 9 beschrieben.
+- Erinnerungen vor Terminen: umgesetzt, siehe ADR 0015.

@@ -9,7 +9,7 @@ Alle Befehle aus dem Hauptverzeichnis des Repositorys auf dem Server; `dc` steht
 | Dienst | Aufgabe |
 | --- | --- |
 | `web` | Django (Gunicorn); führt beim Start die Datenbank-Migrationen aus |
-| `worker` | Celery mit Zeitplan: Push-Erinnerungen (alle 10 Min.), Google-Kalender-Abgleich (nach Änderungen und nachts), Systemmeldungen, Aufräumen (Protokoll und Papierkorb nach 7 Tagen, erledigte Anfragen nach 180 Tagen) |
+| `worker` | Celery mit Zeitplan: Push-Erinnerungen (alle 10 Min.), Google-Kalender-Abgleich (nach Änderungen und nachts), Systemmeldungen, Aufräumen (Protokoll und Papierkorb nach 7 Tagen, erledigte Einladungen nach 30 Tagen, erledigte Anfragen nach 180 Tagen) |
 | `db` | PostgreSQL |
 | `cache` | Redis (Warteschlange, Cache, Login-Sperren) |
 | `caddy` | HTTPS mit automatischem Zertifikat |

@@ -232,3 +232,62 @@ def test_reminders_can_be_switched_off(tomorrow_job, student, pushed, run):
     NotificationSettings.objects.create(user=student.user, reminders=False)
     run(send_due_reminders, now=_at(timezone.localdate(), 18))
     assert pushed == []
+
+
+# ---------- Erinnerungen vor Terminen ----------
+
+
+@pytest.fixture
+def meeting(org, student, device):
+    day = timezone.localdate() + timedelta(days=1)
+    event = Event.objects.create(
+        organization=org,
+        title="AG-Treffen",
+        date=day,
+        start_time=time(14),
+        end_time=time(15, 30),
+        location="Technikraum",
+    )
+    device(student)
+    return EventAttendee.objects.create(
+        organization=org, event=event, membership=student, status=EventAttendee.Status.CONFIRMED
+    )
+
+
+def test_event_reminder_evening_before(meeting, pushed, run):
+    today = timezone.localdate()
+    assert run(send_due_reminders, now=_at(today, 17, 50)) == 0
+    assert run(send_due_reminders, now=_at(today, 18)) == 1
+    assert titles(pushed) == ["Morgen 14:00 Uhr: AG-Treffen"]
+    assert pushed[0][1]["body"] == "Ort: Technikraum"
+    assert pushed[0][1]["url"] == f"/termine/{meeting.event_id}/"
+    assert run(send_due_reminders, now=_at(today, 18, 10)) == 0
+
+
+def test_event_reminder_hours_before_and_moved(meeting, student, pushed, run):
+    NotificationSettings.objects.create(user=student.user, reminder_mode="hours", reminder_hours=2)
+    tomorrow = timezone.localdate() + timedelta(days=1)
+    assert run(send_due_reminders, now=_at(tomorrow, 12)) == 1
+    event = meeting.event
+    event.start_time = time(16)
+    event.end_time = time(17)
+    event.save()
+    assert run(send_due_reminders, now=_at(tomorrow, 14)) == 1
+    assert titles(pushed) == ["Heute 14:00 Uhr: AG-Treffen", "Heute 16:00 Uhr: AG-Treffen"]
+
+
+@pytest.mark.parametrize("case", ["requested", "cancelled", "all_day", "muted"])
+def test_no_event_reminder(meeting, student, pushed, run, case):
+    if case == "requested":
+        meeting.status = EventAttendee.Status.REQUESTED
+        meeting.save()
+    elif case == "cancelled":
+        meeting.event.cancelled = True
+        meeting.event.save()
+    elif case == "all_day":
+        meeting.event.start_time = meeting.event.end_time = None
+        meeting.event.save()
+    else:
+        NotificationSettings.objects.create(user=student.user, reminders=False)
+    run(send_due_reminders, now=_at(timezone.localdate(), 18))
+    assert pushed == []

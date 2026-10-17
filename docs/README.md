@@ -29,5 +29,6 @@
 | [0012](architektur/0012-google-anbindung.md) | Google-Anbindung: Drive und Kalender |
 | [0013](architektur/0013-pwa-und-push.md) | PWA und Push-Mitteilungen |
 | [0014](architektur/0014-abschluss.md) | Landingpage, Rechtstexte, CSP, Sicherheits-Test, Backups |
+| [0015](architektur/0015-erinnerungen-und-einladungen.md) | Erinnerungen vor Terminen, Einladungen aufräumen |
 
 Neue Entscheidungen bekommen die nächste Nummer und einen Eintrag in Abschnitt 16 der Feature-Liste.

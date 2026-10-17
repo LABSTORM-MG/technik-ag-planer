@@ -8,7 +8,7 @@
 
 ## Push-Mitteilungen
 
-Einstellungen → **Benachrichtigungen** → „Auf diesem Gerät aktivieren“ und erlauben, dann „Test-Mitteilung senden“. Dort lässt sich jede Art einzeln abschalten: Crew-Anfragen, Änderungen an deinen Jobs, Erinnerungen, Board und Chats. Die Erinnerung kommt standardmäßig am Vorabend um 18 Uhr mit Uhrzeit und Treffpunkt.
+Einstellungen → **Benachrichtigungen** → „Auf diesem Gerät aktivieren“ und erlauben, dann „Test-Mitteilung senden“. Dort lässt sich jede Art einzeln abschalten: Crew-Anfragen, Änderungen an deinen Jobs, Erinnerungen, Board und Chats. Die Erinnerung vor zugesagten Jobs und Terminen kommt standardmäßig am Vorabend um 18 Uhr mit Uhrzeit und Treffpunkt bzw. Ort.
 
 ## Crew-Anfragen
 

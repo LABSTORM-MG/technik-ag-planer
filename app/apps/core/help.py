@@ -58,7 +58,7 @@ TOPICS = [
                 "App vom Home-Bildschirm. E-Mails verschickt die App dafür nie.",
             ),
             Question(
-                "Wann kommt die Erinnerung vor meinem Job?",
+                "Wann kommt die Erinnerung vor meinem Job oder Termin?",
                 "Standardmäßig am Vorabend um 18 Uhr mit Uhrzeit und Treffpunkt. Unter "
                 "Einstellungen → "
                 "Benachrichtigungen lässt sich das ändern, z. B. auf „3 Stunden vorher“.",

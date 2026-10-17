@@ -138,6 +138,8 @@ class EventAttendee(OrganizationScopedModel):
         blank=True,
         help_text="Leer lassen, um die Stunden aus den Zeiten zu berechnen.",
     )
+    # Startzeit, für die schon erinnert wurde – wird der Termin verschoben, kommt eine neue
+    reminded_for = models.DateTimeField(null=True, blank=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

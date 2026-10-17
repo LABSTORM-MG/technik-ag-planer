@@ -577,6 +577,7 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | 10 | Google-Anbindung | fertig (echter Test mit Google-Konto steht aus) | #12 |
 | 11 | PWA und Push | fertig (Test auf echten Handys steht aus) | #13 |
 | 12 | Abschluss | fertig | #14 |
+| – | Wartung 1: Termin-Erinnerungen, Einladungen aufräumen | fertig | #15 |
 
 **Ergänzungen und Abweichungen**
 
@@ -631,6 +632,9 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | Rechtliches | Impressum, Datenschutz, Nutzungsbedingungen trägt der Betreiber im Django-Admin ein; Vorlagen in `docs/rechtliches/` (ohne Rechtsberatung) | Jede Installation hat einen eigenen Betreiber | ADR 0014 |
 | Sicherheit | Content-Security-Policy ohne `unsafe-inline`; Test ordnet jede View als öffentlich, Konto-View oder AG-geprüft ein; Push nur an Push-Dienste der Browser; Anfragen am Proxy höchstens 30 MB | Ergebnis des Sicherheits-Reviews (`docs/sicherheit/review-2026-10.md`) | ADR 0014 |
 | Betrieb | Backup-Skripte für Datenbank und `.env` (14 Tage), Dateien liegen im Drive der AGs | Abschnitt 14 | ADR 0014 |
+| Push | Erinnerungen auch vor zugesagten Terminen mit Uhrzeit (gleiche Einstellungen wie bei Jobs) | Idee aus Abschnitt 16 | ADR 0015 |
+| Datenschutz | Erledigte Einladungen (abgelaufen, zurückgezogen, angenommen) werden nach 30 Tagen gelöscht | Datensparsamkeit (Abschnitt 11) | ADR 0015 |
+| Google | Kein Drive-Anhang am Google-Termin; der Termin verlinkt in die App | Dateien liegen privat im Drive der AG – Abonnenten könnten Anhänge nicht öffnen | ADR 0015 |
 | Entwicklung | Beispielkonten `owner@example.org`, `lehrer@…`, `schueler@…` …, Passwort jeweils der Name vor dem @ (M6–M11 mit Login ohne @; seit M12 wieder E-Mail-Eingabe) | Schneller durchklicken (Entscheidung des Projektinhabers) | README |
 | Repository | Kein `CONTRIBUTING.md` und kein `SECURITY.md`: Die Zustimmung zur Lizenz steht in der Pull-Request-Vorlage, Sicherheitslücken werden privat über GitHub gemeldet | Entscheidung des Projektinhabers, weniger Dateien | Abschnitt 13 |
 
@@ -647,7 +651,4 @@ Alle Meilensteine sind umgesetzt. Vor dem Einsatz an der Schule stehen noch aus:
 
 **Ideen für später**
 
-- Dateien zusätzlich als Drive-Anhang am Google-Termin (Abschnitt 9, optional)
-- Erinnerungen auch vor Terminen (AG-Treffen)
-- Freistellungsliste an eine Vorlage der Schule anpassen (Abschnitt 9)
-- Abgelaufene Einladungen automatisch löschen
+- Freistellungsliste an eine Vorlage der Schule anpassen (Abschnitt 9) – sobald die Vorlage vorliegt
