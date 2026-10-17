@@ -53,11 +53,25 @@ class DefectForm(forms.ModelForm):
         fields = ["quantity", "description"]
         widgets = {"quantity": forms.NumberInput(attrs={"min": 1})}
 
-    def __init__(self, *args, material, **kwargs):
+    photo = forms.FileField(
+        label="Foto",
+        required=False,
+        help_text="Optional – wird im Google Drive der AG gespeichert.",
+        widget=forms.ClearableFileInput(attrs={"accept": "image/*", "capture": "environment"}),
+    )
+
+    def __init__(self, *args, material, allow_photo=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.material = material
         self.fields["quantity"].min_value = 1
         self.fields["description"].widget.attrs["autofocus"] = True
+        if not allow_photo:  # Fotos nur mit verbundenem Google-Konto
+            del self.fields["photo"]
+
+    def clean_photo(self):
+        from apps.google_sync.forms import clean_image
+
+        return clean_image(self.cleaned_data.get("photo"))
 
     def clean_quantity(self):
         quantity = self.cleaned_data["quantity"]

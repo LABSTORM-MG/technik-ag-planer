@@ -38,6 +38,18 @@
     </section>
   {% endif %}
 
+  <section id="dateien">
+    <div class="section-head">
+      <h2 class="section-title">Dateien</h2>
+      {% if org_perms.MANAGE_INVENTORY %}<a class="button button--secondary button--small" href="{% url 'google_sync:material_upload' material.pk %}" data-sheet-url>+ Datei</a>{% endif %}
+    </div>
+    {% if attachments %}
+      <ul class="list">{% include "google_sync/includes/attachments.html" with can_delete=org_perms.MANAGE_INVENTORY %}</ul>
+    {% else %}
+      <p class="muted">Noch keine Dateien (z. B. Handbuch, Datenblatt, Foto).</p>
+    {% endif %}
+  </section>
+
   <section id="defekte">
     <h2 class="section-title">Defekte</h2>
     {% if open_defects %}
@@ -46,7 +58,7 @@
           <li class="list__item">
             <div class="list__main">
               <span class="list__title">× {{ d.quantity }} · {{ d.description }}</span>
-              <span class="list__subtitle">{{ d.reported_at|date:"D., d.m.Y" }}{% if d.reported_by %} · gemeldet von {{ d.reported_by }}{% endif %}</span>
+              <span class="list__subtitle">{{ d.reported_at|date:"D., d.m.Y" }}{% if d.reported_by %} · gemeldet von {{ d.reported_by }}{% endif %}{% for a in d.attachments.all %} · <a href="{% url 'google_sync:open' a.pk %}" target="_blank" rel="noopener">Foto{% if d.attachments.all|length > 1 %} {{ forloop.counter }}{% endif %}</a>{% endfor %}</span>
             </div>
             <span class="tag {% if d.status == 'defect' %}tag--danger{% else %}tag--warning{% endif %}">{{ d.get_status_display }}</span>
             {% if org_perms.MANAGE_INVENTORY %}

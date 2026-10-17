@@ -12,7 +12,10 @@ def purge_deleted_productions():
     """Entfernt Produktionen endgültig, die seit mehr als 7 Tagen gelöscht sind."""
     cutoff = timezone.now() - timedelta(days=settings.PRODUCTION_TRASH_DAYS)
     count = 0
+    from apps.google_sync import drive
+
     for production in Production.all_objects.filter(deleted_at__lt=cutoff):
+        drive.delete_all(production.attachments.all())  # Abschnitt 2: auch im Drive löschen
         production.delete()
         count += 1
     return count

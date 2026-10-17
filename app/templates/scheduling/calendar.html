@@ -64,5 +64,8 @@
       {% endif %}
     </section>
   {% endif %}
+  {% if google_subscribe_url %}
+    <p class="muted">Lieber im eigenen Kalender? <a href="{{ google_subscribe_url }}" target="_blank" rel="noopener noreferrer">Google-Kalender der AG abonnieren</a> (der Owner muss ihn vorher für deine Google-Adresse freigeben) – oder einzelne Einträge als .ics übernehmen.</p>
+  {% endif %}
 </div>
 {% endblock %}

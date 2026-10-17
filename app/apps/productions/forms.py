@@ -4,7 +4,16 @@ from django.forms import inlineformset_factory
 from apps.organizations.models import Membership
 from apps.scheduling.forms import PeriodTimesMixin
 
-from .models import Category, CrewAssignment, Job, Production, ProductionStatus, Skill, Todo
+from .models import (
+    Category,
+    CrewAssignment,
+    Job,
+    Production,
+    ProductionLink,
+    ProductionStatus,
+    Skill,
+    Todo,
+)
 from .palette import Color
 
 
@@ -167,6 +176,19 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = ["name", "color"]
         widgets = {"color": palette_widget()}
+
+
+class ProductionLinkForm(forms.ModelForm):
+    url = forms.URLField(
+        label="Link",
+        max_length=500,
+        assume_scheme="https",
+        widget=forms.URLInput(attrs={"placeholder": "https://…"}),
+    )
+
+    class Meta:
+        model = ProductionLink
+        fields = ["title", "url"]
 
 
 class SkillForm(forms.ModelForm):

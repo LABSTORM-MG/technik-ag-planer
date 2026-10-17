@@ -2,7 +2,7 @@
 
 Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilensteine: Abschnitt 15, Umsetzungsstand und Entscheidungen: Abschnitt 16 (nach jedem Meilenstein fortschreiben).
 
-**Aktueller Meilenstein: 10 – Google-Anbindung.**
+**Aktueller Meilenstein: 11 – PWA und Push.**
 
 ## Regeln
 
@@ -34,6 +34,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 - **PDFs:** View mit `apps.documents.views._document(...)` (Vorschau + PDF aus einem Template unter `templates/documents/`); Farben nur über die `--print-…`-Tokens
 - **Namen in Einsätzen:** `assignment.person` / `attendee.person` (leere Mitgliedschaft = „Ehemaliges Mitglied“, `apps.accounts.models.FORMER_MEMBER`)
 - **Stunden:** `apps.productions.hours.entries(membership, start, end)`, Zeiträume über `hours.period_from_request(request.GET)`; Template-Filter `{% load hours %}…|stunden`
+- **Google:** Aufrufe nur über `apps.google_sync.google_api` (Tests: Fixtures `google`/`connected` mit Attrappe); Dateien mit `apps.google_sync.drive.upload(org, datei, production=…|material=…|defect=…|inquiry=…)`, Liste per Include `google_sync/includes/attachments.html`. Neue Kalender-Einträge in `calendar_sync.desired_events` und `signals.WATCHED` ergänzen
 - **Kalendereinträge:** `apps.scheduling.calendar.calendar_entries(org, start, end, membership=None)`
 
 ## Apps (`app/apps/`)
@@ -49,6 +50,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 | `board` | Board, Produktions-Chats, Systemmeldungen (Signale), Lesestand | 0007 |
 | `inquiries` | Technik-Anfragen: öffentlicher Link, Formular, Spam-Schutz, geteilte Ansicht Anfrage/Produktion | 0009 |
 | `inventory` | Material, Material-Kategorien, Defekte, Materialsätze, Planung je Produktion (Spitzenbedarf), Packliste | 0008 |
+| `google_sync` | Google-Konto der AG (OAuth, Token verschlüsselt), Drive-Ablage (`Attachment`), Kalender-Übertragung (Gesamtvergleich), Anleitung `docs/installation/google-cloud.md` | 0012 |
 | `documents` | PDFs mit WeasyPrint: Call Sheets, Freistellungsliste, Packliste, Einsatzübersicht; Vorschau mit Herunterladen, Teilen, Drucken | 0010 |
 
 Weitere Fach-Apps (Abschnitt 14) entstehen erst in ihrem Meilenstein.

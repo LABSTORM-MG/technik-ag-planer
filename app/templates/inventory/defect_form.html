@@ -5,7 +5,7 @@
   <p class="eyebrow">{{ material.name }}</p>
   <h1 class="page-title sheet-title">Defekt melden</h1>
   <p class="muted">Defekte Geräte fehlen im verfügbaren Bestand, bis sie repariert sind. Die Meldung erscheint im Board.</p>
-  <form method="post" action="{% url 'inventory:defect_report' material.pk %}" class="form" novalidate>
+  <form method="post" action="{% url 'inventory:defect_report' material.pk %}" class="form" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
     {% include "includes/form_fields.html" %}
     <div class="form-actions">
