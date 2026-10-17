@@ -207,6 +207,12 @@ class Job(OrganizationScopedModel):
     meeting_point = models.CharField(
         "Treffpunkt", max_length=120, blank=True, help_text="z. B. Bühneneingang"
     )
+    crew_needed = models.PositiveSmallIntegerField(
+        "Benötigte Personen",
+        null=True,
+        blank=True,
+        help_text="Optional. Fehlen 3 Tage vorher noch Zusagen, erscheint eine Meldung im Board.",
+    )
     position = models.PositiveIntegerField(default=0)
 
     objects = JobQuerySet.as_manager()
@@ -235,6 +241,10 @@ class Job(OrganizationScopedModel):
 
     def _aware(self, t):
         return timezone.make_aware(datetime.combine(self.date, t))
+
+    @property
+    def confirmed_count(self):
+        return sum(1 for a in self.crew.all() if a.is_confirmed)
 
     @property
     def start_datetime(self):

@@ -2,7 +2,7 @@
 
 Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender, Material, Board und Technik-Anfragen – als Django-Web-App für Handy, Tablet und Computer (PWA).
 
-> **Stand:** Meilensteine 1–4 von 12 sind fertig – Grundgerüst, Konten und AGs, Produktionen, Kalender und Zeiten. Details: [Umsetzungsstand](docs/feature-liste.md#16-umsetzungsstand-und-entscheidungen).
+> **Stand:** Meilensteine 1–5 von 12 sind fertig – Grundgerüst, Konten und AGs, Produktionen, Kalender und Zeiten, Board. Details: [Umsetzungsstand](docs/feature-liste.md#16-umsetzungsstand-und-entscheidungen).
 
 ## Was die App schon kann
 
@@ -10,6 +10,7 @@ Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender,
 - **Produktionen** mit Jobs, Crew (anfragen, einteilen, Konfliktwarnung), To-dos, Aufsicht, Kopieren und „Kürzlich gelöscht“
 - **Dashboard „Was steht an?“** mit nächster Produktion und „Meine Jobs“
 - **Kalender** (Monat, Woche, Agenda), Termine und Terminserien, Stundenraster, „Nicht verfügbar“, Export als `.ics`
+- **Board** als Chat der AG mit Systemmeldungen, Chats je Produktion, Moderation und Zähler für ungelesene Nachrichten
 - **Django-Admin** für den Betreiber: AGs anlegen, Owner einladen, Konten verwalten, Datenexport, Änderungsprotokoll
 
 ## Schnellstart (Entwicklung)
@@ -19,7 +20,7 @@ Voraussetzungen: Docker mit Compose und `make`. Für Arbeit ohne Docker zusätzl
 ```sh
 make dev            # App auf http://localhost:8000, Test-Mails (Mailpit) auf http://localhost:8025
 make migrate        # in einem zweiten Terminal: Datenbank einrichten
-make beispieldaten  # zwei Beispiel-AGs mit Konten, Produktionen und Terminen
+make beispieldaten  # zwei Beispiel-AGs mit Konten, Produktionen, Terminen und Board-Nachrichten
 make superuser      # Betreiber-Konto für den Django-Admin (http://localhost:8000/admin/)
 ```
 
@@ -71,4 +72,4 @@ Django 5.2 (Python 3.13), PostgreSQL, Redis, Celery, Docker, Caddy – Details i
 
 ## Lizenz
 
-Quelloffen (source-available) unter der [PolyForm Noncommercial License 1.0.0](LICENSE). Nutzung, Änderung und Weitergabe für nicht-kommerzielle Zwecke sind erlaubt – Schulen und andere Bildungseinrichtungen ausdrücklich eingeschlossen. Kommerzielle Nutzung ist nicht erlaubt. Beiträge siehe [CONTRIBUTING.md](CONTRIBUTING.md), Sicherheitslücken bitte nach [SECURITY.md](SECURITY.md) melden.
+Quelloffen (source-available) unter der [PolyForm Noncommercial License 1.0.0](LICENSE). Nutzung, Änderung und Weitergabe für nicht-kommerzielle Zwecke sind erlaubt – Schulen und andere Bildungseinrichtungen ausdrücklich eingeschlossen. Kommerzielle Nutzung ist nicht erlaubt. Für Beiträge gilt die Zustimmung in der Pull-Request-Vorlage. Sicherheitslücken bitte nicht als öffentliches Issue, sondern [privat über GitHub](https://github.com/LABSTORM-MG/technik-ag-planer/security/advisories/new) melden.

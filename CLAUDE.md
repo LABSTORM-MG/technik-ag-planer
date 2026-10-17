@@ -2,7 +2,7 @@
 
 Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilensteine: Abschnitt 15, Umsetzungsstand und Entscheidungen: Abschnitt 16 (nach jedem Meilenstein fortschreiben).
 
-**Aktueller Meilenstein: 5 – Board.**
+**Aktueller Meilenstein: 6 – Material.**
 
 ## Regeln
 
@@ -28,6 +28,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 - **Formulare:** Template beginnt mit `{% extends layout %}`; Links mit `data-sheet-url` öffnen es im Bottom-Sheet. `<form data-draft="…">` speichert Entwürfe im Browser. Felder über `includes/field.html` bzw. `includes/form_fields.html`.
 - **Zeitfelder:** `PeriodTimesMixin` (`apps/scheduling/forms.py`) + `includes/time_or_period.html` für Eingabe als Uhrzeit oder Schulstunde
 - **Konflikte:** `apps.scheduling.services.find_conflicts(membership, start, end)`
+- **Systemmeldungen im Board:** `apps.board.services.post_system(org, text, link_production=…, key=…)`
 - **Kalendereinträge:** `apps.scheduling.calendar.calendar_entries(org, start, end, membership=None)`
 
 ## Apps (`app/apps/`)
@@ -40,6 +41,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 | `audit` | Änderungsprotokoll (7 Tage) | 0004 |
 | `productions` | Produktionen (weich gelöscht: `objects` / `all_objects`), Jobs, Crew, To-dos, Kategorien, Status, Dashboard | 0005 |
 | `scheduling` | Kalender, Termine und Serien, „Nicht verfügbar“, Stundenraster, ICS | 0006 |
+| `board` | Board, Produktions-Chats, Systemmeldungen (Signale), Lesestand | 0007 |
 
 Weitere Fach-Apps (Abschnitt 14) entstehen erst in ihrem Meilenstein.
 

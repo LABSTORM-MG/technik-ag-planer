@@ -12,4 +12,4 @@
 
 ## Lizenz
 
-- [ ] Ich stimme zu, dass mein Beitrag unter der PolyForm Noncommercial License 1.0.0 genutzt und vom Projektinhaber gesondert lizenziert werden darf (siehe CONTRIBUTING.md).
+- [ ] Ich stimme zu, dass mein Beitrag unter der PolyForm Noncommercial License 1.0.0 genutzt und vom Projektinhaber gesondert lizenziert werden darf.

@@ -15,4 +15,4 @@ labels: fehler
 
 **Gerät und Browser** (z. B. iPhone, Safari, als App installiert)
 
-<!-- Sicherheitslücken bitte NICHT hier melden, siehe SECURITY.md -->
+<!-- Sicherheitslücken bitte NICHT hier melden, bitte privat über „Security“ → „Report a vulnerability“ melden -->

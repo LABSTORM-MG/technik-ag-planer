@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "apps.organizations",
     "apps.productions",
     "apps.scheduling",
+    "apps.board",
 ]
 
 MIDDLEWARE = [
@@ -159,6 +160,10 @@ CELERY_BEAT_SCHEDULE = {
 CELERY_BEAT_SCHEDULE["produktionen-endgueltig-loeschen"] = {
     "task": "apps.productions.tasks.purge_deleted_productions",
     "schedule": crontab(hour=3, minute=30),
+}
+CELERY_BEAT_SCHEDULE["board-offene-jobs"] = {
+    "task": "apps.board.tasks.announce_open_jobs",
+    "schedule": crontab(hour=7, minute=0),
 }
 AUDIT_RETENTION_DAYS = 7
 PRODUCTION_TRASH_DAYS = 7  # „Kürzlich gelöscht“

@@ -283,6 +283,32 @@ def test_job_create_and_delete(org, planner_client, concert):
     assert not concert.jobs.filter(name="Abbau").exists()
 
 
+def test_job_crew_needed_is_saved_shown_and_copied(
+    org, planner_client, concert, make_member, make_assignment
+):
+    planner_client.post(
+        reverse("productions:job_create", args=[concert.pk]),
+        {
+            "name": "Abbau",
+            "date": concert.start_date.isoformat(),
+            "start_time": "21:00",
+            "end_time": "22:30",
+            "crew_needed": "4",
+        },
+    )
+    abbau = concert.jobs.get(name="Abbau")
+    assert abbau.crew_needed == 4
+    make_assignment(abbau, make_member(org), status=CrewAssignment.Status.CONFIRMED)
+    make_assignment(abbau, make_member(org))
+
+    content = planner_client.get(reverse("productions:detail", args=[concert.pk])).content
+    assert "1 von 4 besetzt" in content.decode()
+
+    planner_client.post(reverse("productions:copy", args=[concert.pk]))
+    copy = Production.objects.for_org(org).get(name=f"{concert.name} (Kopie)")
+    assert copy.jobs.get(name="Abbau").crew_needed == 4
+
+
 def test_new_menu_links_production_form(planner_client):
     content = planner_client.get(reverse("productions:dashboard")).content.decode()
     sheet = content.split('id="sheet-new"', 1)[1].split("</dialog>", 1)[0]

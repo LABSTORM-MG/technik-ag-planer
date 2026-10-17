@@ -5,5 +5,6 @@
   {% include "includes/field.html" with field=jf.date %}
   {% include "includes/time_or_period.html" with form=jf %}
   {% include "includes/field.html" with field=jf.meeting_point %}
+  {% include "includes/field.html" with field=jf.crew_needed %}
   {% if jf.DELETE %}<div class="field field--checkbox">{{ jf.DELETE }}<label for="{{ jf.DELETE.id_for_label }}">Job entfernen</label></div>{% endif %}
 </div>

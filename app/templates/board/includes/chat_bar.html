@@ -1,0 +1,17 @@
+{% if chat_bar %}
+<nav class="chat-bar" aria-label="Chats der Produktionen">
+  <a class="chat-bar__item" href="{% url 'board:index' %}"{% if not production %} aria-current="page"{% endif %}>
+    <span class="chat-bar__circle chat-bar__circle--board">{% include "includes/icon.html" with name="chat" %}</span>
+    <span class="chat-bar__name">Board</span>
+  </a>
+  {% for p in chat_bar %}
+    <a class="chat-bar__item{% if p.category %} color-{{ p.category.color }}{% endif %}" href="{% url 'board:production' p.pk %}"{% if production.pk == p.pk %} aria-current="page"{% endif %}>
+      <span class="chat-bar__circle{% if p.unread %} chat-bar__circle--unread{% endif %}">
+        {{ p.name|slice:":1"|upper }}
+        {% if p.unread %}<span class="badge chat-bar__badge" aria-label="{{ p.unread }} neu">{{ p.unread }}</span>{% endif %}
+      </span>
+      <span class="chat-bar__name">{{ p.name }}</span>
+    </a>
+  {% endfor %}
+</nav>
+{% endif %}

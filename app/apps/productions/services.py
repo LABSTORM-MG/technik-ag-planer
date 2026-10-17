@@ -63,6 +63,7 @@ def copy_production(production, user=None):
             start_time=job.start_time,
             end_time=job.end_time,
             meeting_point=job.meeting_point,
+            crew_needed=job.crew_needed,
             position=job.position,
         )
     for todo in todos:

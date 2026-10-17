@@ -56,6 +56,7 @@ class Command(BaseCommand):
 
         self._productions(Organization.objects.get(name="Technik-AG Nord"))
         self._scheduling(Organization.objects.get(name="Technik-AG Nord"))
+        self._board(Organization.objects.get(name="Technik-AG Nord"))
 
         self.stdout.write(self.style.SUCCESS("Beispieldaten angelegt."))
         self.stdout.write(f"Passwort für alle Konten: {PASSWORD}")
@@ -131,6 +132,9 @@ class Command(BaseCommand):
                 location_name=location,
                 address=address,
             )
+            if name == "Schulkonzert":
+                production.chat_enabled = True
+                production.save(update_fields=["chat_enabled"])
             for i, (job_name, offset, begin, end, meeting) in enumerate(jobs):
                 Job.objects.create(
                     organization=org,
@@ -140,6 +144,7 @@ class Command(BaseCommand):
                     start_time=begin,
                     end_time=end,
                     meeting_point=meeting,
+                    crew_needed=3 if job_name == "Aufbau" else None,
                     position=i,
                 )
         concert = Production.objects.for_org(org).get(name="Schulkonzert")
@@ -150,6 +155,26 @@ class Command(BaseCommand):
         assign(show, members["emma@nord.example"], status="confirmed", role_label="Monitor")
         for text in ["Funkmikros laden", "Bühnenplan drucken"]:
             Todo.objects.create(organization=org, production=concert, text=text)
+
+    def _board(self, org):
+        from apps.board.models import Message
+        from apps.board.services import post
+        from apps.productions.models import Production
+
+        if Message.objects.for_org(org).filter(kind=Message.Kind.USER).exists():
+            return
+        users = {
+            m.user.email: m.user for m in Membership.objects.for_org(org).select_related("user")
+        }
+        concert = Production.objects.for_org(org).get(name="Schulkonzert")
+        for email, text, production in [
+            ("owner@nord.example", "Willkommen im Board! Hier sprechen wir uns ab.", None),
+            ("ben@nord.example", "Wer hat den Schlüssel für den Technikraum?", None),
+            ("lehrkraft@nord.example", "Liegt im Sekretariat.", None),
+            ("admin@nord.example", "Treffen zum Aufbau am Bühneneingang.", concert),
+            ("emma@nord.example", "Ich bringe die Funkmikros mit.", concert),
+        ]:
+            post(org, users[email], text, production)
 
     def _scheduling(self, org):
         from datetime import date, time, timedelta

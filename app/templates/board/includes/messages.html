@@ -1,0 +1,4 @@
+{% load board %}{% for m in chat_messages %}
+  {% if m.day %}<li class="chat__day" data-day="{{ m.day|date:'Y-m-d' }}"><span>{{ m.day|board_day }}</span></li>{% endif %}
+  {% include "board/includes/message.html" %}
+{% endfor %}{% if last_id %}<li hidden data-board-last="{{ last_id }}"></li>{% endif %}
