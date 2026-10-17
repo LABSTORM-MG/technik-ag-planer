@@ -1,0 +1,31 @@
+{% load static %}<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="{{ theme_color }}">
+  <meta name="color-scheme" content="dark">
+  {% include "includes/pwa_head.html" %}
+  <meta name="description" content="Planungs-App für Technik-AGs an Schulen: Produktionen, Crew, Kalender, Material und Board – kostenlos und quelloffen.">
+  <title>{% block title %}Technik-AG Planer{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <header class="public-header">
+    <a class="public-header__brand" href="/">Technik-AG Planer</a>
+    {% if user.is_authenticated %}
+      <a class="button button--secondary button--small" href="{% url 'productions:dashboard' %}">Zur App</a>
+    {% else %}
+      <a class="button button--secondary button--small" href="{% url 'accounts:login' %}">Anmelden</a>
+    {% endif %}
+  </header>
+  <main class="public">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="public-footer">
+    {% include "includes/legal_links.html" %}
+    <p class="muted">Quelloffen unter der PolyForm Noncommercial License 1.0.0 · kostenlos, ohne Werbung und Tracking</p>
+  </footer>
+</body>
+</html>

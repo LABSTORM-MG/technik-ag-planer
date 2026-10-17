@@ -7,12 +7,14 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from conftest import PASSWORD
 
 PUBLIC_URLS = [
+    reverse("productions:dashboard"),  # abgemeldet: Landingpage
+    reverse("core:imprint"),
     reverse("accounts:login"),
     reverse("accounts:password_reset"),
     reverse("core:healthz"),
 ]
 PROTECTED_URLS = [
-    reverse("productions:dashboard"),
+    reverse("productions:list"),
     reverse("scheduling:calendar"),
     reverse("organizations:settings"),
     reverse("organizations:members"),
@@ -49,12 +51,13 @@ def test_login_with_email_and_password(client, owner):
     assert client.get(reverse("productions:dashboard")).status_code == 200
 
 
-def test_login_with_short_sample_name(client, org, make_member, make_user):
-    """Beispielkonten der Entwicklung heißen nur „owner“ usw. (bis M12, siehe Abschnitt 16)."""
+def test_login_requires_email_address(client, org, make_member, make_user):
+    """Seit M12 wieder eine echte E-Mail-Eingabe (vorher kurze Namen für die Beispielkonten)."""
     make_member(org, user=make_user(email="owner", password="owner"))  # noqa: S106
     response = client.post(reverse("accounts:login"), {"email": "owner", "password": "owner"})
 
-    assert response.status_code == 302
+    assert response.status_code == 200
+    assert 'type="email"' in response.content.decode()
 
 
 def test_login_respects_safe_next(client, owner):
@@ -91,7 +94,7 @@ def test_login_blocked_after_five_failures(client, owner):
     )
 
     assert "Zu viele Fehlversuche" in response.content.decode()
-    assert client.get(reverse("productions:dashboard")).status_code == 302
+    assert client.get(reverse("productions:list")).status_code == 302
 
 
 def test_locked_account_cannot_log_in(client, owner):
@@ -107,7 +110,7 @@ def test_locked_account_cannot_log_in(client, owner):
 def test_logout_requires_post(member_client):
     assert member_client.get(reverse("accounts:logout")).status_code == 405
     member_client.post(reverse("accounts:logout"))
-    assert member_client.get(reverse("productions:dashboard")).status_code == 302
+    assert member_client.get(reverse("productions:list")).status_code == 302
 
 
 def test_login_with_2fa_requires_code(client, owner):
@@ -118,7 +121,7 @@ def test_login_with_2fa_requires_code(client, owner):
     )
     assert response.url == reverse("accounts:login_2fa")
     # ohne Code noch nicht angemeldet
-    assert client.get(reverse("productions:dashboard")).status_code == 302
+    assert client.get(reverse("productions:list")).status_code == 302
 
     response = client.post(reverse("accounts:login_2fa"), {"token": "000000"})
     assert "Der Code ist falsch" in response.content.decode()

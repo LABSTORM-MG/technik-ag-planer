@@ -2,7 +2,7 @@
 
 Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender, Material, Board und Technik-Anfragen – als Django-Web-App für Handy, Tablet und Computer (PWA).
 
-> **Stand:** Meilensteine 1–11 von 12 sind fertig – Grundgerüst, Konten und AGs, Produktionen, Kalender und Zeiten, Board, Material, Technik-Anfragen, PDFs, Team-Funktionen, Google-Anbindung, PWA und Push. Details: [Umsetzungsstand](docs/feature-liste.md#16-umsetzungsstand-und-entscheidungen).
+> **Stand:** Alle 12 Meilensteine sind umgesetzt. Vor dem Einsatz an einer Schule stehen noch echte Tests (Google, Handys), die Rechtstexte und die Abstimmung mit der Schule aus – siehe [Umsetzungsstand und „Vor dem Start“](docs/feature-liste.md#16-umsetzungsstand-und-entscheidungen).
 
 ## Was die App schon kann
 
@@ -17,6 +17,7 @@ Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender,
 - **Team:** Fähigkeiten mit Filter und Vorschlägen beim Einteilen, Einsatzübersicht mit Stundenkorrektur, Schuljahreswechsel, Konto löschen (Einsätze bleiben als „Ehemaliges Mitglied“)
 - **Google-Anbindung:** Dateien (Produktionen, Material, Defektfotos, Anfragen) im Google Drive der AG, alle Kalendereinträge automatisch im Google-Kalender der AG – [Einrichtung](docs/installation/google-cloud.md)
 - **Als App installierbar** (Home-Bildschirm, Vollbild) mit **Push-Mitteilungen** zu Crew-Anfragen, Änderungen, Technik-Anfragen, Board und Chats sowie Erinnerung vor eigenen Jobs
+- **Landingpage, Hilfe & FAQ, „Über die App“** und Seiten für Impressum, Datenschutz und Nutzungsbedingungen
 - **Django-Admin** für den Betreiber: AGs anlegen, Owner einladen, Konten verwalten, Datenexport, Änderungsprotokoll
 
 ## Schnellstart (Entwicklung)
@@ -30,16 +31,16 @@ make beispieldaten  # zwei Beispiel-AGs mit Konten, Produktionen, Terminen, Boar
 make superuser      # Betreiber-Konto für den Django-Admin (http://localhost:8000/admin/)
 ```
 
-Beispielkonten (Anmeldename = Passwort, z. B. `owner` / `owner`; nach einer Änderung `make reset-db && make beispieldaten`):
+Beispielkonten (Passwort = Name vor dem @, z. B. `owner@example.org` / `owner`; nach einer Änderung `make reset-db && make beispieldaten`):
 
 | Anmeldung | Rolle |
 | --- | --- |
-| `owner` | Owner der Technik-AG Nord |
-| `admin` | Admin |
-| `lehrer` | Lehrkraft |
-| `schueler` | Schülerin (Emma), auch Mitglied der Technik-AG Süd |
-| `ben` | Schüler |
-| `sued` | Owner der Technik-AG Süd |
+| `owner@example.org` | Owner der Technik-AG Nord |
+| `admin@example.org` | Admin |
+| `lehrer@example.org` | Lehrkraft |
+| `schueler@example.org` | Schülerin (Emma), auch Mitglied der Technik-AG Süd |
+| `ben@example.org` | Schüler |
+| `sued@example.org` | Owner der Technik-AG Süd |
 
 Weitere Befehle:
 

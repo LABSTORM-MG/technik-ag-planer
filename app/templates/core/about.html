@@ -1,0 +1,27 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Über die App{% endblock %}
+{% block page_title %}Über die App{% endblock %}
+{% block page_content %}
+<div class="stack">
+  <section>
+    <h2 class="section-title">Alle Funktionen auf einen Blick</h2>
+    <ul class="list">
+      {% for name, text in features %}
+        <li class="list__item">
+          <div class="list__main">
+            <span class="list__title">{{ name }}</span>
+            <span class="list__subtitle">{{ text }}</span>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  <section class="card">
+    <h2 class="section-title">Version und Lizenz</h2>
+    <p>Version {{ version }} · <a href="{{ source_url }}/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Was ist neu?</a></p>
+    <p class="muted">Der Technik-AG Planer ist quelloffen (source-available) unter der <a href="https://polyformproject.org/licenses/noncommercial/1.0.0/" target="_blank" rel="noopener noreferrer">PolyForm Noncommercial License 1.0.0</a>: kostenlos für Schulen und andere nicht-kommerzielle Zwecke, keine kommerzielle Nutzung. <a href="{{ source_url }}" target="_blank" rel="noopener noreferrer">Quellcode</a></p>
+    <p class="muted">Keine Werbung, kein Tracking. Dateien liegen im Google Drive der AG, alles andere auf dem Server dieser Installation.</p>
+  </section>
+  {% include "includes/legal_links.html" %}
+</div>
+{% endblock %}

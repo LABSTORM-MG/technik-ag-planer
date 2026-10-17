@@ -15,6 +15,7 @@ def org_required(view):
             return redirect("organizations:no_organization")
         return view(request, *args, **kwargs)
 
+    wrapper.checks_organization = True  # für tests/test_security.py
     return wrapper
 
 

@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
+from apps.core.decorators import landing_for_anonymous
 from apps.google_sync.services import connection_for
 from apps.inquiries.models import Inquiry
 from apps.inventory import services as inventory_services
@@ -102,6 +103,7 @@ def _my_assignments(request, today):
 # ---------- Dashboard ----------
 
 
+@landing_for_anonymous
 @org_required
 def dashboard(request):
     today = timezone.localdate()

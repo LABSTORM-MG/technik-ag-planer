@@ -1,4 +1,4 @@
-"""Gliederung der Einstellungen (Abschnitt 10). `url_name=None` = folgt in späterem Meilenstein."""
+"""Gliederung der Einstellungen (Abschnitt 10)."""
 
 from dataclasses import dataclass
 
@@ -9,8 +9,7 @@ from .permissions import Perm
 class Entry:
     label: str
     subtitle: str
-    url_name: str | None = None
-    milestone: int | None = None
+    url_name: str
     owner_only: bool = False
     perm: Perm | None = None
 
@@ -124,8 +123,8 @@ GROUPS = [
                 "Eigene Fähigkeiten aus der Liste auswählen",
                 "productions:my_skills",
             ),
-            Entry("Hilfe & FAQ", "Kurze Antworten auf häufige Fragen", milestone=12),
-            Entry("Über die App", "Alle Funktionen auf einen Blick", milestone=12),
+            Entry("Hilfe & FAQ", "Kurze Antworten auf häufige Fragen", "core:help"),
+            Entry("Über die App", "Alle Funktionen auf einen Blick", "core:about"),
         ],
     ),
     (

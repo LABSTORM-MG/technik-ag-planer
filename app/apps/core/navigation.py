@@ -11,7 +11,6 @@ class Section:
     label: str
     icon: str
     url_name: str
-    milestone: int
     mobile_label: str = ""
 
     @property
@@ -19,14 +18,12 @@ class Section:
         return self.mobile_label or self.label
 
 
-DASHBOARD = Section(
-    "dashboard", "Dashboard", "home", "productions:dashboard", 3, mobile_label="Home"
-)
-CALENDAR = Section("calendar", "Kalender", "calendar", "scheduling:calendar", 4)
-PRODUCTIONS = Section("productions", "Produktionen", "clapper", "productions:list", 3)
-INVENTORY = Section("inventory", "Material", "box", "inventory:list", 6)
-BOARD = Section("board", "Board", "chat", "board:index", 5)
-SETTINGS = Section("settings", "Einstellungen", "gear", "organizations:settings", 12)
+DASHBOARD = Section("dashboard", "Dashboard", "home", "productions:dashboard", mobile_label="Home")
+CALENDAR = Section("calendar", "Kalender", "calendar", "scheduling:calendar")
+PRODUCTIONS = Section("productions", "Produktionen", "clapper", "productions:list")
+INVENTORY = Section("inventory", "Material", "box", "inventory:list")
+BOARD = Section("board", "Board", "chat", "board:index")
+SETTINGS = Section("settings", "Einstellungen", "gear", "organizations:settings")
 
 # Reihenfolge der Seitenleiste
 SIDEBAR = [DASHBOARD, CALENDAR, PRODUCTIONS, INVENTORY, BOARD, SETTINGS]

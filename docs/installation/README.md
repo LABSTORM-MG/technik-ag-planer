@@ -1,6 +1,6 @@
 # Installation auf dem eigenen Server
 
-Diese Anleitung beschreibt den aktuellen Stand. Backups kommen in Meilenstein 12 dazu, ebenso die vollständige Betriebsdoku.
+Danach geht es im Betrieb weiter: Updates, Backups und typische Aufgaben stehen in [../betrieb/README.md](../betrieb/README.md).
 
 ## Voraussetzungen
 
@@ -61,7 +61,12 @@ docker compose -f deploy/docker-compose.yml exec web python manage.py vapid_schl
 
 Die drei ausgegebenen Zeilen (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_ADMIN_EMAIL` – dort eine echte Kontaktadresse eintragen) in die `.env` übernehmen und `docker compose -f deploy/docker-compose.yml up -d` ausführen. Danach aktiviert jedes Mitglied Push unter Einstellungen → Benachrichtigungen auf seinem Gerät. Auf dem iPhone geht das nur in der App vom Home-Bildschirm (Safari → Teilen → „Zum Home-Bildschirm“). Werden die Schlüssel später gewechselt, müssen alle Geräte Push neu aktivieren. Erinnerungen verschickt der `worker`-Container.
 
-## 6. Updates
+## 6. Rechtstexte und Backups
+
+- Impressum, Datenschutzerklärung und Nutzungsbedingungen im Django-Admin unter **Rechtstexte** eintragen (Vorlagen: [../rechtliches/](../rechtliches/README.md)).
+- Tägliche Sicherung per cron einrichten: [../betrieb/README.md#backups](../betrieb/README.md#backups).
+
+## 7. Updates
 
 Solange es noch keine veröffentlichte Version gibt:
 

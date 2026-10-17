@@ -47,17 +47,24 @@ def test_pages_link_manifest_and_icons(member_client):
 
 def test_subscribe_and_unsubscribe(org, student, student_client):
     url = reverse("notifications:subscribe")
-    body = {"endpoint": "https://push.example.org/abc", "keys": {"p256dh": "p", "auth": "a"}}
+    body = {
+        "endpoint": "https://fcm.googleapis.com/fcm/send/abc",
+        "keys": {"p256dh": "p", "auth": "a"},
+    }
     for _ in range(2):  # dasselbe Gerät nur einmal
         response = student_client.post(url, json.dumps(body), content_type="application/json")
         assert response.json() == {"ok": True}
     assert PushSubscription.objects.get().user == student.user
 
-    bad = {"endpoint": "http://unsicher.example.org", "keys": {"p256dh": "p", "auth": "a"}}
-    assert (
-        student_client.post(url, json.dumps(bad), content_type="application/json").status_code
-        == 400
-    )
+    for endpoint in [
+        "http://fcm.googleapis.com/fcm/send/x",  # kein HTTPS
+        "https://intern.example.org/admin",  # kein Push-Dienst
+        "https://fcm.googleapis.com.evil.example/x",
+        "https://fcm.googleapis.com:8443/x",
+    ]:
+        bad = {"endpoint": endpoint, "keys": {"p256dh": "p", "auth": "a"}}
+        response = student_client.post(url, json.dumps(bad), content_type="application/json")
+        assert response.status_code == 400, endpoint
 
     student_client.post(
         reverse("notifications:unsubscribe"),
@@ -65,6 +72,14 @@ def test_subscribe_and_unsubscribe(org, student, student_client):
         content_type="application/json",
     )
     assert not PushSubscription.objects.exists()
+
+
+def test_push_service_allowlist():
+    assert push.is_push_service("https://web.push.apple.com/abc")
+    assert push.is_push_service("https://xyz.notify.windows.com/w/?token=1")
+    assert push.is_push_service("https://updates.push.services.mozilla.com/wpush/v2/x")
+    assert not push.is_push_service("https://evilpush.apple.com.example/x")
+    assert not push.is_push_service("https://localhost/x")
 
 
 def test_cannot_unsubscribe_others(org, student, planner_client, device):

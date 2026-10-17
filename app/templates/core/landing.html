@@ -1,0 +1,56 @@
+{% extends "public_base.html" %}
+{% load static %}
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">Für Technik-AGs an Schulen</p>
+  <h1 class="hero__title">Alles für eure Veranstaltungstechnik – an einem Ort.</h1>
+  <p class="hero__text">Produktionen planen, Crew einteilen, Material im Blick behalten und im Board absprechen. Auf dem Handy, dem Tablet und dem Computer.</p>
+  <div class="toolbar">
+    <a class="button button--primary" href="{% url 'accounts:login' %}">Zur App</a>
+  </div>
+  <p class="muted">Konten gibt es nur auf Einladung – der Owner eurer AG lädt euch ein.</p>
+</section>
+
+<section class="public-section">
+  <h2 class="section-title">So sieht es aus</h2>
+  <div class="shots">
+    <figure class="shot shot--desktop"><img src="{% static 'landing/computer-kalender.png' %}" alt="Kalender in der Monatsansicht am Computer" loading="lazy" width="1280" height="800"><figcaption>Kalender am Computer</figcaption></figure>
+    <figure class="shot shot--phone"><img src="{% static 'landing/handy-dashboard.png' %}" alt="Dashboard auf dem Handy: nächste Produktion und meine Jobs" loading="lazy" width="390" height="844"><figcaption>Was steht an? – auf dem Handy</figcaption></figure>
+    <figure class="shot shot--phone"><img src="{% static 'landing/handy-produktion.png' %}" alt="Produktion mit Jobs und Crew auf dem Handy" loading="lazy" width="390" height="844"><figcaption>Produktion mit Jobs und Crew</figcaption></figure>
+    <figure class="shot shot--phone"><img src="{% static 'landing/handy-material.png' %}" alt="Materialliste mit Bestand und Kategorien" loading="lazy" width="390" height="844"><figcaption>Material mit Bestand und Defekten</figcaption></figure>
+  </div>
+</section>
+
+<section class="public-section">
+  <h2 class="section-title">Funktionen</h2>
+  <ul class="feature-grid">
+    {% for name, text in features %}
+      <li class="card"><h3 class="list__title">{{ name }}</h3><p class="muted">{{ text }}</p></li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="public-section feature-grid feature-grid--three">
+  <div class="card">
+    <h2 class="section-title">Geräte</h2>
+    <p class="muted">Läuft im Browser auf Handy, Tablet und Computer. Auf dem Home-Bildschirm installiert wie eine App – mit Push-Mitteilungen und Erinnerungen vor jedem Job.</p>
+  </div>
+  <div class="card">
+    <h2 class="section-title">Sicherheit und Datenschutz</h2>
+    <p class="muted">Nur auf Einladung, Zwei-Faktor-Anmeldung, strikte Trennung der AGs, keine Werbung und kein Tracking. Gehostet auf dem eigenen Server; Dateien liegen im Google Drive der AG.</p>
+  </div>
+  <div class="card">
+    <h2 class="section-title">Kosten</h2>
+    <p class="muted">Alle Funktionen kostenlos, kein Bezahlmodell. Der Quellcode ist öffentlich (quelloffen, nicht-kommerzielle Lizenz).</p>
+  </div>
+</section>
+
+<section class="public-section">
+  <h2 class="section-title">So startest du</h2>
+  <ol class="steps">
+    <li class="card"><span class="steps__number">1</span><h3 class="list__title">Einladung annehmen</h3><p class="muted">Den Link aus der E-Mail öffnen.</p></li>
+    <li class="card"><span class="steps__number">2</span><h3 class="list__title">Passwort setzen</h3><p class="muted">Namen wählen, Passwort festlegen – fertig.</p></li>
+    <li class="card"><span class="steps__number">3</span><h3 class="list__title">Team einladen</h3><p class="muted">Als Owner Mitglieder einladen und Rollen vergeben.</p></li>
+  </ol>
+</section>
+{% endblock %}

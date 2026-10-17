@@ -6,15 +6,12 @@ from .models import Grade, User
 
 
 class LoginForm(forms.Form):
-    # Vorübergehend Textfeld statt EmailField, damit die Beispielkonten der Entwicklung nur
-    # „owner“ usw. heißen. In M12 wieder auf E-Mail-Eingabe umstellen (Feature-Liste, Abschnitt 16).
-    email = forms.CharField(
+    email = forms.EmailField(
         label="E-Mail-Adresse",
         max_length=254,
-        widget=forms.TextInput(
+        widget=forms.EmailInput(
             attrs={
                 "autocomplete": "username",
-                "inputmode": "email",
                 "autocapitalize": "none",
                 "spellcheck": "false",
                 "autofocus": True,

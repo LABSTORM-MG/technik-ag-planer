@@ -2,9 +2,8 @@
 
     make beispieldaten   (bzw. python manage.py beispieldaten)
 
-Anmeldename = Passwort (z. B. owner / owner, lehrer / lehrer, schueler / schueler) –
-bewusst keine E-Mail-Adressen, damit das Durchklicken schnell geht. Nur in der Entwicklung
-(DEBUG) erlaubt.
+Anmeldung mit <name>@example.org, Passwort = Name (z. B. owner@example.org / owner) –
+bewusst kurz, damit das Durchklicken schnell geht. Nur in der Entwicklung (DEBUG) erlaubt.
 """
 
 from django.conf import settings
@@ -14,6 +13,17 @@ from django.db import transaction
 from apps.accounts.models import User
 from apps.organizations.models import Membership, Organization
 from apps.organizations.permissions import Role
+
+DOMAIN = "@example.org"
+
+
+def _members(org):
+    """Mitgliedschaften nach Kurzname („owner“, „schueler“ …)."""
+    return {
+        m.user.email.split("@")[0]: m
+        for m in Membership.objects.for_org(org).select_related("user")
+    }
+
 
 ORGS = {
     "Technik-AG Nord": [
@@ -43,12 +53,12 @@ class Command(BaseCommand):
 
         for org_name, people in ORGS.items():
             org, _ = Organization.objects.get_or_create(name=org_name)
-            for email, name, grade, role in people:
+            for login, name, grade, role in people:
                 user, created = User.objects.get_or_create(
-                    email=email, defaults={"display_name": name, "grade": grade}
+                    email=f"{login}{DOMAIN}", defaults={"display_name": name, "grade": grade}
                 )
                 if created:
-                    user.set_password(email)  # Anmeldename = Passwort
+                    user.set_password(login)  # Passwort = Name vor dem @
                     user.save()
                 Membership.objects.get_or_create(
                     organization=org, user=user, defaults={"role": role}
@@ -62,14 +72,16 @@ class Command(BaseCommand):
         self._team(Organization.objects.get(name="Technik-AG Nord"))
 
         self.stdout.write(self.style.SUCCESS("Beispieldaten angelegt."))
-        self.stdout.write("Anmeldename = Passwort, z. B. owner / owner")
+        self.stdout.write(
+            f"Anmeldung: <name>{DOMAIN}, Passwort = Name, z. B. owner{DOMAIN} / owner"
+        )
         self.stdout.write(
             f"Technik anfragen (AG Nord): http://localhost:8000/anfrage/{link.token}/"
         )
         for org_name, people in ORGS.items():
             self.stdout.write(f"\n{org_name}:")
-            for email, _name, _grade, role in people:
-                self.stdout.write(f"  {Role(role).label:<11} {email}")
+            for login, _name, _grade, role in people:
+                self.stdout.write(f"  {Role(role).label:<11} {login}{DOMAIN}")
 
     def _productions(self, org):
         from datetime import time, timedelta
@@ -85,7 +97,7 @@ class Command(BaseCommand):
         categories = {c.name: c for c in Category.objects.for_org(org)}
         planning = ProductionStatus.planning_for(org)
         confirmed = ProductionStatus.objects.for_org(org).get(system_key="confirmed")
-        members = {m.user.email: m for m in Membership.objects.for_org(org).select_related("user")}
+        members = _members(org)
 
         plans = [
             (
@@ -187,18 +199,16 @@ class Command(BaseCommand):
 
         if Message.objects.for_org(org).filter(kind=Message.Kind.USER).exists():
             return
-        users = {
-            m.user.email: m.user for m in Membership.objects.for_org(org).select_related("user")
-        }
+        users = {name: m.user for name, m in _members(org).items()}
         concert = Production.objects.for_org(org).get(name="Schulkonzert")
-        for email, text, production in [
+        for name, text, production in [
             ("owner", "Willkommen im Board! Hier sprechen wir uns ab.", None),
             ("ben", "Wer hat den Schlüssel für den Technikraum?", None),
             ("lehrer", "Liegt im Sekretariat.", None),
             ("admin", "Treffen zum Aufbau am Bühneneingang.", concert),
             ("schueler", "Ich bringe die Funkmikros mit.", concert),
         ]:
-            post(org, users[email], text, production)
+            post(org, users[name], text, production)
 
     def _inventory(self, org):
         from datetime import timedelta
@@ -365,7 +375,7 @@ class Command(BaseCommand):
                 frequency="weekly",
                 until=until,
             )
-        members = {m.user.email: m for m in Membership.objects.for_org(org).select_related("user")}
+        members = _members(org)
         # Emma schreibt eine Klausur (1.–4. Stunde), Ben ist zwei Tage auf Klassenfahrt
         klausur = today + timedelta(days=2)
         Unavailability.objects.create(
@@ -396,7 +406,7 @@ class Command(BaseCommand):
 
         if Skill.objects.for_org(org).exists():
             return
-        members = {m.user.email: m for m in Membership.objects.for_org(org).select_related("user")}
+        members = _members(org)
         skills = {
             "Licht": ["schueler", "owner"],
             "Ton": ["ben", "admin"],

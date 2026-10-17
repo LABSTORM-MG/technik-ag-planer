@@ -1,3 +1,6 @@
 # Handbuch
 
-Folgt in Meilenstein 12: Anleitungen für Owner und Mitglieder sowie die Inhalte für „Hilfe & FAQ“ in der App.
+- [Für Owner](owner.md) – AG einrichten, Mitglieder einladen, Rollen, Google, Schuljahreswechsel
+- [Für Mitglieder](mitglieder.md) – App installieren, Push, Crew-Anfragen, Kalender, Einsatzübersicht
+
+Kurze Antworten stehen auch in der App unter Einstellungen → Hilfe & FAQ (Inhalt: `app/apps/core/help.py`).
