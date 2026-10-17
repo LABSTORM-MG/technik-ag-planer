@@ -382,3 +382,10 @@ document.addEventListener("change", (event) => {
     })
     .catch(() => {});
 })();
+
+// Service Worker für Push-Mitteilungen (kein Offline-Modus). Nur über HTTPS bzw. localhost.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
+  });
+}

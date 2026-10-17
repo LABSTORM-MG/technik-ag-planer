@@ -110,7 +110,9 @@ GROUPS = [
         "Für mich",
         [
             Entry(
-                "Benachrichtigungen", "Push-Mitteilungen aktivieren und einstellen", milestone=11
+                "Benachrichtigungen",
+                "Push-Mitteilungen aktivieren und einstellen",
+                "notifications:settings",
             ),
             Entry(
                 "Nicht verfügbar",

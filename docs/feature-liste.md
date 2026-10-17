@@ -575,7 +575,7 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | 8 | PDFs | fertig (Einsatzübersicht-PDF in M9) | #10 |
 | 9 | Team-Funktionen | fertig | #11 |
 | 10 | Google-Anbindung | fertig (echter Test mit Google-Konto steht aus) | #12 |
-| 11 | PWA und Push | offen | |
+| 11 | PWA und Push | fertig (Test auf echten Handys steht aus) | #13 |
 | 12 | Abschluss | offen | |
 
 **Ergänzungen und Abweichungen**
@@ -623,14 +623,16 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | Dateien | Produktionen bekommen den Abschnitt „Dateien“ (Drive-Dateien und Links); Dateien und Links verwalten, wer Produktionen bearbeiten darf; „Kopieren“ übernimmt nur Links | Die Rechte-Tabelle regelt Dateien nicht; Drive-Dateien gehören zur Produktion | ADR 0012 |
 | Dateien | Browser zeigt nur Fotos und PDFs direkt an, alles andere wird heruntergeladen; Anfrage-Formular nimmt nur echte PDFs bis 10 MB | Hochgeladene Dateien dürfen nie als Seite der App laufen; öffentliches Formular | ADR 0012 |
 | Organisation | „Organisation auflösen“ funktioniert jetzt auch mit Produktionen (Status-Schutz `RESTRICT` statt `PROTECT`) | Fehler aus M3 | ADR 0012 |
+| PWA | Service Worker nur für Push, kein Zwischenspeichern; App-Icon in drei Entwürfen, voreingestellt „Fader“ | Kein Offline-Modus (Abschnitt 1); schlicht ohne Logo | ADR 0013 |
+| Push | Abo je Gerät, Einstellungen je Konto (für alle AGs); jede Art einzeln abschaltbar; wer etwas auslöst, bekommt keine Mitteilung | Ein Handy gehört einer Person; keine Mitteilung über eigene Änderungen | ADR 0013 |
+| Push | Erinnerung standardmäßig am Vorabend um 18 Uhr, alternativ einige Stunden vorher; bei verschobenem Job erneut | Abschnitt 9 | ADR 0013 |
+| Push | Board-Nachrichten an alle, Chat-Nachrichten an Eingeteilte und Aufsicht | Regel wie der Zähler in der Navigation | ADR 0013 |
 | Entwicklung | Beispielkonten mit kurzen Anmeldenamen (`owner`, `lehrer`, `schueler` …, Passwort wie der Name); Login-Feld vorübergehend ohne E-Mail-Prüfung | Schneller durchklicken (Entscheidung des Projektinhabers); in M12 zurück auf E-Mail | README |
 | Repository | Kein `CONTRIBUTING.md` und kein `SECURITY.md`: Die Zustimmung zur Lizenz steht in der Pull-Request-Vorlage, Sicherheitslücken werden privat über GitHub gemeldet | Entscheidung des Projektinhabers, weniger Dateien | Abschnitt 13 |
 
 **Offene Punkte für spätere Meilensteine**
 
-- M11: Push-Mitteilung bei neuer Technik-Anfrage für Owner, Admins und Lehrkräfte
-- M11: Push-Mitteilung bei neuer Board- bzw. Chat-Nachricht (Chats nur für Eingeteilte, Regel wie `apps.board.services.my_chat_production_ids`)
-- M11: App-Icon (schlicht, ohne Schullogo; Entwürfe zur Auswahl) und Vollbild ohne Adressleiste beim Hinzufügen zum Home-Bildschirm (`display: standalone`). Testen nur über HTTPS möglich – auf dem eigenen Server oder über einen Tunnel
+- M11 nachholen: Test auf echten Handys über HTTPS (Server oder Tunnel) – Android und iPhone (App vom Home-Bildschirm), Push aktivieren, Test-Mitteilung, Crew-Anfrage, Icon und Vollbild; Icon-Entwurf auswählen (`docs/design/app-icon/`)
 - M12: Login-Feld wieder als E-Mail-Eingabe (`EmailField`, `type="email"`) in `apps/accounts/forms.py`; seit M6 vorübergehend ein Textfeld, damit die Beispielkonten kurze Anmeldenamen haben (`owner`, `lehrer`, `schueler`). Die Beispieldaten bekommen dann wieder E-Mail-Adressen
 - Vor dem Start: Test auf echten Handys (Android und iPhone)
 - M10 nachholen: echter Durchlauf mit einem Google-Cloud-Projekt und einem Google-Konto der AG (`docs/installation/google-cloud.md`); bisher nur gegen eine Attrappe getestet
