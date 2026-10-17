@@ -27,6 +27,7 @@ urlpatterns = [
     path("einstellungen/konto/profil/", views.profile_view, name="profile"),
     path("einstellungen/konto/passwort/", views.password_change_view, name="password_change"),
     path("einstellungen/konto/zwei-faktor/", views.two_factor_view, name="two_factor"),
+    path("einstellungen/konto/loeschen/", views.delete_view, name="delete"),
     path(
         "einstellungen/konto/zwei-faktor/ausschalten/",
         views.two_factor_disable_view,

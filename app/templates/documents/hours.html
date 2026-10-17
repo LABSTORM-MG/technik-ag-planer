@@ -1,0 +1,39 @@
+{% load hours %}<div class="doc">
+  <header class="doc__head">
+    <p class="doc__eyebrow">{{ organization.name }} · Einsatzübersicht</p>
+    <h1 class="doc__title">{{ member.user }}</h1>
+    <dl class="doc__facts">
+      {% if member.user.grade %}<dt>Jahrgangsstufe</dt><dd>{{ member.user.get_grade_display }}</dd>{% endif %}
+      <dt>Rolle</dt><dd>{{ member.get_role_display }}</dd>
+      <dt>Zeitraum</dt><dd>{{ period.label }} ({{ period.start|date:"d.m.Y" }} – {{ period.end|date:"d.m.Y" }})</dd>
+      <dt>Summe</dt><dd><strong>{{ total|stunden }} Stunden</strong> bei {{ entries|length }} {% if entries|length == 1 %}Einsatz{% else %}Einsätzen{% endif %}</dd>
+    </dl>
+  </header>
+
+  {% if entries %}
+    <table class="doc__table">
+      <thead><tr><th>Datum</th><th>Produktion / Termin</th><th>Job</th><th class="doc__num">Stunden</th></tr></thead>
+      <tbody>
+        {% for e in entries %}
+          <tr>
+            <td>{{ e.date|date:"d.m.Y" }}</td>
+            <td>{{ e.title }}</td>
+            <td>{{ e.detail }}</td>
+            <td class="doc__num">{{ e.hours|stunden }}{% if e.is_corrected %} *{% endif %}</td>
+          </tr>
+        {% endfor %}
+        <tr class="doc__total"><td colspan="3">Summe</td><td class="doc__num">{{ total|stunden }}</td></tr>
+      </tbody>
+    </table>
+    {% if any_corrected %}<p class="doc__muted doc__note">* Stunden nachträglich korrigiert (z. B. weil der Abbau länger gedauert hat).</p>{% endif %}
+  {% else %}
+    <p class="doc__muted">Keine Einsätze in diesem Zeitraum.</p>
+  {% endif %}
+
+  <div class="doc__signatures">
+    <div class="doc__signature">Ort, Datum</div>
+    <div class="doc__signature">Unterschrift Lehrkraft</div>
+  </div>
+
+  {% include "documents/includes/footer.html" %}
+</div>

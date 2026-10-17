@@ -149,6 +149,28 @@ class EmailPasswordResetForm(PasswordResetForm):
     )
 
 
+class DeleteAccountForm(forms.Form):
+    password = forms.CharField(
+        label="Passwort zur Bestätigung",
+        strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}),
+    )
+    confirm = forms.BooleanField(
+        label="Ich möchte mein Konto endgültig löschen.",
+        error_messages={"required": "Bitte bestätige das Löschen."},
+    )
+
+    def __init__(self, *args, user, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if not self.user.check_password(password):
+            raise forms.ValidationError("Das Passwort ist falsch.")
+        return password
+
+
 class ConfirmPasswordForm(forms.Form):
     password = forms.CharField(
         label="Passwort zur Bestätigung",

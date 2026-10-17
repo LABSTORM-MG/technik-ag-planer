@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
+from apps.accounts.models import FORMER_MEMBER
 from apps.organizations.models import OrganizationScopedModel
 
 
@@ -117,14 +118,25 @@ class EventAttendee(OrganizationScopedModel):
         CONFIRMED = "confirmed", "zugesagt"
 
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="attendees")
+    # Leer, wenn das Konto gelöscht wurde oder die AG verlassen hat – die Teilnahme bleibt
     membership = models.ForeignKey(
         "organizations.Membership",
         verbose_name="Mitglied",
-        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
         related_name="event_attendances",
     )
     status = models.CharField(
         "Status", max_length=10, choices=Status.choices, default=Status.REQUESTED
+    )
+    corrected_hours = models.DecimalField(
+        "Tatsächliche Stunden",
+        max_digits=4,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Leer lassen, um die Stunden aus den Zeiten zu berechnen.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -137,11 +149,16 @@ class EventAttendee(OrganizationScopedModel):
         ]
 
     def __str__(self):
-        return f"{self.membership.user} – {self.event} ({self.get_status_display()})"
+        return f"{self.person} – {self.event} ({self.get_status_display()})"
 
     @property
     def is_confirmed(self):
         return self.status == self.Status.CONFIRMED
+
+    @property
+    def person(self):
+        """Name für Anzeigen; gelöschte Konten und Ausgetretene erscheinen anonym."""
+        return str(self.membership.user) if self.membership_id else FORMER_MEMBER
 
 
 class Unavailability(OrganizationScopedModel):

@@ -25,6 +25,11 @@ GROUPS = [
                 "organizations:members",
             ),
             Entry(
+                "Einsatzübersicht",
+                "Einsätze und Stunden je Mitglied, als PDF",
+                "productions:hours",
+            ),
+            Entry(
                 "Organisation verwalten",
                 "Ownership übertragen, verlassen oder auflösen",
                 "organizations:manage",
@@ -72,8 +77,8 @@ GROUPS = [
             ),
             Entry(
                 "Fähigkeiten",
-                "Fähigkeiten zur Auswahl anlegen, sortieren, löschen",
-                milestone=9,
+                "Fähigkeiten zur Auswahl anlegen, umbenennen, sortieren, löschen",
+                "productions:skills",
                 owner_only=True,
             ),
             Entry(
@@ -85,7 +90,7 @@ GROUPS = [
             Entry(
                 "Schuljahreswechsel",
                 "Alle Jahrgangsstufen um eins erhöhen, Q2 wird „Extern“",
-                milestone=9,
+                "organizations:school_year",
                 owner_only=True,
             ),
         ],
@@ -112,7 +117,11 @@ GROUPS = [
                 "Tage oder Zeiträume, an denen du nicht kannst",
                 "scheduling:unavailability_list",
             ),
-            Entry("Meine Fähigkeiten", "Eigene Fähigkeiten aus der Liste auswählen", milestone=9),
+            Entry(
+                "Meine Fähigkeiten",
+                "Eigene Fähigkeiten aus der Liste auswählen",
+                "productions:my_skills",
+            ),
             Entry("Hilfe & FAQ", "Kurze Antworten auf häufige Fragen", milestone=12),
             Entry("Über die App", "Alle Funktionen auf einen Blick", milestone=12),
         ],
@@ -129,7 +138,7 @@ GROUPS = [
                 "Status, Einrichtung per Authenticator-App",
                 "accounts:two_factor",
             ),
-            Entry("Konto löschen", "Eigenes Konto dauerhaft löschen", milestone=9),
+            Entry("Konto löschen", "Eigenes Konto dauerhaft löschen", "accounts:delete"),
         ],
     ),
 ]

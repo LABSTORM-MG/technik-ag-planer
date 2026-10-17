@@ -6,6 +6,14 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Hinzugefügt
 
+**Meilenstein 9 – Team-Funktionen**
+
+- Fähigkeiten: Der Owner legt sie an, benennt sie um, sortiert und löscht sie; jedes Mitglied wählt unter „Meine Fähigkeiten“ seine eigenen; sie erscheinen in der Mitgliederliste
+- Crew einteilen mit Filter nach Fähigkeit und Vorschlägen (frei, wer im Schuljahr am wenigsten eingesetzt war, zuerst)
+- Einsatzübersicht je Mitglied mit Stunden aus Jobs und Terminen, Summe und Zeitraum-Filter (Schuljahr, Halbjahre, eigener Zeitraum); Gesamtübersicht für Owner, Admins und Lehrkräfte; Stunden korrigieren; Export als PDF mit Unterschriftszeile
+- Schuljahreswechsel mit Vorschau: alle Jahrgangsstufen eins hoch, Q2 wird „Extern“; nur einmal je Schuljahr, auch über mehrere AGs
+- Konto löschen: Einsätze, Board-Nachrichten und Call-Sheet-Einträge bleiben als „Ehemaliges Mitglied“ erhalten
+
 **Meilenstein 8 – PDFs**
 
 - Call Sheet je Job und „Call Sheet gesamt“ je Produktion mit Ort, Aufsicht, Jobs, Treffpunkt und Crew
@@ -34,6 +42,8 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Geändert
 
+- Mitglied entfernen und AG verlassen löschen die bisherigen Einsätze nicht mehr; sie bleiben als „Ehemaliges Mitglied“ erhalten
+- Der Datenexport enthält auch Mehrfach-Zuordnungen (Aufsicht, Fähigkeiten)
 - Beispielkonten melden sich mit kurzen Namen an (`owner`/`owner`, `lehrer`/`lehrer`, `schueler`/`schueler` …); das Login-Feld nimmt dafür bis M12 auch Namen ohne @ an
 
 **Meilenstein 5 – Board** (#7)

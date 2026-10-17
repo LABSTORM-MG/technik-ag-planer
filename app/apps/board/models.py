@@ -2,10 +2,10 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 
+from apps.accounts.models import FORMER_MEMBER
 from apps.organizations.models import OrganizationScopedModel
 
 MAX_LENGTH = 2000
-FORMER_MEMBER = "Ehemaliges Mitglied"
 
 
 class Message(OrganizationScopedModel):

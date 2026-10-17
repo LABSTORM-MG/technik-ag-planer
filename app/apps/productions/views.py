@@ -10,22 +10,26 @@ from django.views.decorators.http import require_POST
 from apps.inquiries.models import Inquiry
 from apps.inventory import services as inventory_services
 from apps.organizations.decorators import org_required, permission_required_in_org
+from apps.organizations.models import Membership
 from apps.organizations.permissions import Perm
 from apps.scheduling.models import EventAttendee
 from apps.scheduling.services import find_conflicts
 
-from . import services
+from . import hours, services
 from .forms import (
     CategoryForm,
     CrewForm,
+    HoursForm,
     JobForm,
     JobFormSet,
+    MySkillsForm,
     ProductionForm,
+    SkillForm,
     StatusChangeForm,
     StatusForm,
     TodoForm,
 )
-from .models import Category, CrewAssignment, Job, Production, ProductionStatus, Todo
+from .models import Category, CrewAssignment, Job, Production, ProductionStatus, Skill, Todo
 
 PRODUCTIONS = {"active_section": "productions"}
 SETTINGS = {"active_section": "settings"}
@@ -335,7 +339,10 @@ def job_delete(request, pk):
 @permission_required_in_org(Perm.MANAGE_CREW)
 def job_crew(request, pk):
     job = _job(request, pk)
-    form = CrewForm(request.POST or None, job=job)
+    skills = list(Skill.objects.for_org(request.organization))
+    skill = next((s for s in skills if str(s.pk) == request.GET.get("faehigkeit")), None)
+    initial = {"membership": request.GET.get("mitglied")} if request.GET.get("mitglied") else {}
+    form = CrewForm(request.POST or None, job=job, skill=skill, initial=initial)
     conflicts = []
     if request.method == "POST" and form.is_valid():
         membership = form.cleaned_data["membership"]
@@ -353,12 +360,20 @@ def job_crew(request, pk):
             verb = "eingeteilt" if assignment.is_confirmed else "angefragt"
             messages.success(request, f"{membership.user} {verb}.")
             return redirect("productions:detail", pk=job.production_id)
-        form = CrewForm({**request.POST.dict(), "ignore_conflicts": "on"}, job=job)
+        form = CrewForm({**request.POST.dict(), "ignore_conflicts": "on"}, job=job, skill=skill)
         form.is_valid()
     return render(
         request,
         "productions/crew_form.html",
-        {**PRODUCTIONS, "form": form, "job": job, "conflicts": conflicts},
+        {
+            **PRODUCTIONS,
+            "form": form,
+            "job": job,
+            "conflicts": conflicts,
+            "skills": skills,
+            "skill": skill,
+            "suggestions": services.suggest_crew(job, skill) if skill else [],
+        },
     )
 
 
@@ -367,7 +382,7 @@ def job_crew(request, pk):
 def crew_remove(request, pk):
     assignment = _assignment(request, pk)
     assignment.delete()
-    messages.success(request, f"{assignment.membership.user} entfernt.")
+    messages.success(request, f"{assignment.person} entfernt.")
     return redirect("productions:detail", pk=assignment.job.production_id)
 
 
@@ -543,3 +558,158 @@ def status_move(request, pk):
         ProductionStatus.objects.for_org(request.organization),
     )
     return redirect("productions:statuses")
+
+
+# ---------- Fähigkeiten ----------
+
+
+@permission_required_in_org(Perm.MANAGE_ORG_CONFIG)
+def skills(request):
+    return _ordered_settings(
+        request, Skill, SkillForm, "productions/skills.html", "Fähigkeiten", "skills"
+    )
+
+
+def _skill(request, pk):
+    return get_object_or_404(Skill.objects.for_org(request.organization), pk=pk)
+
+
+@permission_required_in_org(Perm.MANAGE_ORG_CONFIG)
+def skill_edit(request, pk):
+    return _edit_item(request, _skill(request, pk), SkillForm, reverse("productions:skills"))
+
+
+@require_POST
+@permission_required_in_org(Perm.MANAGE_ORG_CONFIG)
+def skill_delete(request, pk):
+    skill = _skill(request, pk)
+    skill.delete()
+    messages.success(request, f"Fähigkeit „{skill.name}“ gelöscht.")
+    return redirect("productions:skills")
+
+
+@require_POST
+@permission_required_in_org(Perm.MANAGE_ORG_CONFIG)
+def skill_move(request, pk):
+    services.move(
+        _skill(request, pk), _direction(request), Skill.objects.for_org(request.organization)
+    )
+    return redirect("productions:skills")
+
+
+@org_required
+def my_skills(request):
+    form = MySkillsForm(
+        request.POST or None,
+        organization=request.organization,
+        initial={"skills": request.membership.skills.all()},
+    )
+    if request.method == "POST" and form.is_valid():
+        request.membership.skills.set(form.cleaned_data["skills"])
+        messages.success(request, "Gespeichert.")
+        return redirect("productions:my_skills")
+    return render(request, "productions/my_skills.html", {**SETTINGS, "form": form})
+
+
+# ---------- Einsatzübersicht ----------
+
+
+def hours_membership(request, pk):
+    """Mitglied für die Einsatzübersicht: eigene immer, andere nur mit Recht (sonst 403)."""
+    membership = get_object_or_404(
+        Membership.objects.for_org(request.organization).select_related("user"), pk=pk
+    )
+    if membership != request.membership and not request.membership.has_perm(
+        Perm.VIEW_ALL_ASSIGNMENTS
+    ):
+        raise PermissionDenied
+    return membership
+
+
+def hours_context(request, membership):
+    """Gemeinsam für Seite und PDF (apps/documents)."""
+    period = hours.period_from_request(request.GET)
+    items = hours.entries(membership, period.start, period.end)
+    return {
+        "member": membership,
+        "period": period,
+        "periods": hours.periods(),
+        "entries": items,
+        "total": hours.total(items),
+        "any_corrected": any(e.is_corrected for e in items),
+    }
+
+
+@org_required
+def hours_overview(request):
+    if not request.membership.has_perm(Perm.VIEW_ALL_ASSIGNMENTS):
+        return redirect("productions:hours_member", pk=request.membership.pk)
+    period = hours.period_from_request(request.GET)
+    memberships = Membership.objects.for_org(request.organization).select_related("user")
+    return render(
+        request,
+        "productions/hours_overview.html",
+        {
+            **SETTINGS,
+            "period": period,
+            "periods": hours.periods(),
+            "rows": hours.summary(request.organization, memberships, period.start, period.end),
+        },
+    )
+
+
+@org_required
+def hours_member(request, pk):
+    membership = hours_membership(request, pk)
+    return render(
+        request,
+        "productions/hours_member.html",
+        {**SETTINGS, **hours_context(request, membership)},
+    )
+
+
+def _correct_hours(request, obj, title, back):
+    form = HoursForm(request.POST or None, initial={"corrected_hours": obj.corrected_hours})
+    if request.method == "POST" and form.is_valid():
+        obj.corrected_hours = form.cleaned_data["corrected_hours"]
+        obj.save(update_fields=["corrected_hours"])
+        messages.success(request, "Stunden gespeichert.")
+        return redirect(back)
+    return render(
+        request,
+        "productions/hours_form.html",
+        {**SETTINGS, "form": form, "title": title, "person": obj.person, "back": back},
+    )
+
+
+def _back_to_member(request, obj):
+    url = reverse("productions:hours_member", args=[obj.membership_id])
+    next_url = request.GET.get("next", "")
+    if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        return next_url
+    return url
+
+
+@permission_required_in_org(Perm.CORRECT_HOURS)
+def hours_correct_job(request, pk):
+    assignment = get_object_or_404(
+        CrewAssignment.objects.for_org(request.organization)
+        .filter(membership__isnull=False, job__production__deleted_at__isnull=True)
+        .select_related("job", "job__production", "membership__user"),
+        pk=pk,
+    )
+    title = f"{assignment.job.production} – {assignment.job.name}"
+    return _correct_hours(request, assignment, title, _back_to_member(request, assignment))
+
+
+@permission_required_in_org(Perm.CORRECT_HOURS)
+def hours_correct_event(request, pk):
+    attendee = get_object_or_404(
+        EventAttendee.objects.for_org(request.organization)
+        .filter(membership__isnull=False)
+        .select_related("event", "membership__user"),
+        pk=pk,
+    )
+    return _correct_hours(
+        request, attendee, attendee.event.title, _back_to_member(request, attendee)
+    )

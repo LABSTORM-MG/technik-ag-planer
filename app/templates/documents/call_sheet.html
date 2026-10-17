@@ -11,7 +11,7 @@
           <tbody>
             {% for a in j.crew.all %}
               <tr>
-                <td>{{ a.membership.user }}</td>
+                <td>{{ a.person }}</td>
                 <td>{{ a.role_label|default:"–" }}</td>
                 <td class="doc__status--{% if a.is_confirmed %}confirmed{% else %}requested{% endif %}">{{ a.get_status_display }}</td>
               </tr>

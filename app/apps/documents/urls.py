@@ -27,6 +27,8 @@ urlpatterns = [
         PDF,
         name="release_list_pdf",
     ),
+    path("einsaetze/<int:pk>/uebersicht/", views.hours, name="hours"),
+    path("einsaetze/<int:pk>/uebersicht.pdf", views.hours, PDF, name="hours_pdf"),
     path("produktionen/<int:pk>/packliste.pdf", views.packing_list, PDF, name="packing_list_pdf"),
     path(
         "produktionen/<int:pk>/packliste/vorschau/",

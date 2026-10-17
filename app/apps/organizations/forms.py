@@ -42,5 +42,12 @@ class DissolveForm(forms.Form):
     )
 
 
+class SchoolYearForm(forms.Form):
+    confirm = forms.BooleanField(
+        label="Ja, alle Jahrgangsstufen jetzt um eins erhöhen.",
+        error_messages={"required": "Bitte bestätigen."},
+    )
+
+
 class Require2FAForm(forms.Form):
     require_2fa = forms.BooleanField(label="Zwei-Faktor für alle Mitglieder", required=False)

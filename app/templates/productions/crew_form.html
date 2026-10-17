@@ -5,6 +5,31 @@
   <p class="eyebrow">{{ job.production.name }}</p>
   <h1 class="page-title sheet-title">Crew für {{ job.name }}</h1>
   <p class="muted">{{ job.date|date:"D., d.m." }} · {{ job.start_time|time:"H:i" }}–{{ job.end_time|time:"H:i" }} Uhr</p>
+  {% if skills %}
+    <nav class="chips" aria-label="Nach Fähigkeit filtern">
+      <a class="chip" href="{% url 'productions:job_crew' job.pk %}" data-sheet-url {% if not skill %}aria-current="true"{% endif %}>Alle</a>
+      {% for s in skills %}<a class="chip" href="{% url 'productions:job_crew' job.pk %}?faehigkeit={{ s.pk }}" data-sheet-url {% if s == skill %}aria-current="true"{% endif %}>{{ s.name }}</a>{% endfor %}
+    </nav>
+  {% endif %}
+  {% if skill and not conflicts %}
+    <section class="suggestions">
+      <h2 class="section-title">Vorschläge</h2>
+      {% if suggestions %}
+        <ul class="list">
+          {% for m in suggestions %}
+            <li class="list__item">
+              <div class="list__main">
+                <a class="list__link list__title" href="{% url 'productions:job_crew' job.pk %}?faehigkeit={{ skill.pk }}&amp;mitglied={{ m.pk }}" data-sheet-url>{{ m.user }}</a>
+                <span class="list__subtitle">{% if m.user.grade %}{{ m.user.get_grade_display }} · {% endif %}frei · {{ m.season_count }} {% if m.season_count == 1 %}Einsatz{% else %}Einsätze{% endif %} in diesem Schuljahr</span>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">Niemand mit „{{ skill.name }}“ ist zu dieser Zeit frei.</p>
+      {% endif %}
+    </section>
+  {% endif %}
   {% if conflicts %}
     <div class="message message--warning" role="alert">
       <p><strong>Achtung, Überschneidung:</strong> {{ form.cleaned_data.membership.user }} ist zu dieser Zeit schon eingeplant:</p>
@@ -12,7 +37,7 @@
       <p>Trotzdem eintragen?</p>
     </div>
   {% endif %}
-  <form method="post" action="{% url 'productions:job_crew' job.pk %}" class="form" novalidate>
+  <form method="post" action="{{ request.get_full_path }}" class="form" novalidate>
     {% csrf_token %}
     {% include "includes/form_fields.html" %}
     <div class="form-actions">

@@ -13,6 +13,7 @@ from apps.organizations.decorators import org_required, permission_required_in_o
 from apps.organizations.permissions import Perm
 from apps.productions.models import Job, Production
 from apps.productions.services import with_jobs_and_crew
+from apps.productions.views import hours_context, hours_membership
 from apps.scheduling import periods as school_periods
 
 from . import services
@@ -48,13 +49,23 @@ def _document(request, *, url, as_pdf, template, title, filename, context, back,
             **PRODUCTIONS,
             **context,
             "body_template": template,
-            "pdf_url": reverse(f"documents:{url_name}_pdf", args=[pk]),
+            "pdf_url": reverse(f"documents:{url_name}_pdf", args=[pk]) + _query(request),
+            "download_url": reverse(f"documents:{url_name}_pdf", args=[pk])
+            + _query(request, download="1"),
             "pdf_filename": f"{filename}.pdf",
             "back_url": back[0],
             "back_label": back[1],
             "hints": hints,
         },
     )
+
+
+def _query(request, **extra):
+    """Filter der Vorschau (z. B. Zeitraum) an die PDF-URL weitergeben."""
+    params = request.GET.copy()
+    params.pop("download", None)
+    params.update(extra)
+    return f"?{params.urlencode()}" if params else ""
 
 
 @org_required
@@ -135,4 +146,23 @@ def packing_list(request, pk, as_pdf=False):
         filename=f"packliste-{slugify(production.name)}",
         context={"production": production, "planned": services.packing_items(production)},
         back=(reverse("inventory:packing_list", args=[production.pk]), "Packliste"),
+    )
+
+
+@org_required
+def hours(request, pk, as_pdf=False):
+    membership = hours_membership(request, pk)
+    context = hours_context(request, membership)
+    return _document(
+        request,
+        url=("hours", membership.pk),
+        as_pdf=as_pdf,
+        template="documents/hours.html",
+        title=f"Einsatzübersicht – {membership.user}",
+        filename=f"einsatzuebersicht-{slugify(str(membership.user))}-{context['period'].start:%Y-%m-%d}",
+        context=context,
+        back=(
+            reverse("productions:hours_member", args=[membership.pk]) + _query(request),
+            "Einsatzübersicht",
+        ),
     )

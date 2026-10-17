@@ -1,0 +1,15 @@
+<form method="get" class="card form period-filter">
+  <div class="field">
+    <label class="field__label" for="id_zeitraum">Zeitraum</label>
+    <select name="zeitraum" id="id_zeitraum">
+      {% for p in periods %}<option value="{{ p.key }}"{% if p.key == period.key %} selected{% endif %}>{{ p.label }}</option>{% endfor %}
+      <option value="eigener"{% if period.key == "eigener" %} selected{% endif %}>Eigener Zeitraum</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <div class="field"><label class="field__label" for="id_von">Von</label><input type="date" name="von" id="id_von" value="{{ period.start|date:'Y-m-d' }}"></div>
+    <div class="field"><label class="field__label" for="id_bis">Bis</label><input type="date" name="bis" id="id_bis" value="{{ period.end|date:'Y-m-d' }}"></div>
+  </div>
+  <p class="field__help">Von/Bis gelten bei „Eigener Zeitraum“. Gezählt wird bis heute.</p>
+  <div><button type="submit" class="button button--secondary button--small">Anzeigen</button></div>
+</form>

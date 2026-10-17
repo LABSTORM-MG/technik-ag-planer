@@ -1,0 +1,38 @@
+{% extends "settings/page.html" %}
+{% block page_title_text %}Fähigkeiten{% endblock %}
+{% block page_title %}Fähigkeiten{% endblock %}
+{% block page_content %}
+<div class="stack">
+  <p class="muted">Mitglieder wählen ihre Fähigkeiten unter „Meine Fähigkeiten“. Beim Einteilen lässt sich danach filtern.</p>
+  <ul class="list">
+    {% for item in items %}
+      <li class="list__item">
+        <div class="list__main">
+          <a class="list__link list__title" href="{% url 'productions:skill_edit' item.pk %}">{{ item.name }}</a>
+          <span class="list__subtitle">{{ item.members.count }} Mitglied{{ item.members.count|pluralize:"er" }}</span>
+        </div>
+        <div class="list__actions">
+          <form method="post" action="{% url 'productions:skill_move' item.pk %}">
+            {% csrf_token %}
+            <button type="submit" name="richtung" value="-1" class="icon-button" aria-label="Nach oben"{% if forloop.first %} disabled{% endif %}>↑</button>
+            <button type="submit" name="richtung" value="1" class="icon-button" aria-label="Nach unten"{% if forloop.last %} disabled{% endif %}>↓</button>
+          </form>
+          <form method="post" action="{% url 'productions:skill_delete' item.pk %}" data-confirm="„{{ item.name }}“ löschen? Die Mitglieder verlieren diese Fähigkeit.">
+            {% csrf_token %}<button type="submit" class="icon-button" aria-label="{{ item.name }} löschen">{% include "includes/icon.html" with name="close" %}</button>
+          </form>
+        </div>
+      </li>
+    {% empty %}
+      <li class="list__item muted">Noch keine Fähigkeiten.</li>
+    {% endfor %}
+  </ul>
+  <section class="card">
+    <h2 class="section-title">Neu</h2>
+    <form method="post" class="form" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <div><button type="submit" class="button button--primary">Anlegen</button></div>
+    </form>
+  </section>
+</div>
+{% endblock %}

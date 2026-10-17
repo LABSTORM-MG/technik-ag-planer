@@ -1,5 +1,7 @@
 """Einladungen, Beitritt und Owner-Regeln (Abschnitt 2)."""
 
+from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -168,3 +170,78 @@ def dissolve(organization: Organization, confirm_name: str):
     if confirm_name.strip() != organization.name:
         raise ValidationError("Der eingegebene Name stimmt nicht mit dem Namen der AG überein.")
     organization.delete()
+
+
+# ---------- Schuljahreswechsel ----------
+
+SCHOOL_YEAR_LOCK = timedelta(days=180)
+
+
+def _next_grade(grade):
+    from apps.accounts.models import Grade
+
+    order = [value for value, _label in Grade.choices]  # 5 … Q2, Extern
+    if grade not in order or grade == Grade.EXTERN:
+        return None
+    return order[order.index(grade) + 1]
+
+
+def school_year_preview(organization, now=None):
+    """Wer wird wie hochgestuft? (Wechsel, übersprungene Konten, Sperre bis)."""
+    now = now or timezone.now()
+    changes, skipped = {}, []
+    memberships = (
+        Membership.objects.for_org(organization)
+        .exclude(role=Role.TEACHER)
+        .select_related("user")
+        .order_by("user__display_name")
+    )
+    for m in memberships:
+        user = m.user
+        target = _next_grade(user.grade)
+        if target is None:
+            continue
+        if user.grade_promoted_at and now - user.grade_promoted_at < SCHOOL_YEAR_LOCK:
+            skipped.append(user)
+            continue
+        changes.setdefault((user.grade, target), []).append(user)
+    locked_until = None
+    if organization.school_year_changed_at:
+        locked_until = organization.school_year_changed_at + SCHOOL_YEAR_LOCK
+        if locked_until <= now:
+            locked_until = None
+    return changes, skipped, locked_until
+
+
+@transaction.atomic
+def change_school_year(organization, now=None):
+    """Alle Jahrgangsstufen eins hoch, aus Q2 wird „Extern“ (Abschnitt 2).
+
+    Konten in mehreren AGs werden nur einmal je Schuljahr hochgestuft; eine AG kann den
+    Wechsel nur einmal in 180 Tagen auslösen. Gibt die Anzahl hochgestufter Konten zurück.
+    """
+    from apps.board.services import post_system
+
+    now = now or timezone.now()
+    organization = Organization.objects.select_for_update().get(pk=organization.pk)
+    changes, _skipped, locked_until = school_year_preview(organization, now)
+    if locked_until:
+        raise ValidationError(
+            f"Der Schuljahreswechsel wurde schon ausgelöst; erneut möglich ab "
+            f"{timezone.localtime(locked_until):%d.%m.%Y}."
+        )
+    count = 0
+    for (_old, new), users in changes.items():
+        for user in users:
+            user.grade = new
+            user.grade_promoted_at = now
+            user.save(update_fields=["grade", "grade_promoted_at"])  # einzeln fürs Protokoll
+            count += 1
+    organization.school_year_changed_at = now
+    organization.save(update_fields=["school_year_changed_at"])
+    post_system(
+        organization,
+        f"Schuljahreswechsel: Die Jahrgangsstufen von {count} Mitglied"
+        f"{'ern' if count != 1 else ''} wurden um eins erhöht.",
+    )
+    return count

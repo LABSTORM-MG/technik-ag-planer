@@ -1,0 +1,23 @@
+{% extends "settings/page.html" %}
+{% load hours %}
+{% block page_title_text %}Einsatzübersicht{% endblock %}
+{% block page_title %}Einsatzübersicht{% endblock %}
+{% block page_content %}
+<div class="stack">
+  {% include "productions/includes/period_filter.html" %}
+  <section>
+    <h2 class="section-title">{{ period.label }}</h2>
+    <ul class="list">
+      {% for m, count, total in rows %}
+        <li class="list__item">
+          <div class="list__main">
+            <a class="list__link list__title" href="{% url 'productions:hours_member' m.pk %}?{{ request.GET.urlencode }}">{{ m.user }}{% if m == current_membership %} <span class="muted">(du)</span>{% endif %}</a>
+            <span class="list__subtitle">{% if m.user.grade %}{{ m.user.get_grade_display }} · {% endif %}{{ m.get_role_display }} · {{ count }} {% if count == 1 %}Einsatz{% else %}Einsätze{% endif %}</span>
+          </div>
+          <span class="tag{% if total %} tag--accent{% endif %}">{{ total|stunden }} h</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

@@ -21,8 +21,15 @@ def register(model, *, exclude=()):
 
 
 def _rows(queryset, exclude):
-    fields = [f for f in queryset.model._meta.concrete_fields if f.name not in exclude]
-    return [{f.name: f.value_from_object(obj) for f in fields} for obj in queryset]
+    meta = queryset.model._meta
+    fields = [f for f in meta.concrete_fields if f.name not in exclude]
+    # Mehrfach-Zuordnungen (z. B. Aufsicht, Fähigkeiten) als Liste von IDs
+    many = [f for f in meta.many_to_many if f.name not in exclude]
+    return [
+        {f.name: f.value_from_object(obj) for f in fields}
+        | {f.name: sorted(o.pk for o in f.value_from_object(obj)) for f in many}
+        for obj in queryset.prefetch_related(*(f.name for f in many))
+    ]
 
 
 def export_organization(organization) -> bytes:

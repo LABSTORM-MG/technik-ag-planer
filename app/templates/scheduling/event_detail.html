@@ -31,7 +31,7 @@
       <ul class="crew card">
         {% for a in attendees %}
           <li class="crew__item">
-            <span class="crew__name">{{ a.membership.user }}</span>
+            <span class="crew__name">{{ a.person }}</span>
             <span class="tag {% if a.is_confirmed %}tag--success{% else %}tag--warning{% endif %}">{{ a.get_status_display }}</span>
             {% if a.membership_id == current_membership.pk and not a.is_confirmed %}
               <form method="post" action="{% url 'scheduling:attendee_respond' a.pk %}">
@@ -42,7 +42,7 @@
             {% endif %}
             {% if org_perms.CREATE_EVENTS %}
               <form method="post" action="{% url 'scheduling:attendee_remove' a.pk %}">
-                {% csrf_token %}<button type="submit" class="icon-button" aria-label="{{ a.membership.user }} entfernen">{% include "includes/icon.html" with name="close" %}</button>
+                {% csrf_token %}<button type="submit" class="icon-button" aria-label="{{ a.person }} entfernen">{% include "includes/icon.html" with name="close" %}</button>
               </form>
             {% endif %}
           </li>

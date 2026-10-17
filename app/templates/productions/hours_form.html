@@ -1,0 +1,15 @@
+{% extends layout %}
+{% block title %}Stunden korrigieren{% endblock %}
+{% block topbar_title %}Stunden{% endblock %}
+{% block content %}
+  <p class="eyebrow">{{ person }}</p>
+  <h1 class="page-title sheet-title">{{ title }}</h1>
+  <form method="post" class="form" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <div class="form-actions">
+      <a class="button button--secondary" href="{{ back }}">Abbrechen</a>
+      <button type="submit" class="button button--primary">Speichern</button>
+    </div>
+  </form>
+{% endblock %}

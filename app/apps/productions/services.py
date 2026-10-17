@@ -25,6 +25,32 @@ def with_jobs_and_crew(queryset):
     )
 
 
+def suggest_crew(job, skill, limit=3):
+    """Vorschläge beim Einteilen: Mitglieder mit der Fähigkeit, noch nicht im Job, ohne
+    Überschneidung – wer im Schuljahr die wenigsten Einsätze hat, zuerst."""
+    from apps.scheduling.services import find_conflicts
+
+    from .hours import confirmed_counts
+
+    taken = job.crew.values_list("membership_id", flat=True)
+    candidates = list(
+        Membership.objects.for_org(job.organization)
+        .filter(skills=skill)
+        .exclude(pk__in=taken)
+        .select_related("user", "organization")
+    )
+    counts = confirmed_counts(job.organization, [m.pk for m in candidates])
+    free = [
+        m
+        for m in candidates
+        if not find_conflicts(m, job.start_datetime, job.end_datetime, exclude_job=job)
+    ]
+    free.sort(key=lambda m: (counts[m.pk], str(m.user).lower()))
+    for m in free:
+        m.season_count = counts[m.pk]
+    return free[:limit]
+
+
 def save_production(organization, user, form, formset):
     """Speichert Produktion und Jobs aus `ProductionForm` und `JobFormSet` (beide gültig)."""
     production = form.save(commit=False)

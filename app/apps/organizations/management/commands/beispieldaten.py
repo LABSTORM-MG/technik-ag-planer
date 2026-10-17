@@ -59,6 +59,7 @@ class Command(BaseCommand):
         self._board(Organization.objects.get(name="Technik-AG Nord"))
         self._inventory(Organization.objects.get(name="Technik-AG Nord"))
         link = self._inquiries(Organization.objects.get(name="Technik-AG Nord"))
+        self._team(Organization.objects.get(name="Technik-AG Nord"))
 
         self.stdout.write(self.style.SUCCESS("Beispieldaten angelegt."))
         self.stdout.write("Anmeldename = Passwort, z. B. owner / owner")
@@ -115,6 +116,19 @@ class Command(BaseCommand):
                 ],
             ),
             (
+                "Herbstkonzert",
+                "Konzert",
+                -10,
+                1,
+                confirmed,
+                "Aula",
+                "",
+                [
+                    ("Aufbau", 0, time(13), time(16), "Bühneneingang"),
+                    ("Show", 0, time(18), time(21), "Technikpult"),
+                ],
+            ),
+            (
                 "Sommerfest 2025",
                 "Schulfest",
                 -120,
@@ -158,6 +172,11 @@ class Command(BaseCommand):
         assign(setup, members["ben"], status="confirmed", role_label="Licht")
         assign(show, members["admin"], status="confirmed", role_label="FOH")
         assign(show, members["schueler"], status="confirmed", role_label="Monitor")
+        autumn = Production.objects.for_org(org).get(name="Herbstkonzert")
+        for job in autumn.jobs.all():
+            assign(job, members["schueler"], status="confirmed", role_label="Licht")
+            assign(job, members["ben"], status="confirmed", role_label="Ton")
+        assign(autumn.jobs.get(name="Show"), members["admin"], status="confirmed", role_label="FOH")
         for text in ["Funkmikros laden", "Bühnenplan drucken"]:
             Todo.objects.create(organization=org, production=concert, text=text)
 
@@ -366,3 +385,41 @@ class Command(BaseCommand):
             end_date=trip + timedelta(days=1),
             note="Klassenfahrt",
         )
+
+    def _team(self, org):
+        from datetime import time, timedelta
+
+        from django.utils import timezone
+
+        from apps.productions.models import Skill
+        from apps.scheduling.models import Event, EventAttendee
+
+        if Skill.objects.for_org(org).exists():
+            return
+        members = {m.user.email: m for m in Membership.objects.for_org(org).select_related("user")}
+        skills = {
+            "Licht": ["schueler", "owner"],
+            "Ton": ["ben", "admin"],
+            "Bühne": ["schueler", "ben"],
+            "Kamera": ["admin"],
+        }
+        for i, (name, people) in enumerate(skills.items()):
+            skill = Skill.objects.create(organization=org, name=name, position=i)
+            skill.members.set(members[p] for p in people)
+
+        # Ein vergangenes AG-Treffen für die Einsatzübersicht
+        meeting = Event.objects.create(
+            organization=org,
+            title="AG-Treffen: Lichtpult-Schulung",
+            date=timezone.localdate() - timedelta(days=7),
+            start_time=time(14),
+            end_time=time(15, 30),
+            location="Technikraum",
+        )
+        for person in ["schueler", "ben", "owner"]:
+            EventAttendee.objects.create(
+                organization=org,
+                event=meeting,
+                membership=members[person],
+                status=EventAttendee.Status.CONFIRMED,
+            )
