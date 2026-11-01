@@ -5,7 +5,7 @@
 services:
   caddy:
     ports: !override
-      - "80:80"
+      - "0.0.0.0:80:80"  # nur IPv4, die Firewall-Regel (Anleitung) gilt nur dafür
     volumes:
       - ./caddy/Caddyfile.proxy:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
