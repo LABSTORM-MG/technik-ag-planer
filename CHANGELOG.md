@@ -6,6 +6,10 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Hinzugefügt
 
+**Betrieb**
+
+- Optionale Ergänzung für den Betrieb hinter einem vorgeschalteten Reverse Proxy (`deploy/docker-compose.proxy.yml`)
+
 **Wartung 1**
 
 - Push-Erinnerung auch vor zugesagten Terminen mit Uhrzeit (z. B. AG-Treffen), mit Ort
