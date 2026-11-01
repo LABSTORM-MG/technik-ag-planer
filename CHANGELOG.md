@@ -9,6 +9,8 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 **Betrieb**
 
 - Optionale Ergänzung für den Betrieb hinter einem vorgeschalteten Reverse Proxy (`deploy/docker-compose.proxy.yml`)
+- Behoben: Im Betrieb stürzte der Zeitplan des Workers ab (Datei nicht beschreibbar), sodass Erinnerungen, Aufräumen und nächtlicher Kalender-Abgleich ausfielen
+- Behoben: Fontconfig-Fehlermeldungen im Betrieb (kein beschreibbarer Cache-Ordner)
 
 **Wartung 1**
 
