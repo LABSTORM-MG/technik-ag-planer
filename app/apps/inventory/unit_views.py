@@ -3,6 +3,7 @@ from functools import wraps
 from io import BytesIO
 
 import qrcode
+import qrcode.constants
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
@@ -112,7 +113,11 @@ def create_unit(request, pk):
 def qr(request, pk):
     unit = _unit(request, pk)
     stream = BytesIO()
-    qrcode.make(request.build_absolute_uri(f"/geraet/{unit.code}/")).save(stream, format="PNG")
+    # Nur der Code, keine Adresse: Das ergibt wenige große Felder, die Kameras sicher lesen
+    code = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=16, border=4)
+    code.add_data(unit.code)
+    code.make(fit=True)
+    code.make_image().save(stream, format="PNG")
     return HttpResponse(stream.getvalue(), content_type="image/png")
 
 

@@ -334,3 +334,26 @@ def test_upcoming_lists_are_sorted_by_date_with_job_counts(
         names = [p.name for p in planner_client.get(reverse(url)).context["upcoming"]]
         assert names == ["Bald", "Mittel", "Später"], url
     assert soon.name == names[0]
+
+
+def test_job_form_offers_periods_or_explains_how_to_get_them(
+    org, owner, login, concert, make_member
+):
+    from apps.scheduling.models import SchoolPeriod
+
+    url = reverse("productions:job_create", args=[concert.pk])
+    client = login(owner.user, org)
+
+    content = client.get(url).content.decode()
+    assert "sobald das Stundenraster eingetragen ist" in content
+    assert reverse("scheduling:periods") in content
+    teacher = login(make_member(org, Role.TEACHER).user, org).get(url).content.decode()
+    assert "sobald das Stundenraster eingetragen ist" in teacher
+    assert "Stundenraster eintragen" not in teacher
+
+    SchoolPeriod.objects.create(
+        organization=org, number=1, start_time=time(8), end_time=time(8, 45)
+    )
+    content = login(owner.user, org).get(url).content.decode()
+    assert "sobald das Stundenraster eingetragen ist" not in content
+    assert "oder Stunde" in content

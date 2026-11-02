@@ -8,7 +8,7 @@
       </thead>
       {% for block in blocks %}
         <tbody>
-          <tr class="doc__group"><th colspan="2">{{ block.date|date:"D., d.m.Y" }} · {{ block.periods_label }} ({{ block.time_label }})</th></tr>
+          <tr class="doc__group"><th colspan="2">{{ block.date|date:"D., d.m.Y" }} · {% if block.periods_label %}{{ block.periods_label }} ({{ block.time_label }}){% else %}{{ block.time_label }}{% endif %}</th></tr>
           {% for row in block.rows %}
             <tr><td>{{ row.name }}</td><td>{{ row.grade|default:"–" }}</td></tr>
           {% endfor %}

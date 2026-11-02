@@ -565,3 +565,11 @@ def test_messages_have_no_visible_actions_but_selection_data(student_client, stu
     assert f'data-edit-url="{reverse("board:edit", args=[message.pk])}"' in content
     assert "data-can-delete" in content
     assert 'class="message' not in content
+
+
+def test_messages_carry_author_for_copying(student_client, student, org):
+    services.post(org, student.user, "Hallo")
+
+    content = student_client.get(reverse("board:index")).content.decode()
+
+    assert f'data-author="{student.user}"' in content

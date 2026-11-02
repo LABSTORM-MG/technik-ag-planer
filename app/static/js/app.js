@@ -86,6 +86,15 @@ function filterPicker(picker) {
   picker.querySelector("[data-picker-empty]").hidden = visible > 0;
 }
 
+// Aufklappbare Auswahl: Name übernehmen und wieder zuklappen
+document.addEventListener("change", (event) => {
+  const collapse = event.target.closest?.("[data-picker-collapse]");
+  if (!collapse || event.target.type !== "radio") return;
+  const name = event.target.closest("[data-picker-item]").querySelector(".picker__name");
+  collapse.querySelector("[data-picker-summary]").textContent = name.textContent;
+  collapse.open = false;
+});
+
 function enhancePickers(root = document) {
   root.querySelectorAll("[data-picker]").forEach((picker) => {
     picker.querySelector("[data-picker-search]").hidden = false;
@@ -397,7 +406,7 @@ document.addEventListener("change", (event) => {
     const single = items.length === 1 ? items[0] : null;
     editLink.hidden = !single?.dataset.editUrl;
     if (single?.dataset.editUrl) editLink.href = single.dataset.editUrl;
-    copyButton.hidden = !single?.querySelector(".chat-message__text");
+    copyButton.hidden = !items.some((item) => item.querySelector(".chat-message__text"));
     deleteForm.hidden = !items.length || !items.every((item) => "canDelete" in item.dataset);
     const all = deletable();
     selectAll.closest("label").hidden = all.length === 0;
@@ -471,8 +480,21 @@ document.addEventListener("change", (event) => {
     renderSelection();
   });
   bar.querySelector("[data-select-cancel]").addEventListener("click", clearSelection);
+  // Absender nur am Anfang und wenn er wechselt, Nachrichten durch eine Leerzeile getrennt
+  function copiedText(items) {
+    let author = null;
+    const parts = [];
+    items.forEach((item) => {
+      const text = item.querySelector(".chat-message__text")?.innerText.trim();
+      if (!text) return;
+      parts.push(item.dataset.author !== author ? `${item.dataset.author}: ${text}` : text);
+      author = item.dataset.author;
+    });
+    return parts.join("\n\n");
+  }
+
   copyButton.addEventListener("click", async () => {
-    const text = selected()[0]?.querySelector(".chat-message__text")?.innerText;
+    const text = copiedText(selected());
     if (text) await navigator.clipboard?.writeText(text);
     clearSelection();
   });

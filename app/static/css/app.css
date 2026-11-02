@@ -2362,6 +2362,16 @@ a.icon-button {
   font-size: var(--text-xs);
 }
 
+.picker-collapse__summary {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.picker-collapse[open] > .picker {
+  margin-top: var(--space-2);
+}
+
 .picker__empty {
   margin: 0;
   padding: var(--space-2);

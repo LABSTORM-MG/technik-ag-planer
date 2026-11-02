@@ -1,3 +1,4 @@
+{% if widget.collapsed %}<details class="picker-collapse" data-picker-collapse{% if not widget.selected_label %} open{% endif %}><summary class="input picker-collapse__summary" data-picker-summary>{{ widget.selected_label|default:"Material wählen" }}</summary>{% endif %}
 <div class="picker" data-picker role="radiogroup"{% if widget.attrs.id %} id="{{ widget.attrs.id }}"{% endif %}>
   <input class="input picker__search" type="search" placeholder="Material suchen …" aria-label="Material suchen" data-picker-search hidden>
   {% if widget.categories %}
@@ -11,3 +12,4 @@
     <p class="muted picker__empty" data-picker-empty hidden>Kein Material gefunden.</p>
   </div>
 </div>
+{% if widget.collapsed %}</details>{% endif %}

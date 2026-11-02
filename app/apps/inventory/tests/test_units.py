@@ -708,3 +708,30 @@ def test_generated_code_is_short(org, unit, planner_client):
 
     assert generated.code.startswith("TAG-")
     assert len(generated.code) == 14
+
+
+def test_qr_contains_only_the_code_and_is_large(unit, planner_client):
+    from io import BytesIO
+
+    from PIL import Image
+
+    response = planner_client.get(reverse("inventory:unit_qr", args=[unit.pk]))
+
+    width, height = Image.open(BytesIO(response.content)).size
+    assert width == height
+    # 21 oder 25 Module + 2 × 4 Rand bei 16 px: wenige große Felder statt einer Adresse
+    assert width in {(21 + 8) * 16, (25 + 8) * 16}
+
+
+def test_scanner_still_accepts_labels_with_address():
+    assert unit_services.normalize_code("https://example.org/geraet/mic-01/") == "MIC-01"
+    assert unit_services.normalize_code("TAG-ABC123") == "TAG-ABC123"
+
+
+def test_kit_form_uses_material_picker(planner_client, org, make_material):
+    make_material(org, "Eigenes Mikro")
+
+    page = planner_client.get(reverse("inventory:kit_create")).content.decode()
+
+    assert "data-picker-collapse" in page
+    assert "Eigenes Mikro" in page

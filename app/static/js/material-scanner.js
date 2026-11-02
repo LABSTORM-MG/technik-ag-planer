@@ -41,6 +41,25 @@
     finally { busy = false; }
   }
   form.addEventListener('submit', event => { event.preventDefault(); void submit(form.elements.code.value.trim()); });
+  const newScanner = () => new Html5Qrcode('preview', {verbose: false, experimentalFeatures: {useBarCodeDetectorIfSupported: true}});
+  // Rückfallweg: Ein Foto ist schärfer als das Kamerabild und braucht keinen Autofokus im Browser
+  const photo = document.getElementById('photo');
+  photo?.addEventListener('change', async () => {
+    const file = photo.files[0];
+    photo.value = '';
+    if (!file) return;
+    try {
+      if (!window.Html5Qrcode) throw new Error('Scanner konnte nicht geladen werden. Bitte Inventarcode eingeben.');
+      await stop();
+      preview.hidden = false;
+      const code = await newScanner().scanFile(file, false);
+      preview.hidden = true;
+      await submit(code);
+    } catch (error) {
+      preview.hidden = true;
+      status.textContent = typeof error === 'string' || !error?.message ? 'Im Foto wurde kein QR-Code erkannt. Bitte näher heran und ohne Spiegelung.' : error.message;
+    }
+  });
   button.addEventListener('click', async () => {
     if (starting) return;
     if (active) { await stop(); return; }
@@ -49,8 +68,8 @@
       if (!window.isSecureContext) throw new Error('Die Kamera benötigt HTTPS oder localhost.');
       if (!window.Html5Qrcode) throw new Error('Kamerascanner konnte nicht geladen werden. Bitte Inventarcode eingeben.');
       preview.hidden = false;
-      scanner = new Html5Qrcode('preview', {verbose: false});
-      await scanner.start({facingMode: 'environment'}, {fps: 10, qrbox: (w, h) => {const size = Math.min(270, Math.floor(Math.min(w, h) * 0.8)); return {width: size, height: size};}}, code => { if (!disposed) void submit(code); }, () => {});
+      scanner = newScanner();
+      await scanner.start({facingMode: 'environment'}, {fps: 15, videoConstraints: {facingMode: {ideal: 'environment'}, width: {ideal: 1920}, height: {ideal: 1080}, advanced: [{focusMode: 'continuous'}]}, qrbox: (w, h) => {const size = Math.floor(Math.min(w, h) * 0.9); return {width: size, height: size};}}, code => { if (!disposed) void submit(code); }, () => {});
       active = true;
       if (disposed) { await stop(); return; }
       button.textContent = 'Kamera schließen';

@@ -9,3 +9,6 @@
     {% if form.end_period %}{% include "includes/field.html" with field=form.end_period %}{% endif %}
   </div>
 </div>
+{% if not form.period_names %}
+  <p class="field__help">Schulstunden lassen sich hier wählen, sobald das Stundenraster eingetragen ist.{% if org_perms.MANAGE_ORG_CONFIG %} <a href="{% url 'scheduling:periods' %}">Stundenraster eintragen</a>{% endif %}</p>
+{% endif %}

@@ -2,7 +2,7 @@
 
 from datetime import time, timedelta
 
-from apps.documents.services import release_blocks, release_rows
+from apps.documents.services import release_blocks, release_omissions, release_rows
 from apps.organizations.permissions import Role
 from apps.productions.models import CrewAssignment
 from apps.scheduling.models import SchoolPeriod
@@ -114,10 +114,38 @@ def test_blocks_are_separate_per_day_and_contain_only_release_rows(
     assert "Uhr" in blocks[0].time_label
 
 
-def test_no_blocks_without_raster(
+def test_without_raster_blocks_use_merged_job_times(
     org, monday, make_member, make_production, make_job, make_assignment
 ):
     production = make_production(org)
-    make_assignment(make_job(production, day=monday), make_member(org), CONFIRMED)
+    first = make_job(production, "Aufbau", day=monday, start=time(22, 43), end=time(22, 50))
+    second = make_job(production, "Abbau", day=monday, start=time(22, 50), end=time(22, 55))
+    weekend = make_job(production, "Sa", day=monday + timedelta(days=5))
+    student = make_member(org, Role.STUDENT, display_name="Lennart", grade="10")
+    make_assignment(first, student, CONFIRMED)
+    make_assignment(second, student, CONFIRMED)
+    make_assignment(weekend, student, CONFIRMED)
 
-    assert release_blocks(production) == []
+    [block] = release_blocks(production)
+
+    assert block.time_label == "22:43–22:55 Uhr"
+    assert block.periods_label == ""
+    assert [r.name for r in block.rows] == ["Lennart"]
+
+
+def test_omissions_name_who_is_missing_and_why(
+    org, raster, monday, make_member, make_production, make_job, make_assignment
+):
+    production = make_production(org)
+    school = make_job(production, "Aufbau", day=monday, start=time(9), end=time(10))
+    evening = make_job(production, "Show", day=monday, start=time(22), end=time(23))
+    make_assignment(school, make_member(org, display_name="Da", grade="7"), CONFIRMED)
+    make_assignment(evening, make_member(org, display_name="Abend", grade="7"), CONFIRMED)
+    make_assignment(school, make_member(org, display_name="Offen", grade="7"))
+    make_assignment(school, make_member(org, Role.TEACHER, display_name="Frau L"), CONFIRMED)
+
+    assert release_omissions(production) == [
+        "Abend: Job außerhalb der Schulstunden",
+        "Frau L: Lehrkraft",
+        "Offen: noch nicht zugesagt",
+    ]
