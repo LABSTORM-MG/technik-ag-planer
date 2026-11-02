@@ -25,6 +25,11 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path("einstellungen/konto/profil/", views.profile_view, name="profile"),
+    path(
+        "einstellungen/konto/kalender/",
+        views.calendar_preference_view,
+        name="calendar_preference",
+    ),
     path("einstellungen/konto/passwort/", views.password_change_view, name="password_change"),
     path("einstellungen/konto/zwei-faktor/", views.two_factor_view, name="two_factor"),
     path("einstellungen/konto/loeschen/", views.delete_view, name="delete"),

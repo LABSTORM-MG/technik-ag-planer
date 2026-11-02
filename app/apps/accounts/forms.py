@@ -116,6 +116,18 @@ class ProfileForm(forms.ModelForm):
             del self.fields["grade"]
 
 
+class CalendarPreferenceForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["private_calendar"]
+        help_texts = {
+            "private_calendar": (
+                "Gilt für den Knopf „In privaten Kalender“. Automatisch heißt: iPhone, iPad und "
+                "Mac öffnen Apple Kalender, Android öffnet Google Kalender, sonst fragt die App."
+            )
+        }
+
+
 class GermanPasswordChangeForm(PasswordChangeForm):
     error_messages = {
         **SetPasswordForm.error_messages,

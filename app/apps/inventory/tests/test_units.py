@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models import RestrictedError
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 
@@ -232,8 +233,63 @@ def test_return_wrong_production(org, concert, unit, planned, planner, make_prod
     assert UnitIssue.objects.get().returned_at is None
 
 
-def test_labels_page(planner_client, unit):
-    assert planner_client.get(reverse("inventory:labels")).status_code == 200
+def test_label_menu_lists_devices_and_preselects_material(org, planner_client, unit, make_material):
+    other = make_material(org, "Beamer", tracking="individual")
+    second = MaterialUnit.objects.create(organization=org, material=other, code="BEAM-1")
+    url = reverse("inventory:labels")
+
+    units = {u.pk: u.preselected for u in planner_client.get(url).context["units"]}
+    assert units == {unit.pk: True, second.pk: True}
+
+    response = planner_client.get(url, {"material": other.pk})
+    assert {u.pk: u.preselected for u in response.context["units"]} == {
+        unit.pk: False,
+        second.pk: True,
+    }
+
+
+def test_labels_pdf_uses_selection_of_own_org_only(
+    org, other_org, planner_client, unit, make_material, monkeypatch
+):
+    foreign = MaterialUnit.objects.create(
+        organization=other_org, material=make_material(other_org, "Fremd"), code="FREMD-1"
+    )
+    captured = {}
+
+    def fake_render(template, context, stylesheet):
+        captured.update(context)
+        return b"%PDF-1.7"
+
+    monkeypatch.setattr("apps.inventory.unit_views.render_plain_pdf", fake_render)
+    response = planner_client.get(reverse("inventory:labels_pdf"), {"ids": [unit.pk, foreign.pk]})
+
+    assert response["Content-Type"] == "application/pdf"
+    assert [label["name"] for row in captured["rows"] for label in row] == [unit.material.name]
+
+
+def test_labels_pdf_real_output_without_codes_as_text(unit, planner_client):
+    response = planner_client.get(reverse("inventory:labels_pdf"), {"ids": [unit.pk]})
+
+    assert response.content.startswith(b"%PDF")
+    html = render_to_string(
+        "inventory/labels_pdf.html",
+        {"rows": [[{"name": unit.material.name, "qr": "data:image/png;base64,AA"}]]},
+    )
+    assert unit.material.name in html and unit.code not in html
+
+
+def test_labels_pdf_without_selection_returns_to_menu(planner_client, unit):
+    response = planner_client.get(reverse("inventory:labels_pdf"))
+
+    assert response.url == reverse("inventory:labels")
+
+
+@pytest.mark.parametrize("name", ["inventory:labels", "inventory:labels_pdf"])
+def test_labels_need_qr_mode(org, planner_client, name):
+    org.inventory_qr_enabled = False
+    org.save(update_fields=["inventory_qr_enabled"])
+
+    assert planner_client.get(reverse(name)).url == reverse("inventory:list")
 
 
 def test_private_loans_are_gone(org, mics, planner_client):
@@ -409,7 +465,7 @@ def test_bulk_output_has_no_device_scanner(org, concert, planned, planner_client
     org.inventory_qr_enabled = True
     org.save()
     content = planner_client.get(reverse("inventory:scan", args=[concert.pk])).content.decode()
-    assert "Menge ausgeben" in content and 'id="scan-form"' not in content
+    assert "Ausgeben" in content and 'id="scan-form"' not in content
     response = planner_client.post(
         reverse("inventory:quantity_move", args=[planned.pk]), {"quantity": 1, "operation": "issue"}
     )
@@ -735,3 +791,132 @@ def test_kit_form_uses_material_picker(planner_client, org, make_material):
 
     assert "data-picker-collapse" in page
     assert "Eigenes Mikro" in page
+
+
+def test_devices_are_numbered_per_material_from_one(org, unit, make_material):
+    second = MaterialUnit.objects.create(organization=org, material=unit.material, code="MIC-02")
+    other = MaterialUnit.objects.create(
+        organization=org, material=make_material(org, "Beamer"), code="BEAM-1"
+    )
+
+    assert (unit.number, second.number, other.number) == (1, 2, 1)
+
+
+def test_device_number_stays_when_an_earlier_one_goes(org, unit):
+    second = MaterialUnit.objects.create(organization=org, material=unit.material, code="MIC-02")
+    third = MaterialUnit.objects.create(organization=org, material=unit.material, code="MIC-03")
+    second.delete()
+    third.refresh_from_db()
+
+    assert third.number == 3
+    next_device = MaterialUnit.objects.create(
+        organization=org, material=unit.material, code="MIC-04"
+    )
+    assert next_device.number == 4
+
+
+def test_labels_show_name_above_and_number_below(org, unit, planner_client, monkeypatch):
+    captured = {}
+
+    def fake_render(template, context, stylesheet):
+        captured.update(context)
+        return b"%PDF-1.7"
+
+    monkeypatch.setattr("apps.inventory.unit_views.render_plain_pdf", fake_render)
+    planner_client.get(reverse("inventory:labels_pdf"), {"ids": [unit.pk]})
+
+    [[label]] = captured["rows"]
+    assert (label["name"], label["number"]) == (unit.material.name, 1)
+    html = render_to_string("inventory/labels_pdf.html", {"rows": captured["rows"]})
+    assert html.index(label["name"]) < html.index("<img") < html.index("labels-print__number")
+
+
+def test_number_migration_counts_existing_devices(org, make_material):
+    from importlib import import_module
+
+    from django.apps import apps as django_apps
+
+    migration = import_module("apps.inventory.migrations.0009_materialunit_number")
+    first = make_material(org, "A")
+    second = make_material(org, "B")
+    units = [
+        MaterialUnit.objects.create(organization=org, material=m, code=c)
+        for m, c in [(first, "A-1"), (second, "B-1"), (first, "A-2")]
+    ]
+    for offset, unit in enumerate(units, start=10):
+        MaterialUnit.objects.filter(pk=unit.pk).update(number=offset)
+
+    migration.number_devices(django_apps, None)
+
+    for unit in units:
+        unit.refresh_from_db()
+    assert [u.number for u in units] == [1, 1, 2]
+
+
+# ---------- Material packen ----------
+
+
+def test_issue_rows_show_progress_for_devices_and_quantities(
+    org, concert, unit, planned, mics, make_material, planner
+):
+    cable = make_material(org, "Kabel")
+    cables = PlannedMaterial.objects.create(
+        organization=org,
+        production=concert,
+        material=cable,
+        quantity=4,
+        issued_quantity=3,
+        returned_quantity=1,
+    )
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+
+    rows = {r.material.name: r for r in unit_services.issue_rows(concert)}
+
+    assert rows[unit.material.name].devices_out == [1]
+    assert (rows["Kabel"].issued, rows["Kabel"].to_issue, rows["Kabel"].to_return) == (3, 1, 2)
+    assert cables.pk == rows["Kabel"].planned.pk
+
+
+def test_consumable_needs_no_return(org, concert, make_material):
+    material = make_material(org, "Gaffa", tracking=Material.Tracking.CONSUMABLE)
+    PlannedMaterial.objects.create(
+        organization=org, production=concert, material=material, quantity=2, issued_quantity=2
+    )
+
+    [row] = unit_services.issue_rows(concert)
+
+    assert row.is_consumable and row.to_return == 0
+
+
+def test_quantity_move_answers_json_without_reload(org, concert, make_material, planner_client):
+    org.inventory_qr_enabled = True
+    org.save(update_fields=["inventory_qr_enabled"])
+    item = PlannedMaterial.objects.create(
+        organization=org, production=concert, material=make_material(org, "Kabel"), quantity=2
+    )
+    url = reverse("inventory:quantity_move", args=[item.pk])
+
+    ok = planner_client.post(
+        url, {"operation": "issue", "quantity": 2}, headers={"accept": "application/json"}
+    ).json()
+    bad = planner_client.post(
+        url, {"operation": "issue", "quantity": 1}, headers={"accept": "application/json"}
+    ).json()
+
+    assert ok == {"ok": True, "message": "2 × Kabel ausgegeben."}
+    assert bad["ok"] is False
+
+
+def test_packing_page_shows_switch_list_and_prefilled_amount(
+    org, concert, make_material, planner_client, unit
+):
+    PlannedMaterial.objects.create(
+        organization=org, production=concert, material=make_material(org, "Kabel"), quantity=7
+    )
+
+    content = planner_client.get(reverse("inventory:scan", args=[concert.pk])).content.decode()
+
+    assert "Material packen" in content
+    assert 'name="mode" value="return"' in content
+    assert "Kabel" in content and 'value="7"' in content
+    assert "Materialverwaltung kurz erklärt" not in content

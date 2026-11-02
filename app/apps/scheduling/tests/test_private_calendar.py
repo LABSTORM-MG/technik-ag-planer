@@ -241,3 +241,57 @@ def test_buttons_open_sheet_everywhere(org, student, student_client, concert):
         assert ".ics" not in content and "In Kalender übernehmen" not in content, page
         for target in targets:
             assert f'href="{target}" data-sheet-url' in content, target
+
+
+@pytest.mark.parametrize(
+    ("preference", "agent", "expected"),
+    [
+        ("google", IPAD, "calendar.google.com"),
+        ("google", "", "calendar.google.com"),
+        ("apple", ANDROID, "oeffnen=1"),
+        ("auto", IPAD, "oeffnen=1"),
+    ],
+)
+def test_account_preference_overrides_device(
+    org, make_member, login, concert, preference, agent, expected
+):
+    member = make_member(org)
+    member.user.private_calendar = preference
+    member.user.save(update_fields=["private_calendar"])
+
+    response = login(member.user, org).get(
+        reverse("scheduling:private_calendar_production", args=[concert.pk]),
+        headers={"user-agent": agent},
+    )
+
+    assert response.status_code == 302
+    assert expected in response.url
+
+
+def test_preference_ask_always_shows_choices(org, make_member, login, concert):
+    member = make_member(org)
+    member.user.private_calendar = "ask"
+    member.user.save(update_fields=["private_calendar"])
+
+    response = login(member.user, org).get(
+        reverse("scheduling:private_calendar_production", args=[concert.pk]),
+        headers={"user-agent": IPHONE},
+    )
+
+    assert response.status_code == 200
+    assert "Datei herunterladen" in response.content.decode()
+
+
+def test_member_sets_own_calendar_preference(org, make_member, login):
+    member = make_member(org)
+    client = login(member.user, org)
+    url = reverse("accounts:calendar_preference")
+
+    assert url in client.get(reverse("organizations:settings")).content.decode()
+    assert client.post(url, {"private_calendar": "google"}).status_code == 302
+
+    member.user.refresh_from_db()
+    assert member.user.private_calendar == "google"
+    assert client.post(url, {"private_calendar": "unsinn"}).status_code == 200
+    member.user.refresh_from_db()
+    assert member.user.private_calendar == "google"

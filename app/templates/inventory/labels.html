@@ -1,5 +1,31 @@
 {% extends "base.html" %}
-{% load static %}
-{% block title %}QR-Etiketten{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'css/inventory-units.css' %}">{% endblock %}
-{% block content %}<article class="stack"><h1>QR-Etiketten</h1><p>Über die Druckfunktion des Browsers drucken. <a href="{% url 'inventory:list' %}">Zur Materialliste</a></p><div class="labels">{% for unit in units %}<div class="unit-label"><strong>{{ unit.material.name }}</strong><p>{{ unit.code }}</p><img class="unit-label__qr" width="240" height="240" src="{% url 'inventory:unit_qr' unit.pk %}" alt="QR-Code {{ unit.code }}"></div>{% empty %}<p>Noch keine aktiven Einzelgeräte.</p>{% endfor %}</div></article>{% endblock %}
+{% block title %}QR-Codes drucken – Technik-AG Planer{% endblock %}
+{% block topbar_title %}Material{% endblock %}
+{% block content %}
+<article class="stack">
+  <header class="page-header">
+    {% url 'inventory:list' as zurueck %}{% include "includes/back_link.html" with url=zurueck label="Material" %}
+    <h1 class="page-title">QR-Codes drucken</h1>
+    <p class="muted">Wähle die Geräte aus. Das PDF enthält nur die Codes mit dem Gerätenamen darunter, zwei Spalten auf A4.</p>
+  </header>
+  {% if units %}
+    <form method="get" action="{% url 'inventory:labels_pdf' %}" target="_blank" class="stack" data-labels>
+      <label class="field--checkbox labels-all"><input type="checkbox" data-labels-all> Alle auswählen</label>
+      {% regroup units by material.name as groups %}
+      {% for group in groups %}
+        <section>
+          <h2 class="section-title">{{ group.grouper }}</h2>
+          <ul class="list">
+            {% for unit in group.list %}
+              <li><label class="list__item labels-item"><input type="checkbox" name="ids" value="{{ unit.pk }}"{% if unit.preselected %} checked{% endif %}><span class="labels-item__code">Gerät {{ unit.number }} <span class="muted">· {{ unit.code }}</span></span></label></li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% endfor %}
+      <div><button type="submit" class="button button--primary">PDF erstellen</button></div>
+    </form>
+  {% else %}
+    <p class="muted">Noch keine aktiven Einzelgeräte.</p>
+  {% endif %}
+</article>
+{% endblock %}

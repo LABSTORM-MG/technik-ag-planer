@@ -52,6 +52,13 @@ class UserManager(BaseUserManager):
         return self.get(**{f"{self.model.USERNAME_FIELD}__iexact": username})
 
 
+class CalendarPreference(models.TextChoices):
+    AUTO = "auto", "Automatisch nach Gerät"
+    GOOGLE = "google", "Immer Google Kalender"
+    APPLE = "apple", "Immer Apple Kalender"
+    ASK = "ask", "Immer fragen"
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     """Konto. Login per E-Mail; `is_staff` haben nur Betreiber (Django-Admin)."""
 
@@ -64,6 +71,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         "aktiv", default=True, help_text="Gesperrte Konten können sich nicht anmelden."
     )
     is_staff = models.BooleanField("Betreiber", default=False, help_text="Zugang zum Django-Admin.")
+    private_calendar = models.CharField(
+        "Privater Kalender",
+        max_length=6,
+        choices=CalendarPreference.choices,
+        default=CalendarPreference.AUTO,
+    )
     date_joined = models.DateTimeField("registriert am", default=timezone.now)
     grade_promoted_at = models.DateTimeField(
         "zuletzt hochgestuft am",

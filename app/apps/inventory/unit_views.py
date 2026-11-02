@@ -1,9 +1,6 @@
 import uuid
 from functools import wraps
-from io import BytesIO
 
-import qrcode
-import qrcode.constants
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
@@ -12,6 +9,7 @@ from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from apps.documents.pdf import pdf_response, render_plain_pdf
 from apps.organizations.decorators import org_required, permission_required_in_org
 from apps.organizations.permissions import Perm
 
@@ -112,13 +110,7 @@ def create_unit(request, pk):
 @qr_required
 def qr(request, pk):
     unit = _unit(request, pk)
-    stream = BytesIO()
-    # Nur der Code, keine Adresse: Das ergibt wenige große Felder, die Kameras sicher lesen
-    code = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=16, border=4)
-    code.add_data(unit.code)
-    code.make(fit=True)
-    code.make_image().save(stream, format="PNG")
-    return HttpResponse(stream.getvalue(), content_type="image/png")
+    return HttpResponse(services.qr_png(unit.code), content_type="image/png")
 
 
 @org_required
@@ -191,22 +183,22 @@ def scan(request, pk):
         .select_related("unit", "issued_by", "returned_by", "exception")
         .order_by("-issued_at")
     )
-    open_issues = [i for i in issues if i.returned_at is None]
+    rows = services.issue_rows(production)
     return render(
         request,
         "inventory/scan.html",
         {
             "has_units": MaterialUnit.objects.for_org(request.organization).exists(),
-            "quantity_plans": PlannedMaterial.objects.for_org(request.organization)
-            .filter(production=production)
-            .exclude(material__tracking="individual")
-            .select_related("material"),
+            "rows": rows,
+            "issued_total": sum(r.issued for r in rows),
+            "planned_total": sum(max(r.planned.quantity, r.issued) for r in rows),
+            "returned_total": sum(r.returned for r in rows if not r.is_consumable),
+            "returnable_total": sum(r.issued for r in rows if not r.is_consumable),
             "production": production,
             "issues": issues,
-            "open_issue_count": len(open_issues),
-            "open_issues": open_issues,
+            "open_issue_count": sum(1 for i in issues if i.returned_at is None),
             "teardown": ProductionTeardown.objects.filter(production=production).first(),
-            "active_section": "inventory",
+            "active_section": "productions",
         },
     )
 
@@ -256,19 +248,46 @@ def protocol(request, pk):
     )
 
 
+def _active_units(request):
+    return (
+        MaterialUnit.objects.for_org(request.organization)
+        .filter(archived_at__isnull=True, material__archived_at__isnull=True)
+        .select_related("material", "material__category")
+        .order_by("material__name", "number")
+    )
+
+
 @org_required
 @qr_required
 def labels(request):
-    return render(
-        request,
-        "inventory/labels.html",
+    """Druck-Menü: Geräte auswählen, deren QR-Codes aufs Blatt sollen."""
+    only = request.GET.get("material", "")
+    units = list(_active_units(request))
+    for unit in units:
+        unit.preselected = not only.isdigit() or unit.material_id == int(only)
+    return render(request, "inventory/labels.html", {"units": units, "active_section": "inventory"})
+
+
+@org_required
+@qr_required
+def labels_pdf(request):
+    """Nur die Codes mit Gerätenamen: A4, zwei Spalten, so viele Zeilen wie passen."""
+    ids = [value for value in request.GET.getlist("ids") if value.isascii() and value.isdigit()]
+    units = list(_active_units(request).filter(pk__in=ids))
+    if not units:
+        messages.error(request, "Bitte mindestens ein Gerät auswählen.")
+        return redirect("inventory:labels")
+    labels = [
         {
-            "units": MaterialUnit.objects.for_org(request.organization)
-            .filter(archived_at__isnull=True, material__archived_at__isnull=True)
-            .select_related("material"),
-            "active_section": "inventory",
-        },
-    )
+            "name": unit.material.name,
+            "number": unit.number,
+            "qr": services.qr_data_uri(unit.code),
+        }
+        for unit in units
+    ]
+    rows = [labels[i : i + 2] for i in range(0, len(labels), 2)]
+    content = render_plain_pdf("inventory/labels_pdf.html", {"rows": rows}, "css/labels-print.css")
+    return pdf_response(content, "qr-codes.pdf")
 
 
 @permission_required_in_org(Perm.MANAGE_INVENTORY)
@@ -323,13 +342,17 @@ def quantity_move(request, pk):
     if not services.can_issue(request.membership, planned.production):
         raise PermissionDenied
     raw = request.POST.get("quantity", "")
-    if not raw.isascii() or not raw.isdigit() or len(raw) > 5:
-        messages.error(request, "Bitte eine gültige Stückzahl eingeben.")
+    operation = request.POST.get("operation")
+    try:
+        if not raw.isascii() or not raw.isdigit() or len(raw) > 5:
+            raise ValidationError("Bitte eine gültige Stückzahl eingeben.")
+        services.move_quantity(planned, operation, int(raw), request.user)
+    except ValidationError as error:
+        ok, message = False, " ".join(error.messages)
     else:
-        _run(
-            request,
-            lambda: services.move_quantity(
-                planned, request.POST.get("operation"), int(raw), request.user
-            ),
-        )
+        verb = "zurückgenommen" if operation == "return" else "ausgegeben"
+        ok, message = True, f"{raw} × {planned.material.name} {verb}."
+    if request.headers.get("Accept") == "application/json":
+        return JsonResponse({"ok": ok, "message": message})
+    (messages.success if ok else messages.error)(request, message)
     return redirect("inventory:scan", pk=planned.production_id)

@@ -1,0 +1,51 @@
+/* QR-Etiketten: nur Tabelle, A4, zwei Spalten, vier Zeilen je Seite */
+@page {
+  size: A4;
+  margin: 10mm;
+}
+
+body {
+  margin: 0;
+  font-family: "DejaVu Sans", sans-serif;
+}
+
+.labels-print {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.labels-print tr {
+  break-inside: avoid;
+}
+
+.labels-print td {
+  width: 50%;
+  height: 68mm;
+  padding: 0;
+  border: 0.2mm solid;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.labels-print img {
+  display: block;
+  width: 50mm;
+  height: 50mm;
+  margin: 0 auto;
+}
+
+.labels-print p {
+  margin: 0;
+  padding: 0 3mm;
+  overflow-wrap: anywhere;
+}
+
+.labels-print__name {
+  font-size: 11pt;
+}
+
+.labels-print__number {
+  font-size: 14pt;
+  font-weight: 700;
+}

@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="de">
+<head><meta charset="utf-8"><title>QR-Codes</title></head>
+<body>
+  <table class="labels-print">
+    {% for row in rows %}
+      <tr>
+        {% for label in row %}<td><p class="labels-print__name">{{ label.name }}</p><img src="{{ label.qr }}" alt=""><p class="labels-print__number">{{ label.number }}</p></td>{% endfor %}
+      </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

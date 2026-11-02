@@ -27,4 +27,4 @@ Einträge ließen sich nur als .ics-Datei herunterladen. Mitglieder mussten die 
 
 ## Nachtrag
 
-Das Gerät bestimmt den Kalender jetzt selbst: iPhone, iPad und Mac gehen direkt zu Apple, Android zu Google. Nur auf anderen Geräten erscheint die Auswahl, dort mit der Datei als gleichwertigem dritten Weg.
+Das Gerät bestimmt den Kalender jetzt selbst: iPhone, iPad und Mac gehen direkt zu Apple, Android zu Google. Nur auf anderen Geräten erscheint die Auswahl, dort mit der Datei als gleichwertigem dritten Weg. Wer das anders möchte, stellt es persönlich ein (`User.private_calendar`): immer Google, immer Apple oder immer fragen.

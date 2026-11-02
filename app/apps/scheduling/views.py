@@ -13,6 +13,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 
+from apps.accounts.models import CalendarPreference
 from apps.organizations.decorators import org_required, permission_required_in_org
 from apps.organizations.permissions import Perm
 
@@ -443,10 +444,13 @@ def _uid(request, kind, pk):
 
 
 def _calendar_of_device(request):
-    """„apple“, „google“ oder None, wenn das Gerät keinen klaren Kalender hat.
+    """„apple“, „google“ oder None für die Auswahl: Einstellung des Kontos, sonst das Gerät.
 
     iPadOS meldet sich als Mac, deshalb zählt auch „Macintosh“.
     """
+    preference = request.user.private_calendar
+    if preference != CalendarPreference.AUTO:
+        return None if preference == CalendarPreference.ASK else preference
     agent = request.headers.get("User-Agent", "")
     if any(name in agent for name in ("iPhone", "iPad", "Macintosh")):
         return "apple"
