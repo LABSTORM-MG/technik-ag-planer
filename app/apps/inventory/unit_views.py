@@ -183,22 +183,22 @@ def scan(request, pk):
         .select_related("unit", "issued_by", "returned_by", "exception")
         .order_by("-issued_at")
     )
-    open_issues = [i for i in issues if i.returned_at is None]
+    rows = services.issue_rows(production)
     return render(
         request,
         "inventory/scan.html",
         {
             "has_units": MaterialUnit.objects.for_org(request.organization).exists(),
-            "quantity_plans": PlannedMaterial.objects.for_org(request.organization)
-            .filter(production=production)
-            .exclude(material__tracking="individual")
-            .select_related("material"),
+            "rows": rows,
+            "issued_total": sum(r.issued for r in rows),
+            "planned_total": sum(max(r.planned.quantity, r.issued) for r in rows),
+            "returned_total": sum(r.returned for r in rows if not r.is_consumable),
+            "returnable_total": sum(r.issued for r in rows if not r.is_consumable),
             "production": production,
             "issues": issues,
-            "open_issue_count": len(open_issues),
-            "open_issues": open_issues,
+            "open_issue_count": sum(1 for i in issues if i.returned_at is None),
             "teardown": ProductionTeardown.objects.filter(production=production).first(),
-            "active_section": "inventory",
+            "active_section": "productions",
         },
     )
 
@@ -342,13 +342,17 @@ def quantity_move(request, pk):
     if not services.can_issue(request.membership, planned.production):
         raise PermissionDenied
     raw = request.POST.get("quantity", "")
-    if not raw.isascii() or not raw.isdigit() or len(raw) > 5:
-        messages.error(request, "Bitte eine gültige Stückzahl eingeben.")
+    operation = request.POST.get("operation")
+    try:
+        if not raw.isascii() or not raw.isdigit() or len(raw) > 5:
+            raise ValidationError("Bitte eine gültige Stückzahl eingeben.")
+        services.move_quantity(planned, operation, int(raw), request.user)
+    except ValidationError as error:
+        ok, message = False, " ".join(error.messages)
     else:
-        _run(
-            request,
-            lambda: services.move_quantity(
-                planned, request.POST.get("operation"), int(raw), request.user
-            ),
-        )
+        verb = "zurückgenommen" if operation == "return" else "ausgegeben"
+        ok, message = True, f"{raw} × {planned.material.name} {verb}."
+    if request.headers.get("Accept") == "application/json":
+        return JsonResponse({"ok": ok, "message": message})
+    (messages.success if ok else messages.error)(request, message)
     return redirect("inventory:scan", pk=planned.production_id)

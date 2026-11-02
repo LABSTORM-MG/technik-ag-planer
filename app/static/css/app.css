@@ -1278,14 +1278,34 @@ a.list__item:hover,
   gap: var(--space-2);
 }
 
+/* minmax(0, …): Felder wie Datum dürfen schrumpfen, statt aus der Karte zu ragen */
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
 }
 
+/* Datumsfelder brauchen Platz: Reicht er nicht, stehen sie untereinander */
+.form-row:has(input[type="date"]) {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+}
+
 .form-row--3 {
-  grid-template-columns: 1.4fr 1fr 1fr;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.field input,
+.field select,
+.field textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+
+fieldset.chips {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
 .form-actions {
@@ -1366,7 +1386,7 @@ a.list__item:hover,
 
 @media (max-width: 420px) {
   .form-row--3 {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .form-row--3 > :first-child {

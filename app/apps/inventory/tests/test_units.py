@@ -465,7 +465,7 @@ def test_bulk_output_has_no_device_scanner(org, concert, planned, planner_client
     org.inventory_qr_enabled = True
     org.save()
     content = planner_client.get(reverse("inventory:scan", args=[concert.pk])).content.decode()
-    assert "Menge ausgeben" in content and 'id="scan-form"' not in content
+    assert "Ausgeben" in content and 'id="scan-form"' not in content
     response = planner_client.post(
         reverse("inventory:quantity_move", args=[planned.pk]), {"quantity": 1, "operation": "issue"}
     )
@@ -851,3 +851,72 @@ def test_number_migration_counts_existing_devices(org, make_material):
     for unit in units:
         unit.refresh_from_db()
     assert [u.number for u in units] == [1, 1, 2]
+
+
+# ---------- Material packen ----------
+
+
+def test_issue_rows_show_progress_for_devices_and_quantities(
+    org, concert, unit, planned, mics, make_material, planner
+):
+    cable = make_material(org, "Kabel")
+    cables = PlannedMaterial.objects.create(
+        organization=org,
+        production=concert,
+        material=cable,
+        quantity=4,
+        issued_quantity=3,
+        returned_quantity=1,
+    )
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+
+    rows = {r.material.name: r for r in unit_services.issue_rows(concert)}
+
+    assert rows[unit.material.name].devices_out == [1]
+    assert (rows["Kabel"].issued, rows["Kabel"].to_issue, rows["Kabel"].to_return) == (3, 1, 2)
+    assert cables.pk == rows["Kabel"].planned.pk
+
+
+def test_consumable_needs_no_return(org, concert, make_material):
+    material = make_material(org, "Gaffa", tracking=Material.Tracking.CONSUMABLE)
+    PlannedMaterial.objects.create(
+        organization=org, production=concert, material=material, quantity=2, issued_quantity=2
+    )
+
+    [row] = unit_services.issue_rows(concert)
+
+    assert row.is_consumable and row.to_return == 0
+
+
+def test_quantity_move_answers_json_without_reload(org, concert, make_material, planner_client):
+    org.inventory_qr_enabled = True
+    org.save(update_fields=["inventory_qr_enabled"])
+    item = PlannedMaterial.objects.create(
+        organization=org, production=concert, material=make_material(org, "Kabel"), quantity=2
+    )
+    url = reverse("inventory:quantity_move", args=[item.pk])
+
+    ok = planner_client.post(
+        url, {"operation": "issue", "quantity": 2}, headers={"accept": "application/json"}
+    ).json()
+    bad = planner_client.post(
+        url, {"operation": "issue", "quantity": 1}, headers={"accept": "application/json"}
+    ).json()
+
+    assert ok == {"ok": True, "message": "2 × Kabel ausgegeben."}
+    assert bad["ok"] is False
+
+
+def test_packing_page_shows_switch_list_and_prefilled_amount(
+    org, concert, make_material, planner_client, unit
+):
+    PlannedMaterial.objects.create(
+        organization=org, production=concert, material=make_material(org, "Kabel"), quantity=7
+    )
+
+    content = planner_client.get(reverse("inventory:scan", args=[concert.pk])).content.decode()
+
+    assert "Material packen" in content
+    assert 'name="mode" value="return"' in content
+    assert "Kabel" in content and 'value="7"' in content
+    assert "Materialverwaltung kurz erklärt" not in content

@@ -15,6 +15,7 @@ Bestehende Bestände werden nicht automatisch in Einzelgeräte umgewandelt. Unte
 ## Verwendung
 
 - **Etiketten:** Pro Material oder über „Alle QR-Etiketten“ anzeigen und mit der Druckfunktion des Browsers drucken. Die QR-Codes enthalten Geräteadressen; der Scanner akzeptiert auch reine Inventarcodes und ältere automatisch erzeugte Codes.
+- **Material packen:** Der Schalter „Ausgabe | Rückgabe“ oben gilt für die ganze Seite. Geräte scannen, bei Mengen ist die offene Anzahl schon eingetragen. Die Rückmeldung erscheint direkt über dem Kamerabild.
 - **Planung:** In der Produktion die benötigte Menge eintragen. Einzelne Geräte werden nicht reserviert, beim Scannen geht jedes freie Gerät. Wird mehr gescannt als geplant, erhöht die App die Planung und sagt das an.
 - **Ausgabe/Rückgabe:** QR-Code per Kamera scannen, Inventarcode eingeben oder einen USB-Scanner verwenden. Die Kamera bleibt für weitere Geräte offen. Ein Gerät kann nur eine offene Ausgabe haben. Vorzeitige Ausgaben sind nur zulässig, wenn keine frühere Reservierung blockiert wird. Rückgaben bleiben auch nach Abschluss des Abbaus möglich.
 - **Defekte:** Ein Defekt am Einzelgerät zählt einmal im bestehenden Materialbestand. Nur dieses Gerät wird gesperrt. Allgemeine Defektmeldungen ohne Gerätezuordnung sperren die Ausgabe der Materialart vorsorglich. Reparaturen benötigen einen Vermerk. Die Defekthistorie bleibt erhalten.

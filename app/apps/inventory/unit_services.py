@@ -2,6 +2,7 @@
 
 import base64
 import re
+from dataclasses import dataclass, field
 from io import BytesIO
 from urllib.parse import unquote, urlsplit
 
@@ -310,6 +311,68 @@ def can_issue(membership, production):
         membership=membership,
         status=CrewAssignment.Status.CONFIRMED,
     ).exists()
+
+
+@dataclass
+class IssueRow:
+    """Eine Zeile der Packliste: Stand beim Ausgeben und Zurücknehmen."""
+
+    planned: PlannedMaterial
+    issued: int
+    returned: int
+    devices_out: list = field(default_factory=list)
+
+    @property
+    def material(self):
+        return self.planned.material
+
+    @property
+    def is_individual(self):
+        return self.material.tracking == Material.Tracking.INDIVIDUAL
+
+    @property
+    def is_consumable(self):
+        return self.material.tracking == Material.Tracking.CONSUMABLE
+
+    @property
+    def to_issue(self):
+        return max(self.planned.quantity - self.issued, 0)
+
+    @property
+    def to_return(self):
+        return 0 if self.is_consumable else self.issued - self.returned
+
+
+def issue_rows(production):
+    """Packliste einer Produktion, sortiert wie die Material-Kategorien."""
+    issues = (
+        UnitIssue.objects.filter(production=production)
+        .select_related("unit")
+        .order_by("unit__number")
+    )
+    by_material = {}
+    for issue in issues:
+        by_material.setdefault(issue.unit.material_id, []).append(issue)
+    rows = []
+    planned = (
+        PlannedMaterial.objects.filter(production=production)
+        .select_related("material", "material__category")
+        .order_by("material__category__position", "material__category__name", "material__name")
+    )
+    for item in planned:
+        if item.material.tracking == Material.Tracking.INDIVIDUAL:
+            found = by_material.get(item.material_id, [])
+            rows.append(
+                IssueRow(
+                    item,
+                    len(found),
+                    sum(1 for i in found if i.returned_at),
+                    [i.unit.number for i in found if not i.returned_at],
+                )
+            )
+        else:
+            rows.append(IssueRow(item, item.issued_quantity, item.returned_quantity))
+    return rows
 
 
 def has_outstanding_material(production):

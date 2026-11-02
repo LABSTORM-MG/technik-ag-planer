@@ -31,7 +31,9 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 - QR-Etiketten größer und leichter lesbar, Scan auch per Foto
 - Freistellungsliste als Tabelle: Namen und Jahrgang links, Stunden oben, Kreuze in den betroffenen Feldern; ohne Stundenraster mit Uhrzeiten; die Vorschau nennt, wer warum fehlt
 - Warnung beim Verlassen eines Formulars mit ungespeicherten Änderungen
+- „Material packen“ neu: Schalter „Ausgabe | Rückgabe“ für die ganze Seite, Packliste mit Stand je Material, Mengen ohne Neuladen, die offene Menge ist schon eingetragen
 - Scannen: Erfolg und Fehler erscheinen gut sichtbar über dem Kamerabild, dazu Vibration
+- Behoben: Datumsfelder ragten auf dem Handy aus ihrer Karte; „Meine Fähigkeiten“ zeigte einen halben Rahmen
 - QR-Codes drucken: Geräte auswählen, PDF auf A4 mit zwei Spalten; oben der Gerätename, darunter der Code und die feste Gerätenummer
 - Behoben: Versteckte Auswahlfelder machten Seiten mit Chips bis zu 284 px zu breit, wodurch auch die untere Leiste verrutschte
 - „In privaten Kalender“ wählt den Kalender nach Gerät, die Auswahl erscheint nur noch bei Unklarheit; persönlich einstellbar

@@ -12,7 +12,7 @@
 .inventory-empty { padding: var(--space-6); text-align: center; }
 .inventory-scanner { border: 1px solid var(--color-accent); }
 .unit-label { display: inline-flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); margin-top: var(--space-3); border-radius: var(--radius-md); background: var(--color-qr-bg); color: var(--print-text); break-inside: avoid; max-width: 22rem; overflow-wrap: anywhere; }
-#preview { max-width: 32rem; border-radius: var(--radius-md); overflow: hidden; }
+#preview { border-radius: var(--radius-md); overflow: hidden; }
 #scan-status { margin: 0; }
 .inventory-scan-status {
   position: sticky;
@@ -74,3 +74,40 @@
 .unit-label__qr { max-width: 100%; height: auto; image-rendering: pixelated; }
 .inventory-photo-scan { display: inline-flex; }
 .inventory-photo-scan input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+
+/* ---------- Material packen ---------- */
+[data-mode="issue"] [data-show="return"],
+[data-mode="return"] [data-show="issue"] { display: none; }
+.issue-bar {
+  position: sticky;
+  top: calc(var(--topbar-height) + env(safe-area-inset-top));
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  margin: 0 calc(-1 * var(--space-4));
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-bg);
+}
+.issue-bar__mode { min-width: 0; margin: 0; }
+.issue-bar__progress { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); }
+.issue-list { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.issue-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--item-color, var(--color-line));
+}
+.issue-row__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.issue-row__name { min-width: 0; font-weight: var(--weight-medium); overflow-wrap: anywhere; }
+.issue-row__count { flex: none; font-variant-numeric: tabular-nums; font-weight: var(--weight-bold); }
+.issue-row__hint { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); overflow-wrap: anywhere; }
+.issue-row__form { display: flex; align-items: center; gap: var(--space-2); }
+.issue-row__qty { width: 5.5rem; min-height: 40px; }
+[data-mode="issue"] .issue-row[data-done-issue="true"] .issue-row__count,
+[data-mode="return"] .issue-row[data-done-return="true"] .issue-row__count { color: var(--color-success); }
+.issue-scanner__actions { margin-top: 0; }
+.inventory-scanner #preview { max-width: min(100%, 22rem); margin: 0 auto; }

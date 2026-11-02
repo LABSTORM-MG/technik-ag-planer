@@ -1,39 +1,97 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Materialausgabe – {{ production.name }}{% endblock %}
+{% block title %}Material packen – {{ production.name }}{% endblock %}
+{% block topbar_title %}Material{% endblock %}
 {% block head %}<link rel="stylesheet" href="{% static 'css/inventory-units.css' %}">{% endblock %}
 {% block content %}
-<article class="stack inventory-workspace">
-<header class="page-header"><p class="eyebrow">{{ production.name }}</p><h1 class="page-title">Materialausgabe</h1><a href="{% url 'productions:detail' production.pk %}">Zur Produktion</a> · <a href="{% url 'inventory:teardown_protocol' production.pk %}">Abbauprotokoll / Drucken</a></header>
-{% if teardown.completed_at %}<section class="card"><strong>Produktion abgeschlossen</strong><p class="muted">Der Abbau wurde am {{ teardown.completed_at }} abgeschlossen. Neue Ausgaben sind gesperrt; offene Rückgaben bleiben möglich.</p></section>{% endif %}
-{% include "inventory/includes/tracking_help.html" %}
-<section id="material-state" class="card stack">
-<h2 class="section-title">Material</h2>
-<p class="muted">Einzelgeräte einfach scannen, jedes freie Gerät geht. Mengen nach Stückzahl erfassen.</p>
-{% if open_issues %}
-<div class="stack"><h3 class="eyebrow">Ausgegebene Einzelgeräte</h3>
-{% for issue in open_issues %}<div class="inventory-row-summary inventory-record"><span><strong>{{ issue.unit.material.name }}</strong><span class="list__subtitle">{{ issue.unit.code }}</span></span><span class="tag tag--warning">Ausgegeben</span></div>{% endfor %}
-</div>{% endif %}
-{% if quantity_plans %}{% include "inventory/includes/quantity_issue.html" %}{% endif %}
-</section>
-{% if has_units %}
-<section class="card stack inventory-scanner"><p class="eyebrow">QR-Scanner</p><h2 class="section-title">Ausgabe und Rückgabe</h2>
-<form class="form" method="post" id="scan-form" data-no-unsaved>{% csrf_token %}
-<fieldset class="inventory-mode-tabs"><legend class="visually-hidden">Scanmodus</legend><label><input type="radio" name="mode" value="issue" {% if not teardown.completed_at %}checked{% else %}disabled{% endif %}><span>Ausgabe</span></label><label><input type="radio" name="mode" value="return" {% if teardown.completed_at %}checked{% endif %}><span>Rückgabe</span></label></fieldset>
-<details><summary>Inventarcode manuell eingeben</summary><div class="inventory-manual-row"><label class="field"><span class="field__label">Inventarcode</span><input class="input" name="code" required maxlength="500" autocomplete="off" placeholder="z. B. MIC-01"></label><button class="button button--secondary">Erfassen</button></div></details>
-</form>
-<div class="toolbar"><button class="button button--primary" type="button" id="camera">Kamera starten</button><label class="button button--secondary inventory-photo-scan">Foto aufnehmen<input type="file" id="photo" accept="image/*" capture="environment"></label></div><p id="scan-status" role="status" aria-live="polite" hidden></p><div id="preview" hidden></div>
-<p class="field__help">Etikett vor die Kamera halten. Der Scanner bleibt für weitere Geräte offen. Kamera benötigt HTTPS oder localhost.</p>
-</section>
-{% endif %}
-{% if org_perms.MANAGE_PRODUCTIONS %}<section id="teardown-state" class="card stack"><div class="inventory-row-summary"><h2 class="section-title">Abbaukontrolle</h2><span class="tag {% if open_issue_count %}tag--warning{% else %}tag--success{% endif %}">{{ open_issue_count }} offene Geräterückgaben</span></div>
+<article class="stack inventory-workspace" data-issue-workspace>
+  <header class="page-header">
+    {% url 'productions:detail' production.pk as zurueck %}{% include "includes/back_link.html" with url=zurueck label=production.name %}
+    <h1 class="page-title">Material packen</h1>
+    {% if teardown.completed_at %}<p class="muted">Der Abbau ist abgeschlossen. Neue Ausgaben sind gesperrt, Rückgaben bleiben möglich.</p>{% endif %}
+  </header>
+
+  <div class="issue-bar">
+    <fieldset class="segmented segmented--choice issue-bar__mode">
+      <legend class="visually-hidden">Vorgang</legend>
+      <label><input type="radio" name="mode" value="issue" form="scan-form"{% if not teardown.completed_at %} checked{% else %} disabled{% endif %}>Ausgabe</label>
+      <label><input type="radio" name="mode" value="return" form="scan-form"{% if teardown.completed_at %} checked{% endif %}>Rückgabe</label>
+    </fieldset>
+    <p class="issue-bar__progress" id="issue-progress">
+      <span data-show="issue">{{ issued_total }} von {{ planned_total }} ausgegeben</span>
+      <span data-show="return">{{ returned_total }} von {{ returnable_total }} zurück</span>
+    </p>
+  </div>
+  <p id="scan-status" role="status" aria-live="polite" hidden></p>
+
+  {% if has_units %}
+    <section class="card stack inventory-scanner">
+      <div class="toolbar issue-scanner__actions">
+        <button class="button button--primary" type="button" id="camera">Kamera starten</button>
+        <label class="button button--secondary inventory-photo-scan">Foto aufnehmen<input type="file" id="photo" accept="image/*" capture="environment"></label>
+      </div>
+      <div id="preview" hidden></div>
+      <form method="post" id="scan-form" data-no-unsaved>
+        {% csrf_token %}
+        <details>
+          <summary>Code von Hand eingeben</summary>
+          <div class="inventory-manual-row">
+            <label class="field"><span class="field__label">Inventarcode</span><input class="input" name="code" required maxlength="500" autocomplete="off" placeholder="z. B. TAG-1A2B3C"></label>
+            <button class="button button--secondary">Erfassen</button>
+          </div>
+        </details>
+      </form>
+    </section>
+  {% endif %}
+
+  <section id="material-state" aria-label="Packliste">
+    {% if rows %}
+      <ul class="issue-list">
+        {% for row in rows %}
+          <li class="issue-row card{% if row.material.category %} color-{{ row.material.category.color }}{% endif %}" data-done-issue="{{ row.to_issue|yesno:'false,true' }}" data-done-return="{{ row.to_return|yesno:'false,true' }}">
+            <div class="issue-row__head">
+              <span class="issue-row__name">{{ row.material.name }}</span>
+              <span class="issue-row__count" data-show="issue">{{ row.issued }} / {{ row.planned.quantity }}</span>
+              <span class="issue-row__count" data-show="return">{% if row.is_consumable %}Verbrauch{% else %}{{ row.returned }} / {{ row.issued }}{% endif %}</span>
+            </div>
+            {% if row.is_individual %}
+              <p class="issue-row__hint">{% if row.devices_out %}Draußen: Gerät {{ row.devices_out|join:", " }}{% else %}Einzelgeräte: zum Erfassen scannen{% endif %}</p>
+            {% else %}
+              {% if not teardown.completed_at %}
+                <form class="issue-row__form" method="post" action="{% url 'inventory:quantity_move' row.planned.pk %}" data-show="issue" data-quantity-form data-no-unsaved>
+                  {% csrf_token %}<input type="hidden" name="operation" value="issue">
+                  <label class="visually-hidden" for="ausgabe-{{ row.planned.pk }}">Stückzahl</label>
+                  <input class="input issue-row__qty" id="ausgabe-{{ row.planned.pk }}" name="quantity" type="number" inputmode="numeric" min="1" max="10000" value="{{ row.to_issue|default:1 }}">
+                  <button class="button button--primary button--small"{% if not row.to_issue %} disabled{% endif %}>{% if row.is_consumable %}Entnehmen{% else %}Ausgeben{% endif %}</button>
+                </form>
+              {% endif %}
+              {% if not row.is_consumable %}
+                <form class="issue-row__form" method="post" action="{% url 'inventory:quantity_move' row.planned.pk %}" data-show="return" data-quantity-form data-no-unsaved>
+                  {% csrf_token %}<input type="hidden" name="operation" value="return">
+                  <label class="visually-hidden" for="rueckgabe-{{ row.planned.pk }}">Stückzahl</label>
+                  <input class="input issue-row__qty" id="rueckgabe-{{ row.planned.pk }}" name="quantity" type="number" inputmode="numeric" min="1" max="10000" value="{{ row.to_return|default:1 }}">
+                  <button class="button button--primary button--small"{% if not row.to_return %} disabled{% endif %}>Zurücknehmen</button>
+                </form>
+              {% endif %}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Noch nichts eingeplant. Einzelgeräte lassen sich trotzdem scannen.</p>
+    {% endif %}
+  </section>
+
+  {% if org_perms.MANAGE_PRODUCTIONS %}<section id="teardown-state" class="card stack"><div class="inventory-row-summary"><h2 class="section-title">Abbaukontrolle</h2><span class="tag {% if open_issue_count %}tag--warning{% else %}tag--success{% endif %}">{{ open_issue_count }} offene Geräterückgaben</span></div>
 <details><summary>Rückgaben prüfen und Abbau verwalten</summary><div class="stack">
 {% if teardown.completed_at %}<p>Abgeschlossen am {{ teardown.completed_at }}. Spätere Rückgaben bleiben möglich.</p>{% elif teardown %}<p>Abbau aktiv seit {{ teardown.started_at }}.</p>{% else %}<form class="form" method="post" action="{% url 'inventory:teardown' production.pk %}">{% csrf_token %}<button class="button button--secondary" name="operation" value="start">Abbau starten</button></form>{% endif %}
-{% for issue in issues %}<div><p>{{ issue.unit.code }} – {% if issue.returned_at %}zurückgegeben {{ issue.returned_at }}{% else %}ausgegeben {{ issue.issued_at }}{% endif %}</p>
+{% for issue in issues %}<div><p>Gerät {{ issue.unit.number }} ({{ issue.unit.code }}) – {% if issue.returned_at %}zurückgegeben {{ issue.returned_at }}{% else %}ausgegeben {{ issue.issued_at }}{% endif %}</p>
 {% if issue.exception %}<p>Ausnahme: {{ issue.exception.get_reason_display }} · {{ issue.exception.note }}</p>{% elif not issue.returned_at and teardown and not teardown.completed_at %}
 <details><summary>Ausnahme dokumentieren</summary><form class="form" method="post" action="{% url 'inventory:teardown' production.pk %}">{% csrf_token %}<input type="hidden" name="operation" value="exception"><input type="hidden" name="issue_id" value="{{ issue.pk }}"><select class="input" name="reason" aria-label="Ausnahmegrund"><option value="missing">Vermisst</option><option value="damaged">Beschädigt</option><option value="other">Sonstiges</option></select><label class="field">Bemerkung<textarea class="input" name="note" minlength="5" maxlength="2000" required></textarea></label><button class="button button--secondary">Ausnahme speichern</button></form></details>{% endif %}</div>{% empty %}<p>Keine Ausgaben.</p>{% endfor %}
 {% if teardown and not teardown.completed_at %}<form class="form" method="post" action="{% url 'inventory:teardown' production.pk %}">{% csrf_token %}<button class="button button--secondary" name="operation" value="complete">Abbau abschließen</button></form>{% endif %}
-</div></details></section>{% endif %}</article>
+</div></details></section>{% endif %}
+  {% if org_perms.MANAGE_PRODUCTIONS %}<p><a href="{% url 'inventory:teardown_protocol' production.pk %}">Abbauprotokoll drucken</a></p>{% endif %}
+</article>
 <script src="{% static 'vendor/html5-qrcode.min.js' %}" defer></script>
 <script src="{% static 'js/material-scanner.js' %}" defer></script>
 {% endblock %}
