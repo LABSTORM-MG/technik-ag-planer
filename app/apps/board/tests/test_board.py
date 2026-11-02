@@ -489,3 +489,77 @@ def test_author_color_is_stable_palette_key():
     assert services.author_color(7) == services.author_color(7)
     assert services.author_color(7) in services.AUTHOR_COLORS
     assert services.author_color(None) == "grey"
+
+
+# ---------- Mehrfachauswahl ----------
+
+
+def _delete_many(client, *messages, **extra):
+    return client.post(
+        reverse("board:delete_many"), {"ids": [m.pk for m in messages], **extra}, follow=True
+    )
+
+
+def test_delete_many_removes_only_own_messages_for_students(student_client, student, org, make_member):
+    mine = [services.post(org, student.user, f"Eigene {i}") for i in range(2)]
+    foreign = services.post(org, make_member(org).user, "Fremd")
+
+    response = _delete_many(student_client, *mine, foreign)
+
+    assert "2 Nachrichten gelöscht." in response.content.decode()
+    assert list(Message.objects.filter(kind=Message.Kind.USER).values_list("pk", flat=True)) == [
+        foreign.pk
+    ]
+
+
+@pytest.mark.parametrize(
+    ("role", "allowed"),
+    [(Role.OWNER, True), (Role.ADMIN, True), (Role.TEACHER, True), (Role.STUDENT, False)],
+)
+def test_delete_many_moderation_per_role(org, make_member, login, student, role, allowed):
+    message = services.post(org, student.user, "Unpassend")
+
+    _delete_many(login(make_member(org, role).user, org), message)
+
+    assert Message.objects.filter(pk=message.pk).exists() is not allowed
+
+
+def test_delete_many_ignores_other_orgs(student_client, other_org, make_member):
+    foreign = services.post(other_org, make_member(other_org).user, "Fremde AG")
+
+    response = _delete_many(student_client, foreign)
+
+    assert "Keine Nachricht gelöscht." in response.content.decode()
+    assert Message.objects.filter(pk=foreign.pk).exists()
+
+
+def test_delete_many_stays_in_its_channel(student_client, student, org, make_production):
+    production = make_production(org, chat_enabled=True)
+    in_chat = services.post(org, student.user, "Im Chat", production)
+    on_board = services.post(org, student.user, "Im Board")
+
+    response = student_client.post(
+        reverse("board:delete_many"),
+        {"ids": [in_chat.pk, on_board.pk], "produktion": production.pk},
+    )
+
+    assert response.url == reverse("board:production", args=[production.pk]) + "#ende"
+    assert not Message.objects.filter(pk=in_chat.pk).exists()
+    assert Message.objects.filter(pk=on_board.pk).exists()
+
+
+def test_delete_many_rejects_garbage_ids_and_get(student_client):
+    assert student_client.get(reverse("board:delete_many")).status_code == 405
+    response = student_client.post(reverse("board:delete_many"), {"ids": ["abc", "1;--"]})
+    assert response.status_code == 302
+
+
+def test_messages_have_no_visible_actions_but_selection_data(student_client, student, org):
+    message = services.post(org, student.user, "Hallo")
+
+    content = student_client.get(reverse("board:index")).content.decode()
+
+    assert f'data-msg-id="{message.pk}"' in content
+    assert f'data-edit-url="{reverse("board:edit", args=[message.pk])}"' in content
+    assert "data-can-delete" in content
+    assert 'class="message' not in content

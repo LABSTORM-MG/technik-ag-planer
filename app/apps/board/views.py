@@ -186,3 +186,25 @@ def delete(request, pk):
     message.delete()
     flash.success(request, "Nachricht gelöscht.")
     return redirect(chat_url(production) + "#ende")
+
+
+@require_POST
+@permission_required_in_org(Perm.USE_BOARD)
+def delete_many(request):
+    """Löscht die ausgewählten Nachrichten, die man löschen darf; alles andere bleibt."""
+    production = _production_from(request, request.POST.get("produktion"))
+    ids = [value for value in request.POST.getlist("ids") if value.isascii() and value.isdigit()]
+    candidates = Message.objects.for_org(request.organization).filter(
+        pk__in=ids, production=production
+    )
+    deleted = 0
+    for message in candidates:
+        if services.can_delete(message, request.membership):
+            message.delete()  # einzeln, damit das Änderungsprotokoll es erfasst
+            deleted += 1
+    if deleted:
+        text = "Nachricht gelöscht." if deleted == 1 else f"{deleted} Nachrichten gelöscht."
+        flash.success(request, text)
+    else:
+        flash.error(request, "Keine Nachricht gelöscht.")
+    return redirect(chat_url(production) + "#ende")

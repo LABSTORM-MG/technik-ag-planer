@@ -18,6 +18,21 @@
 
   {% include "board/includes/chat_bar.html" %}
 
+  <div class="chat-select" data-chat-select role="toolbar" aria-label="Ausgewählte Nachrichten" hidden>
+    <label class="chat-select__all"><input type="checkbox" data-select-all> Alle</label>
+    <span class="chat-select__count" data-select-count aria-live="polite"></span>
+    <div class="chat-select__actions">
+      <button type="button" class="button button--secondary button--small" data-select-copy hidden>Kopieren</button>
+      <a class="button button--secondary button--small" href="#" data-select-edit data-sheet-url hidden>Bearbeiten</a>
+      <form method="post" action="{% url 'board:delete_many' %}" data-select-delete hidden>
+        {% csrf_token %}
+        {% if production %}<input type="hidden" name="produktion" value="{{ production.pk }}">{% endif %}
+        <button type="submit" class="button button--danger button--small">Löschen</button>
+      </form>
+      <button type="button" class="icon-button" data-select-cancel aria-label="Auswahl beenden">{% include "includes/icon.html" with name="close" %}</button>
+    </div>
+  </div>
+
   <section class="chat" aria-label="Nachrichten">
     {% if has_older %}
       <p class="chat__older"><a class="button button--secondary button--small" href="{{ chat_url }}?vor={{ chat_messages.0.pk }}">Ältere Nachrichten laden</a></p>
