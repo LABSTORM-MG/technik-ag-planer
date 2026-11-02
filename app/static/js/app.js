@@ -336,6 +336,25 @@ document.addEventListener("change", (event) => {
   if (target && times) target.value = select.dataset.periodEdge === "start" ? times[0] : times[1];
 });
 
+// QR-Codes drucken: „Alle auswählen“
+document.querySelectorAll("[data-labels]").forEach((form) => {
+  const all = form.querySelector("[data-labels-all]");
+  const boxes = [...form.querySelectorAll('input[name="ids"]')];
+  const update = () => {
+    const checked = boxes.filter((box) => box.checked).length;
+    all.checked = checked === boxes.length;
+    all.indeterminate = checked > 0 && checked < boxes.length;
+  };
+  all.addEventListener("change", () => {
+    boxes.forEach((box) => {
+      box.checked = all.checked;
+    });
+    update();
+  });
+  boxes.forEach((box) => box.addEventListener("change", update));
+  update();
+});
+
 // Stundenraster: Pausen anzeigen und neue Stunden sinnvoll vorbelegen
 function toMinutes(value) {
   const [hours, minutes] = value.split(":").map(Number);

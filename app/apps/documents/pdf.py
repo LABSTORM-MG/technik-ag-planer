@@ -26,6 +26,14 @@ def render_pdf(request, template, context):
     return HTML(string=html).write_pdf(stylesheets=_stylesheets())
 
 
+def render_plain_pdf(template, context, stylesheet):
+    """PDF ohne Dokument-Rahmen (Kopf, Fuß, Seitenzahlen) mit eigenem Stylesheet."""
+    from weasyprint import CSS, HTML
+
+    html = render_to_string(template, context)
+    return HTML(string=html).write_pdf(stylesheets=[CSS(filename=finders.find(stylesheet))])
+
+
 def pdf_response(content, filename, *, download=False):
     response = HttpResponse(content, content_type="application/pdf")
     disposition = "attachment" if download else "inline"

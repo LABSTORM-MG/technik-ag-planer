@@ -12,20 +12,27 @@
     button.textContent = 'Kamera starten';
   }
   window.addEventListener('pagehide', () => { disposed = true; void stop(); });
+  // Die Meldung klebt über dem Kamerabild, damit man sie beim Scannen sieht
+  function show(text, kind = '') {
+    status.hidden = false;
+    status.textContent = text;
+    status.className = kind ? `message message--${kind} inventory-scan-status` : 'inventory-scan-status';
+  }
   async function submit(code) {
     const now = Date.now();
     if (busy || (recent.get(code) || 0) > now - 3000) return;
     busy = true;
     recent.set(code, now);
     for (const [key, time] of recent) if (time < now - 10000) recent.delete(key);
-    status.textContent = 'Code wird verarbeitet …';
+    show('Code wird verarbeitet …');
     try {
       const data = new FormData(form);
       data.set('code', code);
       const response = await fetch(form.action, {method: 'POST', body: data, headers: {Accept: 'application/json'}, credentials: 'same-origin'});
       if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) throw new Error('Sitzung abgelaufen oder Anfrage fehlgeschlagen. Bitte Seite neu laden.');
       const result = await response.json();
-      status.textContent = result.message;
+      show(result.message, result.ok ? 'success' : 'error');
+      navigator.vibrate?.(result.ok ? 80 : [60, 60, 60]);
       form.elements.code.value = '';
       if (result.ok) {
         const page = await fetch(location.href, {credentials: 'same-origin'});
@@ -37,7 +44,7 @@
           }
         }
       }
-    } catch (error) { status.textContent = error.message; }
+    } catch (error) { show(error.message, 'error'); }
     finally { busy = false; }
   }
   form.addEventListener('submit', event => { event.preventDefault(); void submit(form.elements.code.value.trim()); });
@@ -57,7 +64,7 @@
       await submit(code);
     } catch (error) {
       preview.hidden = true;
-      status.textContent = typeof error === 'string' || !error?.message ? 'Im Foto wurde kein QR-Code erkannt. Bitte näher heran und ohne Spiegelung.' : error.message;
+      show(typeof error === 'string' || !error?.message ? 'Im Foto wurde kein QR-Code erkannt. Bitte näher heran und ohne Spiegelung.' : error.message, 'error');
     }
   });
   button.addEventListener('click', async () => {
@@ -73,8 +80,8 @@
       active = true;
       if (disposed) { await stop(); return; }
       button.textContent = 'Kamera schließen';
-      status.textContent = 'Kamera aktiv. Weitere Geräte können direkt gescannt werden.';
-    } catch (error) { await stop(); status.textContent = error.message; }
+      show('Kamera aktiv. Etikett in den Rahmen halten.');
+    } catch (error) { await stop(); show(error.message, 'error'); }
     finally { starting = false; }
   });
 })();

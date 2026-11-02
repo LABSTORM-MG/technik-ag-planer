@@ -20,6 +20,7 @@ from apps.organizations.permissions import Role
 
 from . import services, throttle
 from .forms import (
+    CalendarPreferenceForm,
     ConfirmPasswordForm,
     DeleteAccountForm,
     EmailPasswordResetForm,
@@ -137,6 +138,17 @@ def profile_view(request):
         messages.success(request, "Gespeichert.")
         return redirect("accounts:profile")
     return render(request, "accounts/profile.html", {"form": form, "active_section": "settings"})
+
+
+def calendar_preference_view(request):
+    form = CalendarPreferenceForm(request.POST or None, instance=request.user)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Gespeichert.")
+        return redirect("accounts:calendar_preference")
+    return render(
+        request, "accounts/calendar_preference.html", {"form": form, "active_section": "settings"}
+    )
 
 
 def password_change_view(request):

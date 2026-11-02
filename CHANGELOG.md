@@ -31,8 +31,10 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 - QR-Etiketten größer und leichter lesbar, Scan auch per Foto
 - Freistellungsliste als Tabelle: Namen und Jahrgang links, Stunden oben, Kreuze in den betroffenen Feldern; ohne Stundenraster mit Uhrzeiten; die Vorschau nennt, wer warum fehlt
 - Warnung beim Verlassen eines Formulars mit ungespeicherten Änderungen
+- Scannen: Erfolg und Fehler erscheinen gut sichtbar über dem Kamerabild, dazu Vibration
+- QR-Codes drucken: Geräte auswählen, PDF auf A4 mit zwei Spalten; oben der Gerätename, darunter der Code und die feste Gerätenummer
 - Behoben: Versteckte Auswahlfelder machten Seiten mit Chips bis zu 284 px zu breit, wodurch auch die untere Leiste verrutschte
-- „In privaten Kalender“ wählt den Kalender nach Gerät, die Auswahl erscheint nur noch bei Unklarheit
+- „In privaten Kalender“ wählt den Kalender nach Gerät, die Auswahl erscheint nur noch bei Unklarheit; persönlich einstellbar
 - PDF teilen: am Handy über das Teilen-Menü, am Computer „Link kopieren“
 - Board: nur noch Sprechblasen; Bearbeiten und Löschen per Gedrückthalten, Mehrfachauswahl zum Löschen, „Alle auswählen“; kompakte Chat-Blasen, die beim Hochscrollen erscheinen
 - Zurück-Knöpfe einheitlich und immer nur eine Ebene zurück

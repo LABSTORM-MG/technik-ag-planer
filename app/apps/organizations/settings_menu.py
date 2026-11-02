@@ -157,6 +157,11 @@ GROUPS = [
                 "scheduling:unavailability_list",
             ),
             Entry(
+                "Privater Kalender",
+                "Welcher Kalender sich bei „In privaten Kalender“ öffnet",
+                "accounts:calendar_preference",
+            ),
+            Entry(
                 "Meine Fähigkeiten",
                 "Eigene Fähigkeiten aus der Liste auswählen",
                 "productions:my_skills",

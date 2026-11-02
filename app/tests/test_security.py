@@ -37,6 +37,7 @@ PUBLIC = {
 ACCOUNT_LEVEL = {
     "accounts:logout",
     "accounts:profile",
+    "accounts:calendar_preference",
     "accounts:password_change",
     "accounts:two_factor",
     "accounts:two_factor_disable",

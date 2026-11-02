@@ -11,17 +11,19 @@
 .inventory-record { padding: var(--space-3) 0; border-top: 1px solid var(--color-line); }
 .inventory-empty { padding: var(--space-6); text-align: center; }
 .inventory-scanner { border: 1px solid var(--color-accent); }
-.labels { display: flex; flex-wrap: wrap; gap: var(--space-4); }
 .unit-label { display: inline-flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); margin-top: var(--space-3); border-radius: var(--radius-md); background: var(--color-qr-bg); color: var(--print-text); break-inside: avoid; max-width: 22rem; overflow-wrap: anywhere; }
 #preview { max-width: 32rem; border-radius: var(--radius-md); overflow: hidden; }
-#scan-status:not(:empty) { padding: var(--space-3); background: var(--color-surface-raised); border-radius: var(--radius-md); }
-@media (max-width: 600px) { .inventory-mode-grid { grid-template-columns: 1fr; } .inventory-device-header { flex-wrap: wrap; } }
-@media print {
-  .sidebar, .topbar, .tabbar, form, button, a { display: none !important; }
-  .shell, .main, main, .content { display: block !important; margin: 0 !important; padding: 0 !important; }
-  .unit-label, .card { break-inside: avoid; background: var(--print-paper); color: var(--print-text); }
-  body { background: var(--print-paper); color: var(--print-text); }
+#scan-status { margin: 0; }
+.inventory-scan-status {
+  position: sticky;
+  top: calc(var(--topbar-height) + env(safe-area-inset-top) + var(--space-2));
+  z-index: 5;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  font-weight: var(--weight-medium);
 }
+@media (max-width: 600px) { .inventory-mode-grid { grid-template-columns: 1fr; } .inventory-device-header { flex-wrap: wrap; } }
 .inventory-workspace .inventory-device { padding-top: var(--space-4); border-top: 1px solid var(--color-line); }
 .inventory-workspace .inventory-device > summary { padding-bottom: 0; color: var(--color-text); list-style: none; }
 .inventory-device > summary::-webkit-details-marker { display: none; }

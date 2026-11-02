@@ -1,8 +1,12 @@
 """Inventory changes; lock order: production, material, unit."""
 
+import base64
 import re
+from io import BytesIO
 from urllib.parse import unquote, urlsplit
 
+import qrcode
+import qrcode.constants
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import F
@@ -21,6 +25,20 @@ from .models import (
     TeardownException,
     UnitIssue,
 )
+
+
+def qr_png(code):
+    """Nur der Code, keine Adresse: Das ergibt wenige große Felder, die Kameras sicher lesen."""
+    stream = BytesIO()
+    qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=16, border=4)
+    qr.add_data(code)
+    qr.make(fit=True)
+    qr.make_image().save(stream, format="PNG")
+    return stream.getvalue()
+
+
+def qr_data_uri(code):
+    return "data:image/png;base64," + base64.b64encode(qr_png(code)).decode("ascii")
 
 
 def normalize_code(raw):

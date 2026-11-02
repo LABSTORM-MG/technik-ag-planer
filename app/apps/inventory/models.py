@@ -260,18 +260,31 @@ class PlannedMaterial(OrganizationScopedModel):
 class MaterialUnit(OrganizationScopedModel):
     material = models.ForeignKey(Material, on_delete=models.RESTRICT, related_name="units")
     code = models.CharField(max_length=100)
+    # Fortlaufend je Material ab 1, bleibt fest, damit gedruckte Etiketten stimmen
+    number = models.PositiveIntegerField("Nummer", editable=False)
     archived_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        ordering = ["code"]
+        ordering = ["material_id", "number"]
         constraints = [
             models.UniqueConstraint(
                 fields=["organization", "code"], name="material_unit_code_unique_per_org"
-            )
+            ),
+            models.UniqueConstraint(
+                fields=["material", "number"], name="material_unit_number_unique"
+            ),
         ]
 
     def __str__(self):
         return self.code
+
+    def save(self, *args, **kwargs):
+        if not self.number:
+            last = MaterialUnit.objects.filter(material=self.material).aggregate(
+                highest=models.Max("number")
+            )["highest"]
+            self.number = (last or 0) + 1
+        super().save(*args, **kwargs)
 
 
 class UnitIssue(OrganizationScopedModel):

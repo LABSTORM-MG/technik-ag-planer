@@ -400,6 +400,7 @@ Die Einstellungen sind in drei Gruppen gegliedert, jede Zeile ist als Ganzes ank
 | AG anpassen: Verbindungen und Sicherheit | Zwei-Faktor für alle Mitglieder | Pflicht ein/aus, Standard „Aus – freiwillig je Person“ |
 | Für mich | Benachrichtigungen | Push-Mitteilungen aktivieren und einstellen |
 | Für mich | Nicht verfügbar | Tage oder Zeiträume, an denen man nicht kann |
+| Für mich | Privater Kalender | Welcher Kalender sich öffnet: automatisch nach Gerät, immer Google, immer Apple oder immer fragen |
 | Für mich | Meine Fähigkeiten | Eigene Fähigkeiten aus der Liste des Owners auswählen |
 | Für mich | Hilfe & FAQ | Kurze Antworten auf häufige Fragen |
 | Für mich | Über die App | Alle Funktionen auf einen Blick |
@@ -604,6 +605,7 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | – | Dashboard-Kachel und Navigations-Zähler für offene Technik-Anfragen | fertig | #19 |
 | – | Chat-Bedienung, Geräte ohne Reservierung, Material-Auswahl, Zurück-Knöpfe | fertig | #31 |
 | – | Kopieren mehrerer Nachrichten, Stundenraster, Einrichtungs-Checkliste, QR-Lesbarkeit, Freistellungs-Tabelle, Warnung bei ungespeicherten Änderungen | fertig | #32 |
+| – | QR-Codes drucken, persönliche Kalender-Einstellung | fertig | #33 |
 | – | Oberfläche: Nachfrage bei Anfragen, Kalender, Board auf dem Handy, Crew-Schalter, Produktionsseite | fertig | #20, #21 |
 | – | „In privaten Kalender“ mit Auswahl Google, Apple, Datei | fertig | #22 |
 

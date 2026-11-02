@@ -8,6 +8,7 @@ urlpatterns = [
     path("geplant/<int:pk>/menge/", unit_views.quantity_move, name="quantity_move"),
     path("einstellungen/material/", unit_views.inventory_settings, name="settings"),
     path("material/etiketten/", unit_views.labels, name="labels"),
+    path("material/etiketten.pdf", unit_views.labels_pdf, name="labels_pdf"),
     path("geraet/<str:code>/", unit_views.device, name="device"),
     path("geraete/<int:pk>/aktion/", unit_views.unit_action, name="unit_action"),
     path("geraete/<int:pk>/defekt/", unit_views.unit_defect, name="unit_defect"),

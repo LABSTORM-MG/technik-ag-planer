@@ -2451,3 +2451,30 @@ a.icon-button {
   align-items: center;
   gap: var(--space-3);
 }
+
+/* ---------- QR-Codes drucken ---------- */
+
+.labels-all,
+.labels-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.labels-all input,
+.labels-item input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  accent-color: var(--color-accent);
+}
+
+.list li + li > .labels-item {
+  border-top: 1px solid var(--color-line);
+}
+
+.labels-item__code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
