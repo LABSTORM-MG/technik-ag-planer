@@ -586,6 +586,7 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | – | Wartung 1: Termin-Erinnerungen, Einladungen aufräumen | fertig | #15 |
 | – | Betreiber-Konten von AGs trennen | fertig | #17 |
 | – | Technik-Auswahl im Anfrage-Formular je AG | fertig | #18 |
+| – | Einstellungen: ganze Zeile anklickbar, Google-Hinweis für den Owner | fertig | #25 |
 | – | Dashboard-Kachel und Navigations-Zähler für offene Technik-Anfragen | fertig | #19 |
 | – | Oberfläche: Nachfrage bei Anfragen, Kalender, Board auf dem Handy, Crew-Schalter, Produktionsseite | fertig | #20, #21 |
 | – | „In privaten Kalender“ mit Auswahl Google, Apple, Datei | fertig | #22 |
