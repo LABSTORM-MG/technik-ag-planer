@@ -736,45 +736,36 @@ document.querySelectorAll("[data-periods]").forEach((root) => {
   });
 })();
 
-// Teilen: Am Handy das Teilen-Menü des Systems, am Computer „Link kopieren“.
+// Teilen: immer die Datei selbst über das Teilen-Menü des Systems, nie ein Link.
+// Das PDF entsteht beim Aufruf der Seite frisch; Teilen geht nur direkt aus dem Antippen heraus.
+// Kann der Browser keine Dateien teilen, bleibt der Knopf weg: „PDF herunterladen“ geht immer.
 (() => {
   "use strict";
 
   const button = document.querySelector("[data-share-pdf]");
-  if (!button) return;
-  const url = new URL(button.dataset.sharePdf, window.location.href).href;
-  const title = button.dataset.shareTitle;
-  const phone = Boolean(navigator.share) && window.matchMedia("(pointer: coarse)").matches;
-  button.hidden = false;
+  if (!button || !navigator.canShare) return;
 
-  if (!phone) {
-    button.textContent = "Link kopieren";
-    button.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(url);
-        button.textContent = "Link kopiert";
-      } catch {
-        window.prompt("Link zum Kopieren:", url);
-      }
-    });
-    return;
-  }
-
-  // Die Datei liegt beim Klick schon bereit: Teilen geht nur direkt aus dem Antippen heraus
-  let file = null;
-  if (navigator.canShare) {
-    fetch(url, { credentials: "same-origin" })
-      .then((response) => (response.ok ? response.blob() : Promise.reject(response.status)))
-      .then((blob) => {
-        const candidate = new File([blob], button.dataset.shareName, { type: "application/pdf" });
-        if (navigator.canShare({ files: [candidate] })) file = candidate;
-      })
-      .catch(() => {});
-  }
-  button.addEventListener("click", () => {
-    const data = file ? { files: [file], title } : { url, title };
-    navigator.share(data).catch(() => {});
-  });
+  fetch(button.dataset.sharePdf, { credentials: "same-origin", cache: "no-store" })
+    .then((response) => (response.ok ? response.blob() : Promise.reject(response.status)))
+    .then((blob) => {
+      const file = new File([blob], button.dataset.shareName, { type: "application/pdf" });
+      if (!navigator.canShare({ files: [file] })) return;
+      button.hidden = false;
+      button.addEventListener("click", async () => {
+        try {
+          await navigator.share({ files: [file], title: button.dataset.shareTitle });
+        } catch (error) {
+          if (error.name === "AbortError") return; // selbst abgebrochen
+          // Teilen verweigert (manche installierten Apps): Datei stattdessen speichern
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(file);
+          link.download = file.name;
+          link.click();
+          URL.revokeObjectURL(link.href);
+        }
+      });
+    })
+    .catch(() => {});
 })();
 
 // Service Worker für Push-Mitteilungen (kein Offline-Modus). Nur über HTTPS bzw. localhost.

@@ -110,4 +110,5 @@
 [data-mode="issue"] .issue-row[data-done-issue="true"] .issue-row__count,
 [data-mode="return"] .issue-row[data-done-return="true"] .issue-row__count { color: var(--color-success); }
 .issue-scanner__actions { margin-top: 0; }
-.inventory-scanner #preview { max-width: min(100%, 22rem); margin: 0 auto; }
+/* Feste Breite nötig: Der Scanner misst das Feld, und mit margin auto schrumpft es sonst auf 0 */
+.inventory-scanner #preview { width: 100%; max-width: 22rem; margin-inline: auto; }

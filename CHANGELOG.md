@@ -37,7 +37,7 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 - QR-Codes drucken: Geräte auswählen, PDF auf A4 mit zwei Spalten; oben der Gerätename, darunter der Code und die feste Gerätenummer
 - Behoben: Versteckte Auswahlfelder machten Seiten mit Chips bis zu 284 px zu breit, wodurch auch die untere Leiste verrutschte
 - „In privaten Kalender“ wählt den Kalender nach Gerät, die Auswahl erscheint nur noch bei Unklarheit; persönlich einstellbar
-- PDF teilen: am Handy über das Teilen-Menü, am Computer „Link kopieren“
+- PDF teilen: immer die frisch erzeugte Datei über das Teilen-Menü des Systems, nie ein Link
 - Board: nur noch Sprechblasen; Bearbeiten und Löschen per Gedrückthalten, Mehrfachauswahl zum Löschen, „Alle auswählen“; kompakte Chat-Blasen, die beim Hochscrollen erscheinen
 - Zurück-Knöpfe einheitlich und immer nur eine Ebene zurück
 - Material-Auswahl mit Suche und Kategorie-Filter; Knopf „Material packen“ oben auf der Produktionsseite
