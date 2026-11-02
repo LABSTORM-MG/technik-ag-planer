@@ -48,7 +48,8 @@ class Perm(Enum):
         "Technik-Anfragen sehen, übernehmen und als erledigt markieren",
         {O, A, T},
     )
-    ISSUE_MATERIAL = ("Material für Produktionen ausgeben und zurücknehmen", ALL)
+    # Schüler/innen zusätzlich mit eigenem Job (`inventory.unit_services.can_issue`)
+    ISSUE_MATERIAL = ("Material für Produktionen ausgeben und zurücknehmen", {O, A, T})
     MANAGE_TECH_OPTIONS = ("Technik-Auswahl für Anfragen verwalten", {O, A, T})
     CREATE_EVENTS = ("Termine anlegen", {O, A, T})
     OWN_UNAVAILABILITY = ("Eigene „Nicht verfügbar“-Einträge", ALL)

@@ -127,7 +127,7 @@ Vorgesehen sind die Rollen Owner, Admin, Lehrkraft und Schüler/in. Owner und Ad
 | Google-Konto, Stundenraster, Fähigkeiten und Status-Werte verwalten | ja | nein | nein | nein |
 | Technik-Anfragen sehen, übernehmen und als erledigt markieren | ja | ja | ja | nein |
 | Technik-Auswahl für Anfragen verwalten | ja | ja | ja | nein |
-| Material für Produktionen ausgeben und zurücknehmen | ja | ja | ja | ja |
+| Material für Produktionen ausgeben und zurücknehmen | ja | ja | ja | nur mit eigenem Job in der Produktion |
 | Termine anlegen | ja | ja | ja | nein |
 | Eigene „Nicht verfügbar“-Einträge | ja | ja | ja | ja |
 | Stunden in der Einsatzübersicht korrigieren | ja | ja | ja | nein |
@@ -312,7 +312,7 @@ Das Material-Modul verwaltet die Technik der AG mit Kategorien, Bestand und Plan
 
 ### Erweiterung: Materialmodi, Einzelgeräte und Mengenbewegungen (M13)
 
-- Pro AG exklusiv klassische Mengenliste mit Abhaken oder QR-Verwaltung; Standard bleibt klassisch. Wechsel in Einstellungen → AG anpassen → Materialverwaltung, mit Schutz für offene Ausgaben, Rückgaben, und Reservierungen. Für Produktionen geben alle Mitglieder Material aus und nehmen es zurück; reservieren und den Abbau abschließen bleibt bei der Produktionsleitung. Eine private Ausleihe ohne Produktion gibt es nicht.
+- Pro AG exklusiv klassische Mengenliste mit Abhaken oder QR-Verwaltung; Standard bleibt klassisch. Wechsel in Einstellungen → AG anpassen → Materialverwaltung, mit Schutz für offene Ausgaben, Rückgaben, und Reservierungen. Für eine Produktion geben Owner, Admins, Lehrkräfte und alle mit einem zugesagten Job in dieser Produktion Material aus und nehmen es zurück; reservieren und den Abbau abschließen bleibt bei der Produktionsleitung. Eine private Ausleihe ohne Produktion gibt es nicht.
 - Im QR-Modus pro Materialart: `bulk` (Mengenmaterial), `individual` (Einzelgeräte) oder `consumable` (Verbrauchsmaterial). Kabel werden nach Stückzahl geführt; besondere Kabel können bewusst Einzelgeräte sein.
 - Einzelgeräte mit Inventarcodes, Etiketten, aufklappbarer Geräteliste direkt am Material, Archiv und Historie. Konkrete Reservierungen nur im Materialabschnitt der Produktion, bis zur geplanten Menge und ohne zeitlichen Konflikt.
 - Gemeinsame Materialausgabe: Kamerascan/Code für Einzelgeräte, Stückzahl und Teilrückgaben für Mengenmaterial, Bestandsentnahme ohne Rückgabe für Verbrauchsmaterial. Kamera benötigt HTTPS/localhost; Scannerbibliothek wird lokal ausgeliefert.

@@ -29,7 +29,7 @@ Details, Modellübersicht, Migrationen, Teststände und Restarbeiten: [Entwickle
 ## Übernahme in das Hauptprojekt
 
 - **Keine private Ausleihe:** `MaterialCheckout` ist entfallen. Material verlässt das Lager nur für eine Produktion.
-- **Ausgeben darf jedes Mitglied:** Eigenes Recht `ISSUE_MATERIAL`. Reservieren und Abbau bleiben bei der Produktionsleitung.
+- **Wer ausgeben darf:** Recht `ISSUE_MATERIAL` (Owner, Admin, Lehrkraft) und alle mit einem zugesagten Job in dieser Produktion, egal welchem. Eine bloße Anfrage reicht nicht. Reservieren und Abbau bleiben bei der Produktionsleitung.
 - **Löschen:** `RESTRICT` statt `PROTECT`, damit AGs aufgelöst werden können und einzelnes Löschen trotzdem blockiert ist. `UnitIssue.production` wird beim endgültigen Löschen leer, der Name bleibt als Text. Der Aufräumlauf überspringt Produktionen, von denen noch Material draußen ist.
 - **Inventarcodes:** eindeutig je AG, damit keine AG von den Codes einer anderen erfährt.
 - **Kamera:** `camera=(self)` im Caddy-Header. Beim Einspielen muss Caddy neu laden.

@@ -13,7 +13,7 @@ from apps.organizations.permissions import Perm
 from apps.productions import services as production_services
 from apps.productions.models import Production
 
-from . import services
+from . import services, unit_services
 from .forms import (
     DefectForm,
     KitForm,
@@ -411,7 +411,9 @@ def planned_remove(request, pk):
 @org_required
 def packing_list(request, pk):
     production = _production(request, pk)
-    if request.organization.inventory_qr_enabled:
+    if request.organization.inventory_qr_enabled and unit_services.can_issue(
+        request.membership, production
+    ):
         return redirect("inventory:scan", pk=pk)
     planned = production.planned_material.select_related("material", "material__category")
     return render(

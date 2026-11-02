@@ -22,6 +22,7 @@ from apps.inventory.models import (
     UnitReservation,
 )
 from apps.organizations import services as org_services
+from apps.organizations.permissions import Role
 from apps.productions.models import Production
 from apps.productions.tasks import purge_deleted_productions
 
@@ -632,22 +633,67 @@ def test_foreign_code_gives_no_hint_when_creating(
     assert MaterialUnit.objects.for_org(org).filter(code="GEHEIM-1").exists()
 
 
-def test_every_member_can_issue_for_productions(
-    org, concert, unit, planned, planner, member_client
+@pytest.mark.parametrize(
+    ("status", "allowed"), [("confirmed", True), ("requested", False), (None, False)]
+)
+def test_students_issue_only_with_confirmed_job_in_this_production(
+    org, concert, unit, planned, planner, make_member, make_assignment, login, status, allowed
 ):
+    student = make_member(org, Role.STUDENT)
+    if status:
+        make_assignment(concert.jobs.get(name="Show"), student, status=status)
     unit_services.reserve(concert, unit, planner.user)
+    client = login(student.user, org)
     url = reverse("inventory:scan", args=[concert.pk])
 
-    page = member_client.get(url)
-    assert page.status_code == 200
-    assert "Abbaukontrolle" not in page.content.decode()
+    assert client.get(url).status_code == (200 if allowed else 403)
+    response = client.post(url, {"code": unit.code, "mode": "issue"})
 
-    response = member_client.post(url, {"code": unit.code, "mode": "issue"})
+    assert response.status_code == (302 if allowed else 403)
+    assert UnitIssue.objects.filter(unit=unit, production=concert).exists() is allowed
+    if allowed:
+        page = client.get(url).content.decode()
+        assert "Abbaukontrolle" not in page
+        assert UnitIssue.objects.get(unit=unit).production_name == concert.name
 
-    assert response.status_code == 302
-    assert UnitIssue.objects.filter(unit=unit, production=concert).exists()
-    issue = UnitIssue.objects.get(unit=unit)
-    assert issue.production_name == concert.name
+
+def test_job_in_other_production_does_not_count(
+    org, concert, unit, make_production, make_job, make_member, make_assignment, login
+):
+    student = make_member(org, Role.STUDENT)
+    other_job = make_job(make_production(org, "Andere"), "Aufbau")
+    make_assignment(other_job, student, status="confirmed")
+
+    url = reverse("inventory:scan", args=[concert.pk])
+
+    assert login(student.user, org).get(url).status_code == 403
+
+
+@pytest.mark.parametrize("role", [Role.ADMIN, Role.TEACHER])
+def test_planning_roles_issue_without_job(org, concert, unit, make_member, login, role):
+    client = login(make_member(org, role).user, org)
+
+    assert client.get(reverse("inventory:scan", args=[concert.pk])).status_code == 200
+
+
+def test_quantity_issue_needs_job_too(org, concert, mics, make_member, make_assignment, login):
+    org.inventory_qr_enabled = True
+    org.save(update_fields=["inventory_qr_enabled"])
+    item = PlannedMaterial.objects.create(
+        organization=org, production=concert, material=mics, quantity=2
+    )
+    student = make_member(org, Role.STUDENT)
+    client = login(student.user, org)
+    url = reverse("inventory:quantity_move", args=[item.pk])
+    data = {"operation": "issue", "quantity": 1}
+
+    assert client.post(url, data).status_code == 403
+
+    make_assignment(concert.jobs.get(name="Aufbau"), student, status="confirmed")
+
+    assert client.post(url, data).status_code == 302
+    item.refresh_from_db()
+    assert item.issued_quantity == 1
 
 
 def test_members_cannot_control_teardown_or_reserve(concert, unit, member_client):

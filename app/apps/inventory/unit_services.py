@@ -9,7 +9,8 @@ from django.db.models import F
 from django.utils import timezone
 
 from apps.organizations.models import Organization
-from apps.productions.models import Production
+from apps.organizations.permissions import Perm
+from apps.productions.models import CrewAssignment, Production
 
 from .models import (
     DefectReport,
@@ -343,6 +344,17 @@ def move_quantity(planned, operation, quantity, user):
         quantity=quantity,
         user=user,
     )
+
+
+def can_issue(membership, production):
+    """Ausgeben darf, wer das Recht hat oder in dieser Produktion einen zugesagten Job hat."""
+    if membership.has_perm(Perm.ISSUE_MATERIAL):
+        return True
+    return CrewAssignment.objects.filter(
+        job__production=production,
+        membership=membership,
+        status=CrewAssignment.Status.CONFIRMED,
+    ).exists()
 
 
 def has_outstanding_material(production):

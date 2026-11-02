@@ -4,7 +4,7 @@ from io import BytesIO
 
 import qrcode
 from django.contrib import messages
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.http import Http404, HttpResponse, JsonResponse
@@ -185,10 +185,12 @@ def cancel(request, pk):
     return redirect(reverse("productions:detail", args=[reservation.production_id]) + "#material")
 
 
-@permission_required_in_org(Perm.ISSUE_MATERIAL)
+@org_required
 @qr_required
 def scan(request, pk):
     production = _production(request, pk)
+    if not services.can_issue(request.membership, production):
+        raise PermissionDenied
     if request.method == "POST":
         try:
             message = services.scan_unit(
@@ -351,14 +353,16 @@ def inventory_settings(request):
 
 
 @require_POST
-@permission_required_in_org(Perm.ISSUE_MATERIAL)
+@org_required
 @qr_required
 def quantity_move(request, pk):
     planned = get_object_or_404(
-        PlannedMaterial.objects.for_org(request.organization),
+        PlannedMaterial.objects.for_org(request.organization).select_related("production"),
         pk=pk,
         production__deleted_at__isnull=True,
     )
+    if not services.can_issue(request.membership, planned.production):
+        raise PermissionDenied
     raw = request.POST.get("quantity", "")
     if not raw.isascii() or not raw.isdigit() or len(raw) > 5:
         messages.error(request, "Bitte eine gültige Stückzahl eingeben.")

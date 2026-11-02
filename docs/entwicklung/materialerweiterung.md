@@ -94,7 +94,7 @@ Gemeinsame Materialübersicht mit Unterteilungen, keine getrennte zweite Reservi
 - `MANAGE_INVENTORY`: Materialmodus, Gerätepflege und Reparaturen.
 - `MANAGE_PRODUCTIONS`: Reservierungen, Ausgabe/Rückgabe und Abbau.
 - `REPORT_DEFECT`: Gerätedefekte melden.
-- Ausgabe und Rückgabe für Produktionen: alle Mitglieder der aktiven AG (`ISSUE_MATERIAL`); Reservieren und Abbau nur mit `MANAGE_PRODUCTIONS`.
+- Ausgabe und Rückgabe für Produktionen: `ISSUE_MATERIAL` oder ein zugesagter Job in genau dieser Produktion (`unit_services.can_issue`); Reservieren und Abbau nur mit `MANAGE_PRODUCTIONS`.
 - Views prüfen aktive AG und Rechte. Eingaben aus anderen AGs werden abgewiesen. Die aktuelle Implementierung ist trotzdem vor Upstream-Übernahme vollständig auf die Projektkonventionen zu prüfen.
 
 | Datei/Bereich | Verantwortung |
