@@ -15,7 +15,7 @@ Beim Test auf dem Server war das Reservieren konkreter Geräte unnötige Arbeit:
 
 **Textauswahl:** Auf Touch-Geräten ist das Markieren von Nachrichten aus, weil Gedrückthalten sonst die Auswahl des Browsers auslöst. „Kopieren“ ersetzt das.
 
-**Blöcke in der Freistellungsliste:** `release_blocks` teilt die Stunden je Person in zusammenhängende Blöcke und gruppiert Personen mit gleichem Block. Wer nach einer Lücke wieder freigestellt wird, steht in zwei Blöcken.
+**Freistellungsliste als Tabelle:** `release_tables` liefert je Schultag eine Tabelle mit Personen in den Zeilen (aufsteigend nach Jahrgang) und allen Schulstunden in den Spalten. Ohne Stundenraster stehen die zusammengefassten Jobzeiten in den Spalten. Die Liste bleibt bewusst schwarz-weiß, damit sie sich gut kopieren lässt.
 
 ## Folgen
 

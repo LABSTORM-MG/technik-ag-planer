@@ -1614,9 +1614,9 @@ a.list__item:hover,
 .periods__head,
 .periods__row {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) 12px minmax(0, 1fr) 36px;
+  grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr) 32px;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
 .periods__head {
@@ -1637,8 +1637,8 @@ a.list__item:hover,
 .periods__number {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-full);
   background: var(--color-surface-raised);
   color: var(--color-accent);
@@ -1650,22 +1650,24 @@ a.list__item:hover,
   content: counter(period);
 }
 
-.periods__dash {
-  color: var(--color-text-muted);
-  text-align: center;
-}
-
 .periods__field input {
   width: 100%;
   min-width: 0;
   min-height: 44px;
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-1);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
   background: var(--color-surface-raised);
   color: var(--color-text);
   font: inherit;
+  font-size: var(--text-sm);
+  text-align: center;
   color-scheme: dark;
+}
+
+/* Das Uhr-Symbol braucht auf dem Handy zu viel Platz; Antippen öffnet die Auswahl trotzdem */
+.periods__field input::-webkit-calendar-picker-indicator {
+  display: none;
 }
 
 .periods__remove {
@@ -1715,9 +1717,8 @@ a.icon-button {
 
 .board__head {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
 }
 
 .board__head .page-title {

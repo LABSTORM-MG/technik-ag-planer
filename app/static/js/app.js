@@ -4,6 +4,21 @@
 
   const CLOSE_DISTANCE = 80; // px, ab denen ein Wisch nach unten schließt
 
+  const closeSheet = (sheet) => {
+    if (window.confirmLeaveForm?.(sheet) !== false) sheet.close();
+  };
+
+  // Escape: abbrechbar, damit die Warnung vor ungespeicherten Änderungen greift
+  document.addEventListener(
+    "cancel",
+    (event) => {
+      if (event.target.matches?.("[data-sheet]") && window.confirmLeaveForm?.(event.target) === false) {
+        event.preventDefault();
+      }
+    },
+    true,
+  );
+
   document.addEventListener("click", (event) => {
     const opener = event.target.closest("[data-sheet-open]");
     if (opener) {
@@ -14,7 +29,8 @@
 
     const closer = event.target.closest("[data-sheet-close]");
     if (closer) {
-      closer.closest("dialog")?.close();
+      const dialog = closer.closest("dialog");
+      if (dialog) closeSheet(dialog);
       return;
     }
 
@@ -24,7 +40,7 @@
       const inside =
         event.clientX >= rect.left && event.clientX <= rect.right &&
         event.clientY >= rect.top && event.clientY <= rect.bottom;
-      if (!inside) event.target.close();
+      if (!inside) closeSheet(event.target);
     }
   });
 
@@ -50,7 +66,7 @@
       const offset = event.clientY - startY;
       startY = null;
       sheet.style.transform = "";
-      if (offset > CLOSE_DISTANCE) sheet.close();
+      if (offset > CLOSE_DISTANCE) closeSheet(sheet);
     };
 
     grip.addEventListener("pointerup", end);
@@ -120,6 +136,71 @@ document.addEventListener("click", (event) => {
   filterPicker(picker);
 });
 
+// Warnung vor ungespeicherten Änderungen beim Verlassen eines Formulars.
+// Vergleicht mit den Startwerten, zurückgesetzte Eingaben zählen also nicht.
+(() => {
+  const LEAVE_TEXT = "Du hast ungespeicherte Änderungen. Wirklich verlassen, ohne zu speichern?";
+  let leaving = false;
+
+  function isDirty(form) {
+    return [...form.elements].some((element) => {
+      if (!element.name || element.name === "csrfmiddlewaretoken") return false;
+      if (element.type === "checkbox" || element.type === "radio") {
+        return element.checked !== element.defaultChecked;
+      }
+      if (element.tagName === "SELECT") {
+        return [...element.options].some((option) => option.selected !== option.defaultSelected);
+      }
+      return "defaultValue" in element && element.value !== element.defaultValue;
+    });
+  }
+
+  function dirtyForms(root = document) {
+    return [...root.querySelectorAll('form.form[method="post"]:not([data-no-unsaved])')].filter(
+      (form) => {
+        if (!form.closest(".main, dialog")) return false;
+        const dialog = form.closest("dialog");
+        return (!dialog || dialog.open) && isDirty(form);
+      },
+    );
+  }
+
+  // Für die Sheets: false, wenn jemand lieber bleiben möchte
+  window.confirmLeaveForm = (root) => !dirtyForms(root).length || window.confirm(LEAVE_TEXT);
+
+  document.addEventListener("submit", (event) => {
+    if (!event.defaultPrevented) leaving = true;
+  });
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      const link = event.target.closest?.("a[href]");
+      if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
+      if ("sheetUrl" in link.dataset || link.getAttribute("href").startsWith("#")) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+      if (!dirtyForms().length) return;
+      if (window.confirm(LEAVE_TEXT)) {
+        leaving = true;
+      } else {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    },
+    true,
+  );
+
+  // Zurück-Geste, Tab schließen, Neu laden: Der Browser zeigt seine eigene Nachfrage
+  window.addEventListener("beforeunload", (event) => {
+    if (leaving || !dirtyForms().length) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
+  window.addEventListener("pageshow", () => {
+    leaving = false;
+  });
+})();
+
 // Formulare im Bottom-Sheet: <a href="…" data-sheet-url> lädt die Seite ohne Rahmen ins Sheet.
 // Ohne JavaScript öffnet der Link einfach die normale Seite.
 document.addEventListener("click", async (event) => {
@@ -131,6 +212,11 @@ document.addEventListener("click", async (event) => {
   try {
     const response = await fetch(link.href, { headers: { "X-Sheet": "1" }, cache: "no-store" });
     if (!response.ok || response.redirected) throw new Error(String(response.status));
+    const direct = response.headers.get("X-Sheet-Navigate");
+    if (direct) {
+      window.location.href = direct;
+      return;
+    }
     const body = sheet.querySelector("[data-sheet-body]");
     body.innerHTML = await response.text();
     const heading = body.querySelector(".sheet-title");
@@ -631,26 +717,45 @@ document.querySelectorAll("[data-periods]").forEach((root) => {
   });
 })();
 
-// PDF-Vorschau: „Teilen“ über das Teilen-Menü des Geräts (Web Share API mit Datei).
-// Das PDF wird vorab geladen, weil manche Browser das Teilen nur direkt nach dem Tippen erlauben.
-// Ohne Unterstützung bleibt der Button ausgeblendet; dann helfen „Herunterladen“ und „Drucken“.
+// Teilen: Am Handy das Teilen-Menü des Systems, am Computer „Link kopieren“.
 (() => {
   "use strict";
 
   const button = document.querySelector("[data-share-pdf]");
-  if (!button || !navigator.canShare) return;
+  if (!button) return;
+  const url = new URL(button.dataset.sharePdf, window.location.href).href;
+  const title = button.dataset.shareTitle;
+  const phone = Boolean(navigator.share) && window.matchMedia("(pointer: coarse)").matches;
+  button.hidden = false;
 
-  fetch(button.dataset.sharePdf, { credentials: "same-origin" })
-    .then((response) => (response.ok ? response.blob() : Promise.reject(response.status)))
-    .then((blob) => {
-      const file = new File([blob], button.dataset.shareName, { type: "application/pdf" });
-      if (!navigator.canShare({ files: [file] })) return;
-      button.hidden = false;
-      button.addEventListener("click", () => {
-        navigator.share({ files: [file], title: button.dataset.shareTitle }).catch(() => {});
-      });
-    })
-    .catch(() => {});
+  if (!phone) {
+    button.textContent = "Link kopieren";
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        button.textContent = "Link kopiert";
+      } catch {
+        window.prompt("Link zum Kopieren:", url);
+      }
+    });
+    return;
+  }
+
+  // Die Datei liegt beim Klick schon bereit: Teilen geht nur direkt aus dem Antippen heraus
+  let file = null;
+  if (navigator.canShare) {
+    fetch(url, { credentials: "same-origin" })
+      .then((response) => (response.ok ? response.blob() : Promise.reject(response.status)))
+      .then((blob) => {
+        const candidate = new File([blob], button.dataset.shareName, { type: "application/pdf" });
+        if (navigator.canShare({ files: [candidate] })) file = candidate;
+      })
+      .catch(() => {});
+  }
+  button.addEventListener("click", () => {
+    const data = file ? { files: [file], title } : { url, title };
+    navigator.share(data).catch(() => {});
+  });
 })();
 
 // Service Worker für Push-Mitteilungen (kein Offline-Modus). Nur über HTTPS bzw. localhost.

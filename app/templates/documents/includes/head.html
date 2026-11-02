@@ -1,5 +1,5 @@
 <header class="doc__head">
-  <p class="doc__eyebrow">{{ organization.name }} · {{ kind }}</p>
+  <p class="doc__eyebrow">{% if not hide_organization %}{{ organization.name }} · {% endif %}{{ kind }}</p>
   <h1 class="doc__title">{{ production.name }}{% if job %} – {{ job.name }}{% endif %}</h1>
   <dl class="doc__facts">
     <dt>Datum</dt>

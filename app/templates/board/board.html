@@ -3,18 +3,15 @@
 {% block topbar_title %}Board{% endblock %}
 {% block content %}
 <div class="board" data-board data-poll-url="{% url 'board:new' %}{% if production %}?produktion={{ production.pk }}{% endif %}" data-last-id="{{ last_id }}">
-  <header class="board__head{% if production.category %} color-{{ production.category.color }}{% endif %}">
-    <div>
-      {% if production %}
-        {% url 'board:index' as zurueck %}{% include "includes/back_link.html" with url=zurueck label="Board" %}
-        <h1 class="page-title">{{ production.name }}</h1>
-        <p class="muted"><a href="{% url 'productions:detail' production.pk %}">Zur Produktion</a></p>
-      {% else %}
-        <h1 class="page-title">Board</h1>
-      {% endif %}
-    </div>
-    <button type="button" class="icon-button" data-sheet-open="sheet-more" aria-label="Menü">{% include "includes/icon.html" with name="more" %}</button>
-  </header>
+  {% if production %}
+    <header class="board__head{% if production.category %} color-{{ production.category.color }}{% endif %}">
+      {% url 'board:index' as zurueck %}{% include "includes/back_link.html" with url=zurueck label="Board" %}
+      <h1 class="page-title">{{ production.name }}</h1>
+      <p class="muted"><a href="{% url 'productions:detail' production.pk %}">Zur Produktion</a></p>
+    </header>
+  {% else %}
+    <h1 class="visually-hidden">Board</h1>
+  {% endif %}
 
   {% include "board/includes/chat_bar.html" %}
 

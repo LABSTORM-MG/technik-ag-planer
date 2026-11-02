@@ -29,10 +29,12 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 - Board: Mehrere Nachrichten kopieren, Absender nur am Anfang und beim Wechsel
 - Materialsätze nutzen die neue Material-Auswahl
 - QR-Etiketten größer und leichter lesbar, Scan auch per Foto
-- Freistellungsliste: ohne Stundenraster mit Uhrzeiten; die Vorschau nennt, wer warum fehlt
+- Freistellungsliste als Tabelle: Namen und Jahrgang links, Stunden oben, Kreuze in den betroffenen Feldern; ohne Stundenraster mit Uhrzeiten; die Vorschau nennt, wer warum fehlt
+- Warnung beim Verlassen eines Formulars mit ungespeicherten Änderungen
+- „In privaten Kalender“ wählt den Kalender nach Gerät, die Auswahl erscheint nur noch bei Unklarheit
+- PDF teilen: am Handy über das Teilen-Menü, am Computer „Link kopieren“
 - Board: nur noch Sprechblasen; Bearbeiten und Löschen per Gedrückthalten, Mehrfachauswahl zum Löschen, „Alle auswählen“; kompakte Chat-Blasen, die beim Hochscrollen erscheinen
 - Zurück-Knöpfe einheitlich und immer nur eine Ebene zurück
-- Freistellungsliste nach Stundenblöcken für Lehrkräfte
 - Material-Auswahl mit Suche und Kategorie-Filter; Knopf „Material packen“ oben auf der Produktionsseite
 - Einzelgeräte werden nicht mehr reserviert: Jedes freie Gerät lässt sich scannen, die Planung passt sich an
 - Behoben: Produktionsliste und Dashboard waren nicht zuverlässig nach Datum sortiert

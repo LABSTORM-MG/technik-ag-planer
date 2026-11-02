@@ -10,7 +10,7 @@
     {{ formset.management_form }}
     {% if formset.non_form_errors %}<ul class="form-errors" role="alert">{% for e in formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     <div class="periods" data-periods>
-      <div class="periods__head" aria-hidden="true"><span></span><span>Beginn</span><span></span><span>Ende</span><span></span></div>
+      <div class="periods__head" aria-hidden="true"><span></span><span>Beginn</span><span>Ende</span><span></span></div>
       <div class="periods__rows" data-formset="periods">
         {% for f in formset %}{% include "scheduling/includes/period_row.html" %}{% endfor %}
       </div>

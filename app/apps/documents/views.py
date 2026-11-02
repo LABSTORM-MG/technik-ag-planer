@@ -132,7 +132,7 @@ def release_list(request, pk, as_pdf=False):
         filename=f"freistellungsliste-{slugify(production.name)}",
         context={
             "production": production,
-            "blocks": services.release_blocks(production),
+            "tables": services.release_tables(production),
             "supervisors": production.supervisors.all(),
         },
         back=(reverse("productions:detail", args=[production.pk]), production.name),
