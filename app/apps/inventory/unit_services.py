@@ -27,11 +27,22 @@ from .models import (
     UnitIssue,
 )
 
+QR_MIN_VERSION = 2
+
 
 def qr_png(code):
-    """Nur der Code, keine Adresse: Das ergibt wenige große Felder, die Kameras sicher lesen."""
+    """Nur der Code, keine Adresse: Das ergibt wenige große Felder, die Kameras sicher lesen.
+
+    Mindestens Version 2: Erst sie hat das Ausrichtungsmuster, ohne das der Scanner
+    schräg fotografierte Codes nicht liest (ADR 0024).
+    """
     stream = BytesIO()
-    qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=16, border=4)
+    qr = qrcode.QRCode(
+        version=QR_MIN_VERSION,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=16,
+        border=4,
+    )
     qr.add_data(code)
     qr.make(fit=True)
     qr.make_image().save(stream, format="PNG")

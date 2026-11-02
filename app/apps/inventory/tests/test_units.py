@@ -775,8 +775,25 @@ def test_qr_contains_only_the_code_and_is_large(unit, planner_client):
 
     width, height = Image.open(BytesIO(response.content)).size
     assert width == height
-    # 21 oder 25 Module + 2 × 4 Rand bei 16 px: wenige große Felder statt einer Adresse
-    assert width in {(21 + 8) * 16, (25 + 8) * 16}
+    # 25 Module + 2 × 4 Rand bei 16 px: wenige große Felder statt einer Adresse
+    assert width == (25 + 8) * 16
+
+
+def _qr_modules(code):
+    from io import BytesIO
+
+    from PIL import Image
+
+    return Image.open(BytesIO(unit_services.qr_png(code))).width // 16 - 8
+
+
+def test_short_code_keeps_alignment_pattern_for_slanted_photos():
+    # Version 1 (21 Module) hat kein Ausrichtungsmuster und ist schräg nicht lesbar
+    assert _qr_modules("TAG-77567C79C0") == 25
+
+
+def test_long_code_still_grows_beyond_minimum_version():
+    assert _qr_modules("TAG-" + "A" * 60) > 25
 
 
 def test_scanner_still_accepts_labels_with_address():

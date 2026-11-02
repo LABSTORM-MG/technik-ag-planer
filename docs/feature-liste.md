@@ -606,6 +606,7 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | – | Chat-Bedienung, Geräte ohne Reservierung, Material-Auswahl, Zurück-Knöpfe | fertig | #31 |
 | – | Kopieren mehrerer Nachrichten, Stundenraster, Einrichtungs-Checkliste, QR-Lesbarkeit, Freistellungs-Tabelle, Warnung bei ungespeicherten Änderungen | fertig | #32 |
 | – | QR-Codes drucken mit Gerätenummer, persönliche Kalender-Einstellung, „Material packen“ neu | fertig | #33 |
+| – | QR-Codes mindestens Version 2, damit sie auch schräg lesbar sind (ADR 0024) | fertig | #36 |
 | – | Oberfläche: Nachfrage bei Anfragen, Kalender, Board auf dem Handy, Crew-Schalter, Produktionsseite | fertig | #20, #21 |
 | – | „In privaten Kalender“ mit Auswahl Google, Apple, Datei | fertig | #22 |
 
