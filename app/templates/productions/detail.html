@@ -136,10 +136,7 @@
             <span class="dot" aria-hidden="true"></span>
             <div class="list__main">
               <a class="list__link list__title" href="{% url 'inventory:detail' p.material_id %}">{{ p.material }} × {{ p.quantity }}</a>
-              {% if current_organization.inventory_qr_enabled and p.material.tracking != "individual" %}<span class="list__subtitle">{{ p.material.get_tracking_display }}</span>{% endif %}
-              {% if current_organization.inventory_qr_enabled and p.material.tracking == "individual" %}
-                {% include "inventory/includes/production_reservations.html" %}
-              {% endif %}
+              {% if current_organization.inventory_qr_enabled %}<span class="list__subtitle">{{ p.material.get_tracking_display }}</span>{% endif %}
               {% if p.source_kit or p.shortage %}
                 <span class="list__subtitle">{% if p.source_kit %}aus Satz „{{ p.source_kit }}“{% endif %}{% if p.source_kit and p.shortage %} · {% endif %}{% if p.shortage %}<span class="text-danger">{{ p.shortage.needed }} benötigt, {{ p.shortage.available }} verfügbar</span>{% endif %}</span>
               {% endif %}

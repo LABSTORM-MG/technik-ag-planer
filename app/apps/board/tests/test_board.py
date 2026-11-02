@@ -500,7 +500,9 @@ def _delete_many(client, *messages, **extra):
     )
 
 
-def test_delete_many_removes_only_own_messages_for_students(student_client, student, org, make_member):
+def test_delete_many_removes_only_own_messages_for_students(
+    student_client, student, org, make_member
+):
     mine = [services.post(org, student.user, f"Eigene {i}") for i in range(2)]
     foreign = services.post(org, make_member(org).user, "Fremd")
 

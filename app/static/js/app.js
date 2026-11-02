@@ -70,6 +70,47 @@ document.addEventListener("submit", (event) => {
   if (message && !window.confirm(message)) event.preventDefault();
 });
 
+// Material-Auswahl: Suche und Filter nur mit JavaScript, ohne bleibt die ganze Liste nutzbar.
+// Über das Dokument, weil Sheet-Inhalte erst später in die Seite kommen.
+function filterPicker(picker) {
+  const query = picker.querySelector("[data-picker-search]").value.trim().toLowerCase();
+  const category = picker.querySelector("[data-picker-category][aria-current]")?.dataset.pickerCategory;
+  let visible = 0;
+  picker.querySelectorAll("[data-picker-item]").forEach((item) => {
+    const match =
+      (!category || item.dataset.category === category) &&
+      (!query || item.dataset.name.includes(query));
+    item.hidden = !match;
+    if (match) visible += 1;
+  });
+  picker.querySelector("[data-picker-empty]").hidden = visible > 0;
+}
+
+function enhancePickers(root = document) {
+  root.querySelectorAll("[data-picker]").forEach((picker) => {
+    picker.querySelector("[data-picker-search]").hidden = false;
+    const chips = picker.querySelector("[data-picker-chips]");
+    if (chips) chips.hidden = false;
+  });
+}
+
+enhancePickers();
+new MutationObserver(() => enhancePickers()).observe(document.body, { childList: true, subtree: true });
+document.addEventListener("input", (event) => {
+  const picker = event.target.closest?.("[data-picker-search]")?.closest("[data-picker]");
+  if (picker) filterPicker(picker);
+});
+document.addEventListener("click", (event) => {
+  const chip = event.target.closest("[data-picker-category]");
+  if (!chip) return;
+  const picker = chip.closest("[data-picker]");
+  picker.querySelectorAll("[data-picker-category]").forEach((other) => {
+    other.removeAttribute("aria-current");
+  });
+  chip.setAttribute("aria-current", "true");
+  filterPicker(picker);
+});
+
 // Formulare im Bottom-Sheet: <a href="…" data-sheet-url> lädt die Seite ohne Rahmen ins Sheet.
 // Ohne JavaScript öffnet der Link einfach die normale Seite.
 document.addEventListener("click", async (event) => {

@@ -1,0 +1,13 @@
+<div class="picker" data-picker role="radiogroup"{% if widget.attrs.id %} id="{{ widget.attrs.id }}"{% endif %}>
+  <input class="input picker__search" type="search" placeholder="Material suchen …" aria-label="Material suchen" data-picker-search hidden>
+  {% if widget.categories %}
+    <div class="chips picker__chips" data-picker-chips hidden>
+      <button type="button" class="chip" data-picker-category="" aria-current="true">Alle</button>
+      {% for category in widget.categories %}<button type="button" class="chip color-{{ category.color }}" data-picker-category="{{ category.pk }}"><span class="dot" aria-hidden="true"></span>{{ category.name }}</button>{% endfor %}
+    </div>
+  {% endif %}
+  <div class="picker__list">
+    {% for group, options, index in widget.optgroups %}{% for option in options %}{% include option.template_name with widget=option %}{% endfor %}{% endfor %}
+    <p class="muted picker__empty" data-picker-empty hidden>Kein Material gefunden.</p>
+  </div>
+</div>

@@ -105,9 +105,34 @@ class DefectForm(forms.ModelForm):
         return quantity
 
 
+class MaterialPicker(forms.RadioSelect):
+    """Auswahl mit Suche und Kategorie-Filter statt der langen Browser-Liste."""
+
+    template_name = "inventory/widgets/material_picker.html"
+    option_template_name = "inventory/widgets/material_picker_option.html"
+
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex, attrs)
+        option["material"] = getattr(value, "instance", None)
+        return option
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        categories = {}
+        for _group, options, _index in context["widget"]["optgroups"]:
+            for option in options:
+                material = option["material"]
+                if material is not None and material.category_id:
+                    categories[material.category_id] = material.category
+        context["widget"]["categories"] = sorted(
+            categories.values(), key=lambda c: (c.position, c.name)
+        )
+        return context
+
+
 class PlanForm(forms.Form):
     material = forms.ModelChoiceField(
-        queryset=None, label="Material", empty_label="Material wählen"
+        queryset=None, label="Material", empty_label=None, widget=MaterialPicker
     )
     quantity = forms.IntegerField(label="Menge", min_value=1, initial=1)
     ignore_conflicts = forms.BooleanField(required=False, widget=forms.HiddenInput)
@@ -115,11 +140,12 @@ class PlanForm(forms.Form):
     def __init__(self, *args, organization, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["material"].queryset = (
-            Material.objects.for_org(organization).active().select_related("category")
+            Material.objects.for_org(organization)
+            .active()
+            .select_related("category")
+            .order_by("category__position", "category__name", "name")
         )
-        self.fields["material"].label_from_instance = lambda m: (
-            f"{m.name}" + (f" ({m.category})" if m.category_id else "")
-        )
+        self.fields["material"].label_from_instance = lambda m: m.name
 
 
 class PlanKitForm(forms.Form):

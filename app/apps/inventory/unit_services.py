@@ -20,7 +20,6 @@ from .models import (
     ProductionTeardown,
     TeardownException,
     UnitIssue,
-    UnitReservation,
 )
 
 
@@ -58,9 +57,7 @@ def check_open(production):
     if ProductionTeardown.objects.filter(
         production=production, completed_at__isnull=False
     ).exists():
-        raise ValidationError(
-            "Der Abbau ist abgeschlossen; neue Ausgaben und Reservierungen sind gesperrt."
-        )
+        raise ValidationError("Der Abbau ist abgeschlossen; neue Ausgaben sind gesperrt.")
 
 
 def check_available(unit):
@@ -74,55 +71,6 @@ def check_available(unit):
         raise ValidationError("Für diese Materialart liegt eine offene Defektmeldung vor.")
     if unit.issues.filter(returned_at__isnull=True).exists():
         raise ValidationError("Dieses Gerät ist noch ausgegeben oder vermisst.")
-
-
-def reservations(unit):
-    # Use current production dates, so moving an event cannot silently leave stale dates.
-    return unit.reservations.filter(released_at__isnull=True, production__deleted_at__isnull=True)
-
-
-@transaction.atomic
-def reserve(production, unit, user):
-    production = lock_production(production)
-    unit = lock_unit(unit)
-    if production.organization_id != unit.organization_id:
-        raise ValidationError("Gerät gehört nicht zu dieser AG.")
-    check_open(production)
-    check_available(unit)
-    if production.end_date < production.start_date:
-        raise ValidationError("Ungültiger Produktionszeitraum.")
-    if (
-        reservations(unit)
-        .filter(
-            production__start_date__lte=production.end_date,
-            production__end_date__gte=production.start_date,
-        )
-        .exists()
-    ):
-        raise ValidationError("Das Gerät ist im Produktionszeitraum bereits reserviert.")
-    plan = PlannedMaterial.objects.filter(production=production, material=unit.material).first()
-    count = UnitReservation.objects.filter(
-        production=production, unit__material=unit.material, released_at__isnull=True
-    ).count()
-    if not plan or count >= plan.quantity:
-        raise ValidationError("Zuerst eine ausreichende Menge dieser Materialart einplanen.")
-    return UnitReservation.objects.create(
-        organization=production.organization, production=production, unit=unit, created_by=user
-    )
-
-
-@transaction.atomic
-def cancel(reservation):
-    lock_production(reservation.production)
-    lock_unit(reservation.unit)
-    if UnitIssue.objects.filter(
-        production=reservation.production, unit=reservation.unit, returned_at__isnull=True
-    ).exists():
-        raise ValidationError("Gerät vor dem Aufheben der Reservierung zurückgeben.")
-    reservation.refresh_from_db()
-    if reservation.released_at is None:
-        reservation.released_at = timezone.now()
-        reservation.save(update_fields=["released_at"])
 
 
 @transaction.atomic
@@ -147,29 +95,26 @@ def scan_unit(production, raw, mode, user):
         raise ValidationError("Ungültiger Scanmodus.")
     check_open(production)
     check_available(unit)
-    today = timezone.localdate()
-    own = reservations(unit).filter(production=production, production__end_date__gte=today).first()
-    if not own:
-        raise ValidationError("Keine aktive Reservierung für dieses Gerät.")
-    # Early issue must not block another production before our reservation starts.
-    if (
-        reservations(unit)
-        .exclude(production=production)
-        .filter(
-            production__start_date__lte=production.end_date,
-            production__end_date__gte=min(today, production.start_date),
-        )
-        .exists()
-    ):
-        raise ValidationError(
-            "Das Gerät wird vorher oder im selben Zeitraum für eine andere Produktion benötigt."
-        )
-    plan = PlannedMaterial.objects.filter(production=production, material=unit.material).first()
-    issued = UnitIssue.objects.filter(
-        production=production, unit__material=unit.material, returned_at__isnull=True
-    ).count()
-    if not plan or issued >= plan.quantity:
-        raise ValidationError("Kein freier Platz in der Materialplanung.")
+    # Jedes freie Gerät geht; die Planung folgt dem, was tatsächlich rausgeht
+    plan, created = PlannedMaterial.objects.get_or_create(
+        organization=production.organization,
+        production=production,
+        material=unit.material,
+        defaults={"quantity": 1},
+    )
+    issued = (
+        1
+        + UnitIssue.objects.filter(
+            production=production, unit__material=unit.material, returned_at__isnull=True
+        ).count()
+    )
+    note = ""
+    if created:
+        note = f" {unit.material.name} war nicht eingeplant und wurde ergänzt."
+    elif issued > plan.quantity:
+        note = f" {issued} von {plan.quantity} geplant, Planung auf {issued} erhöht."
+        plan.quantity = issued
+        plan.save(update_fields=["quantity"])
     UnitIssue.objects.create(
         organization=production.organization,
         unit=unit,
@@ -177,7 +122,7 @@ def scan_unit(production, raw, mode, user):
         production_name=production.name,
         issued_by=user,
     )
-    return "Ausgabe gespeichert."
+    return f"Ausgabe gespeichert.{note}"
 
 
 @transaction.atomic
@@ -219,13 +164,10 @@ def archive_unit(unit, operation):
         unit.archived_at = None
         unit.save(update_fields=["archived_at"])
         return
-    if (
-        unit.issues.filter(returned_at__isnull=True).exists()
-        or reservations(unit).filter(production__end_date__gte=timezone.localdate()).exists()
-    ):
-        raise ValidationError("Gerät ist noch ausgegeben oder reserviert.")
+    if unit.issues.filter(returned_at__isnull=True).exists():
+        raise ValidationError("Gerät ist noch ausgegeben.")
     if operation == "delete":
-        if unit.issues.exists() or unit.reservations.exists() or unit.defects.exists():
+        if unit.issues.exists() or unit.defects.exists():
             raise ValidationError("Geräte mit Historie können nur archiviert werden.")
         unit.delete()
     elif operation == "archive":
@@ -286,11 +228,6 @@ def teardown(production, operation, user, *, issue_id=None, reason="", note=""):
             raise ValidationError("Es sind noch Rückgaben ungeklärt.")
         state.completed_at, state.completed_by = timezone.now(), user
         state.save(update_fields=["completed_at", "completed_by"])
-        for reservation in UnitReservation.objects.filter(
-            production=production, released_at__isnull=True
-        ):
-            reservation.released_at = state.completed_at
-            reservation.save(update_fields=["released_at"])
     else:
         raise ValidationError("Ungültiger Abbauvorgang.")
 

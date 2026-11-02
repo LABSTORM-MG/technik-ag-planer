@@ -12,7 +12,7 @@ Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender,
 - **Kalender** (Monat, Woche, Agenda), Termine und Terminserien, Stundenraster, „Nicht verfügbar“, Übernahme in den privaten Kalender (Google, Apple, `.ics`)
 - **Board** als Chat der AG mit Systemmeldungen, Chats je Produktion, Moderation und Zähler für ungelesene Nachrichten
 - **Material** mit Kategorien, Bestand, Links, Defektmeldungen und Materialsätzen; Planung je Produktion mit Konfliktwarnung und Packliste zum Abhaken
-- **Optionale QR-Verwaltung je AG:** Einzelgeräte mit Inventarcodes und Etiketten, Reservierung auf der Produktionsseite, Ausgabe/Rückgabe per Kamera oder Code, gerätespezifische Defekte und Abbauprotokoll
+- **Optionale QR-Verwaltung je AG:** Einzelgeräte mit Inventarcodes und Etiketten, Ausgabe/Rückgabe per Kamera oder Code, gerätespezifische Defekte und Abbauprotokoll
 - **Gemischter Materialbestand:** Kabel und Adapter nach Stückzahl mit Teilrückgaben, Verbrauchsmaterial als Entnahme ohne Rückgabe
 - **Technik anfragen** über einen öffentlichen Link ohne Konto; Anfragen erscheinen in der Produktionsliste und werden in einer geteilten Ansicht zur Produktion
 - **PDFs** mit Vorschau zum Herunterladen, Teilen und Drucken: Call Sheet je Job und je Produktion, Freistellungsliste für die Schule, Packliste, Einsatzübersicht
@@ -61,7 +61,7 @@ Die Entwicklungsumgebung braucht keine `.env`. Nach neuen Abhängigkeiten (`uv a
 Unter **Einstellungen → Materialverwaltung** kann eine Person mit Materialverwaltungsrecht zwischen klassischer Packliste und QR-Verwaltung wählen. Standard bleibt die klassische Liste. Im QR-Modus wird unter **Material → Bearbeiten → Verwaltung** je Materialart ausgewählt:
 
 - **Mengenmaterial:** Kabel, Adapter und Klemmen nach Stückzahl ausgeben und zurücknehmen.
-- **Einzelgeräte:** Geräte anlegen, Etiketten drucken, in der Produktion konkret reservieren und bei Ausgabe/Rückgabe scannen.
+- **Einzelgeräte:** Geräte anlegen, Etiketten drucken und bei Ausgabe/Rückgabe scannen.
 - **Verbrauchsmaterial:** Entnahmen erfassen, endlichen Bestand reduzieren, ohne Rückgabepflicht.
 
 Vorhandene Daten bleiben erhalten; neue Migrationen mit `make migrate` ausführen. Für die Kamera sind HTTPS oder localhost und eine Browserfreigabe erforderlich. Die lokale Entwicklungsdatenbank ist extern standardmäßig auf Port **5433** erreichbar (`POSTGRES_DEV_PORT`); innerhalb von Docker bleibt es Port 5432.

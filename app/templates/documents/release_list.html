@@ -2,7 +2,6 @@
   {% include "documents/includes/head.html" with kind="Freistellungsliste" %}
 
   {% if blocks %}
-    <p class="doc__meta">Veranstaltung: {{ production.name }} · Aufsicht führende Lehrkraft: {% for s in supervisors %}{{ s.user }}{% if not forloop.last %}, {% endif %}{% empty %}–{% endfor %}</p>
     <table class="doc__table">
       <thead>
         <tr><th>Name</th><th>Jg.</th></tr>
