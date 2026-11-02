@@ -167,8 +167,17 @@ def test_customize_page_collects_org_settings_for_owner(owner_client):
 @pytest.mark.parametrize(
     ("role", "expected"),
     [
-        (Role.ADMIN, ["Kategorien", "Material-Kategorien", "Technik anfragen", "Technik-Auswahl"]),
-        (Role.TEACHER, ["Technik-Auswahl"]),
+        (
+            Role.ADMIN,
+            [
+                "Kategorien",
+                "Materialverwaltung",
+                "Material-Kategorien",
+                "Technik anfragen",
+                "Technik-Auswahl",
+            ],
+        ),
+        (Role.TEACHER, ["Materialverwaltung", "Technik-Auswahl"]),
     ],
 )
 def test_customize_shows_only_allowed_entries(org, make_member, login, role, expected):

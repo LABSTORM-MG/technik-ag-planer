@@ -13,7 +13,7 @@ from apps.organizations.permissions import Perm
 from apps.productions import services as production_services
 from apps.productions.models import Production
 
-from . import services
+from . import services, unit_services
 from .forms import (
     DefectForm,
     KitForm,
@@ -117,6 +117,7 @@ def material_detail(request, pk):
         {
             **INVENTORY,
             "material": material,
+            "units": material.units.prefetch_related("defects", "issues__production"),
             "links": material.links.all(),
             "attachments": material.attachments.select_related("uploaded_by"),
             "open_defects": material.defects.filter(status__in=DefectReport.OPEN)
@@ -214,6 +215,8 @@ def defect_report(request, pk):
 @permission_required_in_org(Perm.MANAGE_INVENTORY)
 def defect_status(request, pk):
     defect = _defect(request, pk)
+    if defect.unit_id and request.organization.inventory_qr_enabled:
+        return redirect("inventory:units", pk=defect.material_id)
     status = request.POST.get("status")
     if status in DefectReport.Status.values and status != defect.status:
         services.set_defect_status(defect, status)
@@ -362,6 +365,15 @@ def planned_edit(request, pk):
     shortages = []
     if request.method == "POST" and form.is_valid():
         quantity = form.cleaned_data["quantity"]
+        if quantity < planned.issued_quantity:
+            form.add_error(
+                "quantity", "Die Menge darf nicht unter der bereits ausgegebenen Menge liegen."
+            )
+            return render(
+                request,
+                "inventory/planned_form.html",
+                {**PRODUCTIONS, "form": form, "planned": planned, "shortages": []},
+            )
         shortage = services.check(planned.material, planned.production, quantity)
         if shortage is None or form.cleaned_data["ignore_conflicts"]:
             planned.quantity = quantity
@@ -382,6 +394,12 @@ def planned_edit(request, pk):
 @permission_required_in_org(Perm.MANAGE_PRODUCTIONS)
 def planned_remove(request, pk):
     planned = _planned(request, pk)
+    if (
+        planned.movements.exists()
+        or planned.material.units.filter(issues__production=planned.production).exists()
+    ):
+        messages.error(request, "Material mit Ausgabehistorie kann nicht entfernt werden.")
+        return _back_to_production(planned.production)
     planned.delete()
     messages.success(request, f"{planned.material} entfernt.")
     return _back_to_production(planned.production)
@@ -393,6 +411,10 @@ def planned_remove(request, pk):
 @org_required
 def packing_list(request, pk):
     production = _production(request, pk)
+    if request.organization.inventory_qr_enabled and unit_services.can_issue(
+        request.membership, production
+    ):
+        return redirect("inventory:scan", pk=pk)
     planned = production.planned_material.select_related("material", "material__category")
     return render(
         request,
@@ -408,6 +430,9 @@ PACK_FIELDS = {"ausgabe": "issued_at", "rueckgabe": "returned_at"}
 @org_required
 def packing_toggle(request, pk):
     planned = _planned(request, pk)
+    if request.organization.inventory_qr_enabled:
+        messages.info(request, "Im QR-Modus erfolgt die Ausgabe und Rückgabe über den Scanner.")
+        return redirect("inventory:packing_list", pk=planned.production_id)
     field = PACK_FIELDS.get(request.POST.get("spalte", ""))
     if field:
         services.set_packed(planned, field, getattr(planned, field) is None)

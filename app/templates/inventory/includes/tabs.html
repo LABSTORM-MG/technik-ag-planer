@@ -2,3 +2,6 @@
   <a href="{% url 'inventory:list' %}"{% if tab == "material" %} aria-current="page"{% endif %}>Material</a>
   <a href="{% url 'inventory:kits' %}"{% if tab == "kits" %} aria-current="page"{% endif %}>Materialsätze</a>
 </nav>
+
+{% if current_organization.inventory_qr_enabled %}<a class="button button--secondary" href="{% url 'inventory:labels' %}">Alle QR-Etiketten</a>
+{% endif %}

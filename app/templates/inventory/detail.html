@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% load static %}
+{% block head %}{% if current_organization.inventory_qr_enabled %}<link rel="stylesheet" href="{% static 'css/inventory-units.css' %}">{% endif %}{% endblock %}
 {% block title %}{{ material.name }} – Technik-AG Planer{% endblock %}
 {% block topbar_title %}Material{% endblock %}
 {% block content %}
@@ -19,6 +21,9 @@
       {% endif %}
     </div>
   </header>
+  {% if current_organization.inventory_qr_enabled and material.tracking == "individual" %}
+  <section class="stack inventory-workspace" id="einzelgeraete"><div><h2 class="section-title">Einzelgeräte &amp; QR-Etiketten</h2><p class="field__help">Gerät anklicken, um Etikett, Defekte und Historie zu öffnen.</p></div>{% include "inventory/includes/device_list.html" %}</section>
+  {% endif %}
 
   {% if material.notes %}
     <section class="card">
@@ -102,5 +107,6 @@
       <p class="muted">In keiner kommenden Produktion eingeplant.</p>
     {% endif %}
   </section>
+
 </article>
 {% endblock %}

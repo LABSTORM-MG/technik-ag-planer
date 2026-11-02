@@ -35,6 +35,9 @@ def test_no_color_literals_outside_tokens():
         for path in directory.rglob("*"):
             if path == TOKENS or path.suffix not in SCANNED_SUFFIXES:
                 continue
+            # Unveränderte Fremdbibliothek (siehe LICENSE daneben)
+            if path.name == "html5-qrcode.min.js":
+                continue
             for number, line in enumerate(path.read_text().splitlines(), start=1):
                 if COLOR_LITERAL.search(line):
                     offenders.append(f"{path.relative_to(APP_DIR)}:{number}: {line.strip()}")

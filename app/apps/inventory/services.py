@@ -26,7 +26,7 @@ def available(material):
 
 
 def annotate_defects(materials):
-    """Setzt `defective` und `available` an jedem Material einer Liste (eine Abfrage)."""
+    """Setzt `defective` und `available` an jedem Material einer Liste."""
     materials = list(materials)
     counts = dict(
         DefectReport.objects.filter(material__in=materials, status__in=DefectReport.OPEN)

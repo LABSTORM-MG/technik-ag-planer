@@ -49,6 +49,14 @@ class MaterialQuerySet(OrganizationQuerySet):
 
 
 class Material(OrganizationScopedModel):
+    class Tracking(models.TextChoices):
+        BULK = "bulk", "Mengenmaterial (z. B. Kabel)"
+        INDIVIDUAL = "individual", "Einzelgeräte mit QR-Code"
+        CONSUMABLE = "consumable", "Verbrauchsmaterial (ohne Rückgabe)"
+
+    tracking = models.CharField(
+        "Verwaltung", max_length=12, choices=Tracking.choices, default=Tracking.BULK
+    )
     name = models.CharField("Name", max_length=120, help_text="z. B. Lichtpult")
     category = models.ForeignKey(
         MaterialCategory,
@@ -123,6 +131,13 @@ class DefectReport(OrganizationScopedModel):
         REPAIRED = "repaired", "repariert"
 
     OPEN = (Status.DEFECT, Status.IN_REPAIR)
+    unit = models.ForeignKey(
+        "MaterialUnit", null=True, blank=True, on_delete=models.RESTRICT, related_name="defects"
+    )
+    resolution = models.TextField(blank=True)
+    resolved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
 
     material = models.ForeignKey(
         Material, verbose_name="Material", on_delete=models.CASCADE, related_name="defects"
@@ -208,6 +223,13 @@ class PlannedMaterial(OrganizationScopedModel):
         Material, verbose_name="Material", on_delete=models.CASCADE, related_name="plannings"
     )
     quantity = models.PositiveIntegerField("Menge", default=1)
+    issued_quantity = models.PositiveIntegerField(default=0)
+    returned_quantity = models.PositiveIntegerField(default=0)
+
+    @property
+    def outstanding_quantity(self):
+        return self.issued_quantity - self.returned_quantity
+
     # Nur zur Anzeige („aus Satz …“); Änderungen am Satz wirken nicht zurück
     source_kit = models.ForeignKey(
         Kit,
@@ -233,3 +255,111 @@ class PlannedMaterial(OrganizationScopedModel):
 
     def __str__(self):
         return f"{self.production} – {self.material} × {self.quantity}"
+
+
+class MaterialUnit(OrganizationScopedModel):
+    material = models.ForeignKey(Material, on_delete=models.RESTRICT, related_name="units")
+    code = models.CharField(max_length=100)
+    archived_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["code"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "code"], name="material_unit_code_unique_per_org"
+            )
+        ]
+
+    def __str__(self):
+        return self.code
+
+
+class UnitIssue(OrganizationScopedModel):
+    unit = models.ForeignKey(MaterialUnit, on_delete=models.RESTRICT, related_name="issues")
+    # Die Geräte-Historie überlebt das endgültige Löschen der Produktion
+    production = models.ForeignKey(
+        "productions.Production", null=True, blank=True, on_delete=models.SET_NULL
+    )
+    production_name = models.CharField(max_length=200, blank=True)
+    issued_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+    issued_at = models.DateTimeField(auto_now_add=True)
+    returned_at = models.DateTimeField(null=True, blank=True)
+    returned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["unit"], condition=Q(returned_at__isnull=True), name="unit_one_open_issue"
+            )
+        ]
+
+
+class UnitReservation(OrganizationScopedModel):
+    unit = models.ForeignKey(MaterialUnit, on_delete=models.RESTRICT, related_name="reservations")
+    production = models.ForeignKey(
+        "productions.Production", on_delete=models.CASCADE, related_name="unit_reservations"
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    released_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["unit", "production"],
+                condition=Q(released_at__isnull=True),
+                name="unit_unique_reservation",
+            )
+        ]
+
+
+class ProductionTeardown(OrganizationScopedModel):
+    production = models.OneToOneField(
+        "productions.Production", on_delete=models.CASCADE, related_name="teardown"
+    )
+    started_at = models.DateTimeField(auto_now_add=True)
+    started_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    completed_at = models.DateTimeField(null=True, blank=True)
+    completed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
+
+class TeardownException(OrganizationScopedModel):
+    class Reason(models.TextChoices):
+        MISSING = "missing", "Vermisst"
+        DAMAGED = "damaged", "Beschädigt"
+        OTHER = "other", "Sonstiges"
+
+    issue = models.OneToOneField(UnitIssue, on_delete=models.RESTRICT, related_name="exception")
+    reason = models.CharField(max_length=10, choices=Reason.choices)
+    note = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
+
+class QuantityMovement(OrganizationScopedModel):
+    planned = models.ForeignKey(PlannedMaterial, on_delete=models.CASCADE, related_name="movements")
+    operation = models.CharField(
+        max_length=6, choices=[("issue", "Ausgabe"), ("return", "Rückgabe")]
+    )
+    quantity = models.PositiveIntegerField()
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(quantity__gte=1), name="movement_quantity_min_1")
+        ]
