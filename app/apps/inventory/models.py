@@ -132,7 +132,7 @@ class DefectReport(OrganizationScopedModel):
 
     OPEN = (Status.DEFECT, Status.IN_REPAIR)
     unit = models.ForeignKey(
-        "MaterialUnit", null=True, blank=True, on_delete=models.PROTECT, related_name="defects"
+        "MaterialUnit", null=True, blank=True, on_delete=models.RESTRICT, related_name="defects"
     )
     resolution = models.TextField(blank=True)
     resolved_by = models.ForeignKey(
@@ -258,20 +258,29 @@ class PlannedMaterial(OrganizationScopedModel):
 
 
 class MaterialUnit(OrganizationScopedModel):
-    material = models.ForeignKey(Material, on_delete=models.PROTECT, related_name="units")
-    code = models.CharField(max_length=100, unique=True)
+    material = models.ForeignKey(Material, on_delete=models.RESTRICT, related_name="units")
+    code = models.CharField(max_length=100)
     archived_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["code"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "code"], name="material_unit_code_unique_per_org"
+            )
+        ]
 
     def __str__(self):
         return self.code
 
 
 class UnitIssue(OrganizationScopedModel):
-    unit = models.ForeignKey(MaterialUnit, on_delete=models.PROTECT, related_name="issues")
-    production = models.ForeignKey("productions.Production", on_delete=models.PROTECT)
+    unit = models.ForeignKey(MaterialUnit, on_delete=models.RESTRICT, related_name="issues")
+    # Die Geräte-Historie überlebt das endgültige Löschen der Produktion
+    production = models.ForeignKey(
+        "productions.Production", null=True, blank=True, on_delete=models.SET_NULL
+    )
+    production_name = models.CharField(max_length=200, blank=True)
     issued_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
     )
@@ -290,7 +299,7 @@ class UnitIssue(OrganizationScopedModel):
 
 
 class UnitReservation(OrganizationScopedModel):
-    unit = models.ForeignKey(MaterialUnit, on_delete=models.PROTECT, related_name="reservations")
+    unit = models.ForeignKey(MaterialUnit, on_delete=models.RESTRICT, related_name="reservations")
     production = models.ForeignKey(
         "productions.Production", on_delete=models.CASCADE, related_name="unit_reservations"
     )
@@ -330,7 +339,7 @@ class TeardownException(OrganizationScopedModel):
         DAMAGED = "damaged", "Beschädigt"
         OTHER = "other", "Sonstiges"
 
-    issue = models.OneToOneField(UnitIssue, on_delete=models.PROTECT, related_name="exception")
+    issue = models.OneToOneField(UnitIssue, on_delete=models.RESTRICT, related_name="exception")
     reason = models.CharField(max_length=10, choices=Reason.choices)
     note = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -339,23 +348,8 @@ class TeardownException(OrganizationScopedModel):
     )
 
 
-class MaterialCheckout(OrganizationScopedModel):
-    material = models.ForeignKey(Material, on_delete=models.PROTECT, related_name="checkouts")
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
-    )
-    quantity = models.PositiveIntegerField(default=1)
-    taken_at = models.DateTimeField(auto_now_add=True)
-    returned_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        constraints = [
-            models.CheckConstraint(condition=Q(quantity__gte=1), name="checkout_quantity_min_1")
-        ]
-
-
 class QuantityMovement(OrganizationScopedModel):
-    planned = models.ForeignKey(PlannedMaterial, on_delete=models.PROTECT, related_name="movements")
+    planned = models.ForeignKey(PlannedMaterial, on_delete=models.CASCADE, related_name="movements")
     operation = models.CharField(
         max_length=6, choices=[("issue", "Ausgabe"), ("return", "Rückgabe")]
     )

@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models import F, Sum
 from django.utils import timezone
 
-from .models import DefectReport, Kit, KitItem, Material, MaterialCheckout, PlannedMaterial
+from .models import DefectReport, Kit, KitItem, Material, PlannedMaterial
 
 # ---------- Bestand ----------
 
@@ -22,10 +22,7 @@ def available(material):
     """Verfügbarer Bestand ohne offene Defekte; None = beliebig."""
     if material.quantity is None:
         return None
-    taken = (
-        material.checkouts.filter(returned_at__isnull=True).aggregate(n=Sum("quantity"))["n"] or 0
-    )
-    return max(material.quantity - defective_count(material) - taken, 0)
+    return max(material.quantity - defective_count(material), 0)
 
 
 def annotate_defects(materials):
@@ -37,18 +34,9 @@ def annotate_defects(materials):
         .annotate(n=Sum("quantity"))
         .values_list("material_id", "n")
     )
-    loans = dict(
-        MaterialCheckout.objects.filter(material__in=materials, returned_at__isnull=True)
-        .values("material_id")
-        .annotate(n=Sum("quantity"))
-        .values_list("material_id", "n")
-    )
     for m in materials:
         m.defective = counts.get(m.pk, 0)
-        m.checked_out = loans.get(m.pk, 0)
-        m.available = (
-            None if m.quantity is None else max(m.quantity - m.defective - m.checked_out, 0)
-        )
+        m.available = None if m.quantity is None else max(m.quantity - m.defective, 0)
     return materials
 
 

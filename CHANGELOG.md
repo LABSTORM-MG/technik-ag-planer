@@ -6,14 +6,14 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ### Hinzugefügt
 
-**Meilenstein 13 – Materialerweiterung im Fork (Übernahmeprüfung offen)**
+**Meilenstein 13 – Materialerweiterung**
 
 - Optionaler AG-Modus: klassische Packliste oder QR-Verwaltung mit Materialarten für Einzelgeräte, Mengen und Verbrauch.
 - Inventarcodes, druckbare QR-Etiketten, Gerätehistorie, konkrete Reservierungen auf der Produktionsseite und fortlaufender Kamerascan für Ausgabe/Rückgabe.
-- Stückzahlausgabe mit Teilrückgaben, Verbrauchsentnahme mit Bestandsreduktion und persönliche Ausleihen im klassischen Modus.
+- Stückzahlausgabe mit Teilrückgaben, Verbrauchsentnahme mit Bestandsreduktion.
 - Gerätebezogene Defekte, Reparaturvermerke, Abbau mit begründeten Geräteausnahmen und druckbarem Protokoll.
 - Kompakte aufklappbare Materialoberflächen, klare Sperrzustände und integrierte Benutzerhilfe.
-- Migrationen erhalten vorhandene Geräte; Dokumentation und Restarbeiten in [Entwicklerübergabe](docs/entwicklung/materialerweiterung.md) und [ADR 0020](docs/architektur/0020-material-einzelgeraete.md).
+- Migrationen erhalten vorhandene Geräte; Dokumentation in der [Entwicklerübergabe](docs/entwicklung/materialerweiterung.md) und [ADR 0020](docs/architektur/0020-material-einzelgeraete.md).
 - Begleitend: verzögerter WeasyPrint-Import; externer Entwicklungsdatenbank-Port standardmäßig 5433 (`POSTGRES_DEV_PORT`).
 
 

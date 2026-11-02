@@ -12,7 +12,7 @@ Die Erweiterung bleibt innerhalb der vorhandenen Django-App `inventory`. Sie ver
 
 - Klassisch: Mengenplanung und bisherige Packliste zum Abhaken. QR-Einstiege sind ausgeblendet und QR-Views serverseitig gesperrt.
 - QR: Geräteverwaltung und strukturierte Ausgabe. Klassische Packlisten-Haken sind deaktiviert. Für Personen mit Produktionsverwaltungsrecht führt der Packlisten-Endpunkt zur Materialausgabe.
-- Vor Aktivierung müssen persönliche Ausleihen zurückgegeben sein. Vor Deaktivierung müssen offene Geräteausgaben und Mengenrückgaben erledigt und aktive Einzelgerätereservierungen aufgehoben sein.
+- Vor Deaktivierung müssen offene Geräteausgaben und Mengenrückgaben erledigt und aktive Einzelgerätereservierungen aufgehoben sein.
 - Ein Moduswechsel löscht weder Material noch Historien. Die serverseitige Modusprüfung wird bei schreibenden Abläufen innerhalb der Transaktion erneut vorgenommen.
 
 ### Verwaltungsart einer Materialart
@@ -84,9 +84,6 @@ Nach Geräteerfassung oder ersten Mengenbewegungen verhindert das Materialformul
 - Druckbares Abbauprotokoll mit Ausgaben, Rückgaben, Personen, Ausnahmen und Mengenbewegungen. PDF über Browserdruck, bisher keine Einbindung in die vorhandene WeasyPrint-Dokumentpipeline.
 - Übersicht kompakt; Aktionen und Ausnahmeformulare zunächst eingeklappt. Die offene Geräteanzahl ist gesondert ausgewiesen; Mengenrückgaben stehen bei ihren Materialpositionen.
 
-### Persönliche Ausleihen
-
-Im klassischen Modus ergänzt `MaterialCheckout` mengenbasierte persönliche Ausleihen. Mitglieder geben eigene Ausleihen zurück; Personen mit Materialverwaltungsrecht auch fremde. Offene Ausleihen reduzieren die verfügbare Menge und beeinflussen bestehende Planungskonflikte. QR-Geräteausgaben und persönliche Ausleihen sind unterschiedliche Vorgänge.
 
 ### Oberfläche und Hilfe
 
@@ -97,7 +94,7 @@ Gemeinsame Materialübersicht mit Unterteilungen, keine getrennte zweite Reservi
 - `MANAGE_INVENTORY`: Materialmodus, Gerätepflege und Reparaturen.
 - `MANAGE_PRODUCTIONS`: Reservierungen, Ausgabe/Rückgabe und Abbau.
 - `REPORT_DEFECT`: Gerätedefekte melden.
-- Persönliche Ausleihe: Mitglieder der aktiven AG, Rücknahme fremder Ausleihen nur mit Verwaltungsrecht.
+- Ausgabe und Rückgabe für Produktionen: alle Mitglieder der aktiven AG (`ISSUE_MATERIAL`); Reservieren und Abbau nur mit `MANAGE_PRODUCTIONS`.
 - Views prüfen aktive AG und Rechte. Eingaben aus anderen AGs werden abgewiesen. Die aktuelle Implementierung ist trotzdem vor Upstream-Übernahme vollständig auf die Projektkonventionen zu prüfen.
 
 | Datei/Bereich | Verantwortung |
@@ -120,7 +117,6 @@ Nebenänderungen: WeasyPrint wird in `documents/pdf.py` erst bei PDF-Erzeugung i
 - `organizations/0003_organization_inventory_qr_enabled`
 - `inventory/0002_material_units`
 - `inventory/0003_defectreport_resolution_defectreport_resolved_by_and_more`
-- `inventory/0004_materialcheckout`
 - `inventory/0005_material_tracking_plannedmaterial_issued_quantity_and_more`
 - `inventory/0006_preserve_device_tracking`
 
@@ -133,7 +129,7 @@ Ein größerer PostgreSQL-Testlauf bestand mit 438 Tests. Nach Änderungen an de
 Vor einer Übernahme verbleiben insbesondere:
 
 - Vollständige aktuelle `make test`- und `make lint`-Läufe sowie grüne CI; PR und Review im Originalprojekt sind noch offen.
-- Audit-/Exportregistrierung ist nachgezogen: alle sieben neuen Modelle sind in `inventory/apps.py` registriert; der AG-Export enthält den QR-Modus. Freigeben von Reservierungen und Rückgabe persönlicher Ausleihen verwenden `save()`, damit das Änderungsprotokoll ausgelöst wird. Ein gezielter Test prüft Registrierung, Export, AG-Trennung und Protokollierung einer Reservierungsaufhebung. Vollständige Integration weiterhin im Gesamt-Review prüfen.
+- Audit-/Exportregistrierung ist nachgezogen: alle sieben neuen Modelle sind in `inventory/apps.py` registriert; der AG-Export enthält den QR-Modus. Freigeben von Reservierungen verwendet `save()`, damit das Änderungsprotokoll ausgelöst wird. Ein gezielter Test prüft Registrierung, Export, AG-Trennung und Protokollierung einer Reservierungsaufhebung. Vollständige Integration weiterhin im Gesamt-Review prüfen.
 - Lösch- und Aufräumpfade prüfen: neue `PROTECT`-Beziehungen können Produktionspurge oder AG-Auflösung beeinflussen. Kontoentfernung, Datenexport und Datenschutz zusammenhängend prüfen.
 - Migration mit realistischem Altbestand, bereits abgeschlossenen Produktionen und vorhandenen Geräteausgaben durchspielen.
 - Historie nach Terminänderungen, Mengenplanung versus aktuellem Bestand, Archivierung und Wiederaktivierung gemeinsam prüfen.

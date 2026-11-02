@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('inventory', '0004_materialcheckout'),
+        ('inventory', '0003_defectreport_resolution_defectreport_resolved_by_and_more'),
         ('organizations', '0003_organization_inventory_qr_enabled'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]

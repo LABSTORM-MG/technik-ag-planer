@@ -1,20 +1,29 @@
 from datetime import timedelta
+from pathlib import Path
 
 import pytest
+from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
+from django.db.models import RestrictedError
 from django.urls import reverse
 from django.utils import timezone
 
 from apps.inventory import services, unit_services
 from apps.inventory.models import (
     DefectReport,
+    Material,
     MaterialUnit,
     PlannedMaterial,
     ProductionTeardown,
+    QuantityMovement,
     TeardownException,
     UnitIssue,
     UnitReservation,
 )
+from apps.organizations import services as org_services
+from apps.productions.models import Production
+from apps.productions.tasks import purge_deleted_productions
 
 
 @pytest.fixture
@@ -218,33 +227,6 @@ def test_custom_code_grows_stock(unit, planner_client):
     )
 
 
-def test_checkout_capacity_return_and_ownership(unit, planner_client, member_client, planner, mics):
-    from apps.inventory.models import MaterialCheckout
-
-    # Bulk loans are kept separate from scanned single-device issues.
-    unit.delete()
-    mics.organization.inventory_qr_enabled = False
-    mics.organization.save(update_fields=["inventory_qr_enabled"])
-    mics.quantity = 2
-    mics.save()
-    url = reverse("inventory:checkout", args=[mics.pk])
-    assert member_client.post(url, {"quantity": "2"}).status_code == 302
-    loan = MaterialCheckout.objects.get()
-    planner_client.post(url, {"quantity": "1"})
-    assert MaterialCheckout.objects.count() == 1
-    member_client.post(reverse("inventory:checkin", args=[loan.pk]))
-    loan.refresh_from_db()
-    assert loan.returned_at
-    planner_client.post(url, {"quantity": "1"})
-    other_loan = MaterialCheckout.objects.get(returned_at__isnull=True)
-    member_client.post(reverse("inventory:checkin", args=[other_loan.pk]))
-    other_loan.refresh_from_db()
-    assert other_loan.returned_at is None
-    planner_client.post(reverse("inventory:checkin", args=[other_loan.pk]))
-    other_loan.refresh_from_db()
-    assert other_loan.returned_at
-
-
 def test_legacy_generated_lowercase_code(concert, unit, planned, planner):
     unit.code = "TAG-abcdef01234"
     unit.save()
@@ -266,14 +248,18 @@ def test_cancel_issued_and_return_wrong_production(
     assert UnitIssue.objects.get().returned_at is None
 
 
-def test_labels_and_bulk_loan_ui(mics, planner_client, unit, org):
+def test_labels_page(planner_client, unit):
     assert planner_client.get(reverse("inventory:labels")).status_code == 200
+
+
+def test_private_loans_are_gone(org, mics, planner_client):
     org.inventory_qr_enabled = False
     org.save(update_fields=["inventory_qr_enabled"])
-    assert (
-        "Persönliche Ausleihe"
-        in planner_client.get(reverse("inventory:detail", args=[mics.pk])).content.decode()
-    )
+
+    content = planner_client.get(reverse("inventory:detail", args=[mics.pk])).content.decode()
+
+    assert "Ausleihe" not in content
+    assert "checkout" not in content
 
 
 @pytest.mark.django_db(transaction=True)
@@ -318,16 +304,6 @@ def test_parallel_device_operations_are_serialized(
         assert UnitReservation.objects.filter(released_at__isnull=True).count() == 1
     else:
         assert UnitIssue.objects.filter(returned_at__isnull=True).count() == 1
-
-
-def test_bulk_loans_reduce_planning_availability(mics, planner):
-    original = services.available(mics)
-    loan = unit_services.checkout(mics, 2, planner.user)
-    assert services.available(mics) == original - 2
-    annotated = services.annotate_defects([mics])[0]
-    assert annotated.available == original - 2 and annotated.checked_out == 2
-    unit_services.checkin(loan, planner.user, False)
-    assert services.available(mics) == original
 
 
 def test_modes_are_exclusive(org, concert, planned, planner_client):
@@ -409,14 +385,9 @@ def test_classic_mode_reuses_material_with_existing_devices(org, unit, planned, 
     planner_client.post(reverse("inventory:settings"), {"mode": "classic"})
     org.refresh_from_db()
     assert not org.inventory_qr_enabled
-    response = planner_client.post(
-        reverse("inventory:checkout", args=[unit.material_id]), {"quantity": 1}
+    assert (
+        planner_client.get(reverse("inventory:detail", args=[unit.material_id])).status_code == 200
     )
-    assert response.status_code == 302
-    assert unit.material.checkouts.filter(returned_at__isnull=True).count() == 1
-    planner_client.post(reverse("inventory:settings"), {"mode": "qr"})
-    org.refresh_from_db()
-    assert not org.inventory_qr_enabled
 
 
 def test_reservations_only_on_production_page(unit, planned, concert, planner_client):
@@ -535,7 +506,6 @@ def test_new_inventory_data_is_exported_and_audited(
         "UnitReservation",
         "ProductionTeardown",
         "TeardownException",
-        "MaterialCheckout",
         "QuantityMovement",
     ]
     from apps.audit.registry import _registry
@@ -547,3 +517,160 @@ def test_new_inventory_data_is_exported_and_audited(
     assert data["ag.json"]["inventory_qr_enabled"] is True
     assert [row["code"] for row in data["inventory_materialunit.json"]] == [unit.code]
     assert foreign.code not in json.dumps(data)
+
+
+# ---------- Übernahme: Löschpfade, Rechte, Inventarcodes, Kamera ----------
+
+
+def _issue(org, unit, production, user, returned=True):
+    return UnitIssue.objects.create(
+        organization=org,
+        unit=unit,
+        production=production,
+        production_name=production.name,
+        issued_by=user,
+        returned_at=timezone.now() if returned else None,
+    )
+
+
+def _expire(production):
+    production.soft_delete()
+    Production.all_objects.filter(pk=production.pk).update(
+        deleted_at=timezone.now() - timedelta(days=8)
+    )
+
+
+def test_purge_removes_production_and_keeps_device_history(org, unit, planner, make_production):
+    production = make_production(org, "Altes Konzert")
+    issue = _issue(org, unit, production, planner.user)
+    _expire(production)
+
+    assert purge_deleted_productions() == 1
+
+    assert not Production.all_objects.filter(pk=production.pk).exists()
+    issue.refresh_from_db()
+    assert issue.production is None
+    assert issue.production_name == "Altes Konzert"
+
+
+def test_purge_skips_production_with_open_device_but_continues(org, unit, planner, make_production):
+    blocked = make_production(org, "Gerät noch draußen")
+    _issue(org, unit, blocked, planner.user, returned=False)
+    other = make_production(org, "Frei")
+    _expire(blocked)
+    _expire(other)
+
+    assert purge_deleted_productions() == 1
+
+    assert Production.all_objects.filter(pk=blocked.pk).exists()
+    assert not Production.all_objects.filter(pk=other.pk).exists()
+
+
+def test_purge_skips_production_with_outstanding_quantity(org, mics, make_production):
+    production = make_production(org)
+    PlannedMaterial.objects.create(
+        organization=org, production=production, material=mics, quantity=2, issued_quantity=2
+    )
+    _expire(production)
+
+    assert purge_deleted_productions() == 0
+    assert Production.all_objects.filter(pk=production.pk).exists()
+
+
+def test_purge_ignores_consumables_and_removes_movements(org, mics, planner, make_production):
+    mics.tracking = Material.Tracking.CONSUMABLE
+    mics.save(update_fields=["tracking"])
+    production = make_production(org)
+    planned_item = PlannedMaterial.objects.create(
+        organization=org, production=production, material=mics, quantity=2, issued_quantity=2
+    )
+    QuantityMovement.objects.create(
+        organization=org, planned=planned_item, operation="issue", quantity=2, user=planner.user
+    )
+    _expire(production)
+
+    assert purge_deleted_productions() == 1
+    assert not QuantityMovement.objects.exists()
+
+
+def test_dissolving_org_with_device_history_works(org, unit, planner, make_production):
+    issue = _issue(org, unit, make_production(org), planner.user, returned=False)
+    TeardownException.objects.create(
+        organization=org, issue=issue, reason="missing", note="weg", created_by=planner.user
+    )
+
+    org_services.dissolve(org, org.name)
+
+    assert not MaterialUnit.objects.exists()
+    assert not UnitIssue.objects.exists()
+
+
+def test_material_with_devices_cannot_be_deleted_alone(unit):
+    with pytest.raises(RestrictedError):
+        unit.material.delete()
+
+
+def test_same_code_allowed_in_two_orgs_not_twice_in_one(org, other_org, unit, make_material):
+    foreign = make_material(other_org, "Fremd", tracking=Material.Tracking.INDIVIDUAL)
+    MaterialUnit.objects.create(organization=other_org, material=foreign, code=unit.code)
+
+    with pytest.raises(IntegrityError), transaction.atomic():
+        MaterialUnit.objects.create(organization=org, material=unit.material, code=unit.code)
+
+
+def test_foreign_code_gives_no_hint_when_creating(
+    org, other_org, unit, planner_client, make_material
+):
+    foreign = make_material(other_org, "Fremd", tracking=Material.Tracking.INDIVIDUAL)
+    MaterialUnit.objects.create(organization=other_org, material=foreign, code="GEHEIM-1")
+
+    response = planner_client.post(
+        reverse("inventory:unit_create", args=[unit.material_id]), {"code": "GEHEIM-1"}, follow=True
+    )
+
+    assert "bereits vergeben" not in response.content.decode()
+    assert MaterialUnit.objects.for_org(org).filter(code="GEHEIM-1").exists()
+
+
+def test_every_member_can_issue_for_productions(
+    org, concert, unit, planned, planner, member_client
+):
+    unit_services.reserve(concert, unit, planner.user)
+    url = reverse("inventory:scan", args=[concert.pk])
+
+    page = member_client.get(url)
+    assert page.status_code == 200
+    assert "Abbaukontrolle" not in page.content.decode()
+
+    response = member_client.post(url, {"code": unit.code, "mode": "issue"})
+
+    assert response.status_code == 302
+    assert UnitIssue.objects.filter(unit=unit, production=concert).exists()
+    issue = UnitIssue.objects.get(unit=unit)
+    assert issue.production_name == concert.name
+
+
+def test_members_cannot_control_teardown_or_reserve(concert, unit, member_client):
+    assert (
+        member_client.post(
+            reverse("inventory:teardown", args=[concert.pk]), {"operation": "start"}
+        ).status_code
+        == 403
+    )
+    assert (
+        member_client.post(
+            reverse("inventory:reserve_unit", args=[concert.pk]), {"unit": unit.pk}
+        ).status_code
+        == 403
+    )
+
+
+@pytest.mark.parametrize("name", ["Caddyfile", "Caddyfile.proxy"])
+def test_camera_allowed_for_own_site_only(name):
+    candidates = [
+        Path(settings.BASE_DIR).parent / "deploy" / "caddy" / name,
+    ]
+    path = next((c for c in candidates if c.exists()), None)
+    if path is None:
+        pytest.skip("deploy/ ist im Test-Container nicht eingebunden")
+    assert "camera=(self)" in path.read_text()

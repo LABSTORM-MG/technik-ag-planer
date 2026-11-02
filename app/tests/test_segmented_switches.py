@@ -8,7 +8,13 @@ from apps.notifications.forms import SettingsForm
 from apps.scheduling.forms import EventEditScopeForm, SegmentedRadio
 
 APP_DIR = Path(settings.BASE_DIR)
-ALLOWED = {"segmented_option.html", "chip_option.html"}
+ALLOWED = {
+    "segmented_option.html",
+    "chip_option.html",
+    "scan.html",  # eigener Schalter „Ausgabe | Rückgabe“ mit großen Flächen
+    "settings.html",  # Materialverwaltung: Modus als Karten mit Erklärung
+    "production_reservations.html",  # Geräteauswahl aus einer Liste, kein Umschalter
+}
 
 
 def test_templates_use_radios_only_inside_switches():

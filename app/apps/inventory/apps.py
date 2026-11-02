@@ -33,7 +33,6 @@ class InventoryConfig(AppConfig):
             "UnitReservation",
             "ProductionTeardown",
             "TeardownException",
-            "MaterialCheckout",
             "QuantityMovement",
         ]:
             model = self.get_model(name)

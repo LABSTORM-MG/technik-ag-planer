@@ -90,8 +90,6 @@ def create_unit(request, pk):
                     "Bitte zuerst die Verwaltungsart auf Einzelgeräte mit QR-Code setzen."
                 )
             Material.objects.select_for_update().get(pk=material.pk)
-            if material.checkouts.filter(returned_at__isnull=True).exists():
-                raise ValidationError("Zuerst die offenen persönlichen Ausleihen zurückgeben.")
             MaterialUnit.objects.create(
                 organization=request.organization, material=material, code=code
             )
@@ -187,7 +185,7 @@ def cancel(request, pk):
     return redirect(reverse("productions:detail", args=[reservation.production_id]) + "#material")
 
 
-@permission_required_in_org(Perm.MANAGE_PRODUCTIONS)
+@permission_required_in_org(Perm.ISSUE_MATERIAL)
 @qr_required
 def scan(request, pk):
     production = _production(request, pk)
@@ -287,35 +285,6 @@ def protocol(request, pk):
     )
 
 
-@require_POST
-@org_required
-def checkout(request, pk):
-    material = get_object_or_404(Material.objects.for_org(request.organization), pk=pk)
-    raw = request.POST.get("quantity", "1")
-    if not raw.isdigit() or len(raw) > 5:
-        messages.error(request, "Bitte eine gültige Menge angeben.")
-    else:
-        _run(request, lambda: services.checkout(material, int(raw), request.user))
-    return redirect("inventory:detail", pk=pk)
-
-
-@require_POST
-@org_required
-def checkin(request, pk):
-    from apps.organizations.permissions import role_has_perm
-
-    from .models import MaterialCheckout
-
-    loan = get_object_or_404(MaterialCheckout.objects.for_org(request.organization), pk=pk)
-    _run(
-        request,
-        lambda: services.checkin(
-            loan, request.user, role_has_perm(request.membership.role, Perm.MANAGE_INVENTORY)
-        ),
-    )
-    return redirect("inventory:detail", pk=loan.material_id)
-
-
 @org_required
 @qr_required
 def labels(request):
@@ -356,17 +325,7 @@ def inventory_settings(request):
                     )
                     .exists()
                 )
-                from .models import MaterialCheckout
-
-                loans = (
-                    MaterialCheckout.objects.for_org(org).filter(returned_at__isnull=True).exists()
-                )
-                if enabled and loans:
-                    messages.error(
-                        request,
-                        "Zuerst offene persönliche Ausleihen zurückgeben, bevor QR aktiviert wird.",
-                    )
-                elif not enabled and (
+                if not enabled and (
                     outstanding
                     or reserved
                     or PlannedMaterial.objects.for_org(org)
@@ -392,7 +351,7 @@ def inventory_settings(request):
 
 
 @require_POST
-@permission_required_in_org(Perm.MANAGE_PRODUCTIONS)
+@permission_required_in_org(Perm.ISSUE_MATERIAL)
 @qr_required
 def quantity_move(request, pk):
     planned = get_object_or_404(

@@ -411,9 +411,7 @@ def planned_remove(request, pk):
 @org_required
 def packing_list(request, pk):
     production = _production(request, pk)
-    if request.organization.inventory_qr_enabled and request.membership.has_perm(
-        Perm.MANAGE_PRODUCTIONS
-    ):
+    if request.organization.inventory_qr_enabled:
         return redirect("inventory:scan", pk=pk)
     planned = production.planned_material.select_related("material", "material__category")
     return render(

@@ -108,11 +108,5 @@
     {% endif %}
   </section>
 
-{% if not current_organization.inventory_qr_enabled %}  <section class="card stack"><h2>Persönliche Ausleihe</h2>
-    <p>Einzelgeräte werden über die Materialausgabe einer Produktion gescannt.</p>
-    {% if not material.is_archived %}<form method="post" action="{% url 'inventory:checkout' material.pk %}">{% csrf_token %}<label class="field">Menge<input type="number" name="quantity" min="1" max="10000" value="1" required></label><button class="button button--secondary">Ausleihen</button></form>{% endif %}
-    {% for loan in material.checkouts.all %}<div><p>{{ loan.quantity }} × · {{ loan.user|default:'Ehemaliges Mitglied' }} · {{ loan.taken_at }}{% if loan.returned_at %} · zurück {{ loan.returned_at }}{% endif %}</p>
-    {% if not loan.returned_at %}{% if loan.user_id == user.pk or org_perms.MANAGE_INVENTORY %}<form method="post" action="{% url 'inventory:checkin' loan.pk %}">{% csrf_token %}<button class="button button--secondary">Zurückgeben</button></form>{% endif %}{% endif %}</div>{% empty %}<p>Noch keine persönlichen Ausleihen.</p>{% endfor %}
-  </section>{% endif %}
 </article>
 {% endblock %}

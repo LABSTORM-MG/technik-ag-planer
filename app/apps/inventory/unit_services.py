@@ -5,6 +5,7 @@ from urllib.parse import unquote, urlsplit
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 
 from apps.organizations.models import Organization
@@ -169,7 +170,11 @@ def scan_unit(production, raw, mode, user):
     if not plan or issued >= plan.quantity:
         raise ValidationError("Kein freier Platz in der Materialplanung.")
     UnitIssue.objects.create(
-        organization=production.organization, unit=unit, production=production, issued_by=user
+        organization=production.organization,
+        unit=unit,
+        production=production,
+        production_name=production.name,
+        issued_by=user,
     )
     return "Ausgabe gespeichert."
 
@@ -290,38 +295,6 @@ def teardown(production, operation, user, *, issue_id=None, reason="", note=""):
 
 
 @transaction.atomic
-def checkout(material, quantity, user):
-    from .models import MaterialCheckout
-    from .services import available
-
-    lock_mode(material.organization, qr=False)
-    material = Material.objects.select_for_update().get(pk=material.pk)
-    if material.is_archived or not 1 <= quantity <= 10000:
-        raise ValidationError("Material archiviert oder ungültige Menge (1–10000).")
-    stock = available(material)
-    if material.defects.filter(status__in=DefectReport.OPEN).exists():
-        raise ValidationError("Für dieses Material ist ein Defekt offen.")
-    if stock is not None and quantity > stock:
-        raise ValidationError("Nicht genügend Material für diese Ausleihe verfügbar.")
-    return MaterialCheckout.objects.create(
-        organization=material.organization, material=material, quantity=quantity, user=user
-    )
-
-
-@transaction.atomic
-def checkin(loan, user, can_manage):
-    from .models import MaterialCheckout
-
-    Material.objects.select_for_update().get(pk=loan.material_id)
-    if loan.user_id != user.pk and not can_manage:
-        raise ValidationError("Nur eigene Ausleihen können zurückgegeben werden.")
-    loan = MaterialCheckout.objects.get(pk=loan.pk)
-    if loan.returned_at is None:
-        loan.returned_at = timezone.now()
-        loan.save(update_fields=["returned_at"])
-
-
-@transaction.atomic
 def move_quantity(planned, operation, quantity, user):
     from django.db.models import Sum
 
@@ -369,4 +342,17 @@ def move_quantity(planned, operation, quantity, user):
         operation=operation,
         quantity=quantity,
         user=user,
+    )
+
+
+def has_outstanding_material(production):
+    """Ist noch Material dieser Produktion draußen? Dann darf sie nicht endgültig verschwinden."""
+    if UnitIssue.objects.filter(production=production, returned_at__isnull=True).exists():
+        return True
+    return (
+        PlannedMaterial.objects.filter(
+            production=production, issued_quantity__gt=F("returned_quantity")
+        )
+        .exclude(material__tracking=Material.Tracking.CONSUMABLE)
+        .exists()
     )

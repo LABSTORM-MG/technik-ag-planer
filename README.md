@@ -2,7 +2,7 @@
 
 Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender, Material, Board und Technik-Anfragen – als Django-Web-App für Handy, Tablet und Computer (PWA).
 
-> **Stand:** Die ursprünglichen 12 Meilensteine sind umgesetzt. Dieser Fork ergänzt Meilenstein 13 (Materialverwaltung mit optionalen QR-Scans); Übernahmeprüfung und Hardwareabnahme stehen noch aus. Vor dem Einsatz an einer Schule stehen noch echte Tests (Google, Handys), die Rechtstexte und die Abstimmung mit der Schule aus – siehe [Umsetzungsstand und „Vor dem Start“](docs/feature-liste.md#16-umsetzungsstand-und-entscheidungen).
+> **Stand:** Die ursprünglichen 12 Meilensteine sind umgesetzt. Dazu kommt Meilenstein 13 (Materialverwaltung mit optionalen QR-Scans); der Test auf echten Geräten steht noch aus. Vor dem Einsatz an einer Schule stehen noch echte Tests (Google, Handys), die Rechtstexte und die Abstimmung mit der Schule aus – siehe [Umsetzungsstand und „Vor dem Start“](docs/feature-liste.md#16-umsetzungsstand-und-entscheidungen).
 
 ## Was die App schon kann
 
@@ -13,7 +13,7 @@ Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender,
 - **Board** als Chat der AG mit Systemmeldungen, Chats je Produktion, Moderation und Zähler für ungelesene Nachrichten
 - **Material** mit Kategorien, Bestand, Links, Defektmeldungen und Materialsätzen; Planung je Produktion mit Konfliktwarnung und Packliste zum Abhaken
 - **Optionale QR-Verwaltung je AG:** Einzelgeräte mit Inventarcodes und Etiketten, Reservierung auf der Produktionsseite, Ausgabe/Rückgabe per Kamera oder Code, gerätespezifische Defekte und Abbauprotokoll
-- **Gemischter Materialbestand:** Kabel und Adapter nach Stückzahl mit Teilrückgaben, Verbrauchsmaterial als Entnahme ohne Rückgabe; persönliche Ausleihen im klassischen Modus
+- **Gemischter Materialbestand:** Kabel und Adapter nach Stückzahl mit Teilrückgaben, Verbrauchsmaterial als Entnahme ohne Rückgabe
 - **Technik anfragen** über einen öffentlichen Link ohne Konto; Anfragen erscheinen in der Produktionsliste und werden in einer geteilten Ansicht zur Produktion
 - **PDFs** mit Vorschau zum Herunterladen, Teilen und Drucken: Call Sheet je Job und je Produktion, Freistellungsliste für die Schule, Packliste, Einsatzübersicht
 - **Team:** Fähigkeiten mit Filter und Vorschlägen beim Einteilen, Einsatzübersicht mit Stundenkorrektur, Schuljahreswechsel, Konto löschen (Einsätze bleiben als „Ehemaliges Mitglied“)
@@ -66,7 +66,7 @@ Unter **Einstellungen → Materialverwaltung** kann eine Person mit Materialverw
 
 Vorhandene Daten bleiben erhalten; neue Migrationen mit `make migrate` ausführen. Für die Kamera sind HTTPS oder localhost und eine Browserfreigabe erforderlich. Die lokale Entwicklungsdatenbank ist extern standardmäßig auf Port **5433** erreichbar (`POSTGRES_DEV_PORT`); innerhalb von Docker bleibt es Port 5432.
 
-[Bedienungsanleitung](docs/handbuch/material-scans.md) · [Entwicklerübergabe mit offenen Prüfungen](docs/entwicklung/materialerweiterung.md) · [Architekturentscheidung ADR 0020](docs/architektur/0020-material-einzelgeraete.md)
+[Bedienungsanleitung](docs/handbuch/material-scans.md) · [Entwicklerübergabe](docs/entwicklung/materialerweiterung.md) · [Architekturentscheidung ADR 0022](docs/architektur/0022-material-einzelgeraete.md)
 
 ## Betrieb
 
