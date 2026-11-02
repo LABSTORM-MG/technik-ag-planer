@@ -2,11 +2,10 @@ import json
 from datetime import timedelta
 
 from django import forms
-from django.forms import modelformset_factory
 
 from apps.organizations.models import Membership
 
-from .models import Event, EventAttendee, EventSeries, SchoolPeriod, Unavailability
+from .models import Event, EventAttendee, EventSeries, Unavailability
 from .periods import periods_for
 from .services import MAX_SERIES_DAYS
 
@@ -180,39 +179,34 @@ class UnavailabilityForm(PeriodTimesMixin, forms.ModelForm):
         self.setup_periods(organization)
 
 
-class PeriodForm(forms.ModelForm):
-    class Meta:
-        model = SchoolPeriod
-        fields = ["number", "start_time", "end_time"]
-        widgets = {"start_time": TimeInput(), "end_time": TimeInput()}
+class PeriodForm(forms.Form):
+    start_time = forms.TimeField(label="Beginn", widget=TimeInput())
+    end_time = forms.TimeField(label="Ende", widget=TimeInput())
 
 
-class BasePeriodFormSet(forms.BaseModelFormSet):
+class BasePeriodFormSet(forms.BaseFormSet):
+    """Die Stunden werden nach Beginn sortiert und beim Speichern durchnummeriert."""
+
     def clean(self):
         super().clean()
         rows = []
         for form in self.forms:
-            if not form.has_changed() and not form.instance.pk:
-                continue
             if self.can_delete and self._should_delete_form(form):
                 continue
-            data = form.cleaned_data
-            if not data:
+            data = getattr(form, "cleaned_data", None)
+            if not data or "start_time" not in data or "end_time" not in data:
                 continue
             if data["end_time"] <= data["start_time"]:
                 form.add_error("end_time", "Das Ende muss nach dem Beginn liegen.")
-            rows.append((data["number"], data["start_time"], data["end_time"]))
-        numbers = [r[0] for r in rows]
-        if len(numbers) != len(set(numbers)):
-            raise forms.ValidationError("Jede Stundennummer darf nur einmal vorkommen.")
+                continue
+            rows.append((data["start_time"], data["end_time"]))
         rows.sort()
-        for (n1, _s1, e1), (n2, s2, _e2) in zip(rows, rows[1:], strict=False):
-            if s2 < e1:
-                raise forms.ValidationError(
-                    f"Die {n1}. und {n2}. Stunde überschneiden sich oder sind nicht in Reihenfolge."
-                )
+        for (_start, end), (next_start, _end) in zip(rows, rows[1:], strict=False):
+            if next_start < end:
+                raise forms.ValidationError("Die Stunden dürfen sich nicht überschneiden.")
+        self.rows = rows
 
 
-PeriodFormSet = modelformset_factory(
-    SchoolPeriod, form=PeriodForm, formset=BasePeriodFormSet, extra=1, can_delete=True
+PeriodFormSet = forms.formset_factory(
+    PeriodForm, formset=BasePeriodFormSet, extra=0, can_delete=True
 )

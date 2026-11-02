@@ -6,7 +6,7 @@ Owner sind bewusst Schülerinnen oder Schüler („Schüler lernen von Schülern
 
 1. Die Einladungs-Mail des Betreibers öffnen, Namen und Passwort setzen.
 2. Die App auf dem Handy installieren (siehe [Mitglieder-Handbuch](mitglieder.md#app-installieren)).
-3. Einstellungen → AG anpassen → **Stundenraster** prüfen (Beginn und Ende der Schulstunden) – nötig für Freistellungsliste und Eingabe „1.–4. Stunde“.
+3. Einstellungen → AG anpassen → **Stundenraster** prüfen (Beginn und Ende der Schulstunden; die Checkliste auf dem Dashboard führt durch die Einrichtung) – nötig für Freistellungsliste und Eingabe „1.–4. Stunde“.
 4. Einstellungen → AG anpassen → **Kategorien** und **Status-Werte** anpassen (z. B. „Abgesagt“ ergänzen).
 5. Einstellungen → AG anpassen → **Fähigkeiten** anlegen (z. B. Licht, Ton, Bühne, Kamera).
 6. Optional, empfohlen: Einstellungen → AG anpassen → **Zwei-Faktor für alle Mitglieder**.

@@ -86,7 +86,7 @@ def test_pdfs(show, planner_client, url_name, filename):
 
 def test_release_list_preview(show, planner_client):
     content = planner_client.get(reverse("documents:release_list", args=[show.pk])).content.decode()
-    assert "Emma Schulz" in content and "1.–3. Stunde" in content and "Frau Muster" in content
+    assert "Emma Schulz" in content and "doc__cross" in content and "Frau Muster" in content
     assert "kein Stundenraster" not in content
 
 

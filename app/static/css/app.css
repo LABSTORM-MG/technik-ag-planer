@@ -531,7 +531,7 @@ h3 {
 }
 
 .input,
-.field input:not([type="checkbox"]),
+.field input:not([type="checkbox"], [type="radio"]),
 .field select {
   width: 100%;
   min-height: 44px;
@@ -979,6 +979,7 @@ a.list__item:hover,
 }
 
 .chip {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -995,6 +996,8 @@ a.list__item:hover,
 
 .chip input {
   position: absolute;
+  width: 1px;
+  height: 1px;
   opacity: 0;
   pointer-events: none;
 }
@@ -1101,15 +1104,10 @@ a.list__item:hover,
   cursor: pointer;
 }
 
-/* Stärker als die allgemeine Regel für Felder, die Eingaben auf volle Breite setzt */
-.segmented--choice input,
-.field .segmented--choice input {
+.segmented--choice input {
   position: absolute;
   width: 1px;
-  min-height: 0;
   height: 1px;
-  padding: 0;
-  border: 0;
   opacity: 0;
 }
 
@@ -1604,23 +1602,19 @@ a.list__item:hover,
   gap: var(--space-2);
 }
 
-.periods__row {
-  display: grid;
-  grid-template-columns: 70px 1fr 1fr 60px;
-  align-items: center;
+.periods__rows {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-2);
+  counter-reset: period;
 }
 
-.periods__row input:not([type="checkbox"]) {
-  width: 100%;
-  min-height: 40px;
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-raised);
-  color: var(--color-text);
-  font: inherit;
-  color-scheme: dark;
+.periods__head,
+.periods__row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .periods__head {
@@ -1628,6 +1622,69 @@ a.list__item:hover,
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
+}
+
+.periods__row {
+  counter-increment: period;
+}
+
+.periods__row:has(.periods__remove input:checked) {
+  display: none;
+}
+
+.periods__number {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-raised);
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+}
+
+.periods__number::before {
+  content: counter(period);
+}
+
+.periods__field input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--space-1);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: center;
+  color-scheme: dark;
+}
+
+/* Das Uhr-Symbol braucht auf dem Handy zu viel Platz; Antippen öffnet die Auswahl trotzdem */
+.periods__field input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+.periods__remove {
+  cursor: pointer;
+}
+
+.periods__remove input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.periods__gap {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  text-align: center;
 }
 
 .periods__error {
@@ -1658,9 +1715,8 @@ a.icon-button {
 
 .board__head {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
 }
 
 .board__head .page-title {
@@ -2336,13 +2392,10 @@ a.icon-button {
   outline-offset: 2px;
 }
 
-.field .picker__item input {
+.picker__item input {
   position: absolute;
   width: 1px;
-  min-height: 0;
   height: 1px;
-  padding: 0;
-  border: 0;
   opacity: 0;
 }
 
@@ -2362,7 +2415,39 @@ a.icon-button {
   font-size: var(--text-xs);
 }
 
+.picker-collapse__summary {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.picker-collapse[open] > .picker {
+  margin-top: var(--space-2);
+}
+
 .picker__empty {
   margin: 0;
   padding: var(--space-2);
+}
+
+/* ---------- Einrichtungs-Checkliste ---------- */
+
+.setup-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.setup-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.setup-step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }

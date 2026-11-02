@@ -89,22 +89,35 @@ def test_google_url_leaves_out_internal_and_shortens_long_text():
 
 
 @pytest.mark.parametrize(
-    ("agent", "first"),
-    [
-        (IPHONE, "Apple Kalender"),
-        (IPAD, "Apple Kalender"),
-        (ANDROID, "Google Kalender"),
-        ("", "Google Kalender"),
-    ],
+    ("agent", "expected"),
+    [(IPHONE, "oeffnen=1"), (IPAD, "oeffnen=1"), (ANDROID, "calendar.google.com")],
 )
-def test_order_follows_device(member_client, concert, agent, first):
+def test_known_device_goes_straight_to_its_calendar(member_client, concert, agent, expected):
+    url = reverse("scheduling:private_calendar_production", args=[concert.pk])
+
+    response = member_client.get(url, headers={"user-agent": agent})
+
+    assert response.status_code == 302
+    assert expected in response.url
+    assert "User-Agent" in response["Vary"]
+
+    sheet = member_client.get(url, headers={"user-agent": agent, "x-sheet": "1"})
+    assert sheet.status_code == 204
+    assert expected in sheet["X-Sheet-Navigate"]
+
+
+@pytest.mark.parametrize("agent", ["", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Firefox/159.0"])
+def test_unknown_device_gets_three_equal_choices(member_client, concert, agent):
     response = member_client.get(
         reverse("scheduling:private_calendar_production", args=[concert.pk]),
         headers={"user-agent": agent},
     )
 
-    assert response.context["options"][0]["label"] == first
-    assert "User-Agent" in response["Vary"]
+    assert [o["label"] for o in response.context["options"]] == [
+        "Google Kalender",
+        "Apple Kalender",
+        "Datei herunterladen",
+    ]
 
 
 def test_sheet_offers_all_ways(member_client, concert):

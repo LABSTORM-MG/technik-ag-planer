@@ -116,7 +116,13 @@ def release_list(request, pk, as_pdf=False):
     production = _production(request, pk)
     hints = ["Nur zugesagte Crew ohne Lehrkräfte; Wochenenden fallen weg."]
     if not school_periods.periods_for(request.organization):
-        hints.append("Es ist noch kein Stundenraster eingetragen – die Liste bleibt deshalb leer.")
+        hints.append(
+            "Es ist noch kein Stundenraster eingetragen, die Liste nennt deshalb Uhrzeiten "
+            "statt Schulstunden."
+        )
+    omitted = services.release_omissions(production)
+    if omitted:
+        hints.append("Nicht auf der Liste: " + "; ".join(omitted) + ".")
     return _document(
         request,
         url=("release_list", production.pk),
@@ -126,7 +132,7 @@ def release_list(request, pk, as_pdf=False):
         filename=f"freistellungsliste-{slugify(production.name)}",
         context={
             "production": production,
-            "blocks": services.release_blocks(production),
+            "tables": services.release_tables(production),
             "supervisors": production.supervisors.all(),
         },
         back=(reverse("productions:detail", args=[production.pk]), production.name),

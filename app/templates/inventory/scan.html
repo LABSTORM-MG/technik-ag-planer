@@ -18,11 +18,11 @@
 </section>
 {% if has_units %}
 <section class="card stack inventory-scanner"><p class="eyebrow">QR-Scanner</p><h2 class="section-title">Ausgabe und Rückgabe</h2>
-<form class="form" method="post" id="scan-form">{% csrf_token %}
+<form class="form" method="post" id="scan-form" data-no-unsaved>{% csrf_token %}
 <fieldset class="inventory-mode-tabs"><legend class="visually-hidden">Scanmodus</legend><label><input type="radio" name="mode" value="issue" {% if not teardown.completed_at %}checked{% else %}disabled{% endif %}><span>Ausgabe</span></label><label><input type="radio" name="mode" value="return" {% if teardown.completed_at %}checked{% endif %}><span>Rückgabe</span></label></fieldset>
 <details><summary>Inventarcode manuell eingeben</summary><div class="inventory-manual-row"><label class="field"><span class="field__label">Inventarcode</span><input class="input" name="code" required maxlength="500" autocomplete="off" placeholder="z. B. MIC-01"></label><button class="button button--secondary">Erfassen</button></div></details>
 </form>
-<button class="button button--primary" type="button" id="camera">Kamera starten</button><div id="preview" hidden></div><p id="scan-status" role="status" aria-live="polite"></p>
+<div class="toolbar"><button class="button button--primary" type="button" id="camera">Kamera starten</button><label class="button button--secondary inventory-photo-scan">Foto aufnehmen<input type="file" id="photo" accept="image/*" capture="environment"></label></div><div id="preview" hidden></div><p id="scan-status" role="status" aria-live="polite"></p>
 <p class="field__help">Etikett vor die Kamera halten. Der Scanner bleibt für weitere Geräte offen. Kamera benötigt HTTPS oder localhost.</p>
 </section>
 {% endif %}

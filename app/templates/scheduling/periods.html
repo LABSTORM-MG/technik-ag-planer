@@ -3,24 +3,21 @@
 {% block page_title %}Stundenraster{% endblock %}
 {% block page_content %}
 <div class="stack">
-  <p class="muted">Die Unterrichtsstunden gelten an allen Schultagen gleich. Pausen ergeben sich aus den Lücken. Zeiten lassen sich danach überall auch als Schulstunde eingeben.</p>
-  {% if is_suggestion %}<ul class="messages"><li class="message message--warning">Noch kein Stundenraster gespeichert – unten steht ein Vorschlag. Bitte anpassen und speichern.</li></ul>{% endif %}
+  <p class="muted">Trag die Unterrichtsstunden ein, sie gelten an allen Schultagen gleich. Danach lassen sich Jobs und Termine auch als Schulstunde eingeben, und die Freistellungsliste nennt Stunden statt Uhrzeiten.</p>
+  {% if is_suggestion %}<div class="message message--warning" role="status">Noch nicht gespeichert: Das ist ein Vorschlag. Bitte anpassen und speichern.</div>{% endif %}
   <form method="post" class="form card" novalidate>
     {% csrf_token %}
     {{ formset.management_form }}
     {% if formset.non_form_errors %}<ul class="form-errors" role="alert">{% for e in formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-    <div class="periods">
-      <div class="periods__row periods__head"><span>Stunde</span><span>Beginn</span><span>Ende</span><span>Löschen</span></div>
-      {% for f in formset %}
-        <div class="periods__row">
-          {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
-          <span>{{ f.number }}</span><span>{{ f.start_time }}</span><span>{{ f.end_time }}</span>
-          <span>{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</span>
-          {% if f.errors %}<span class="field__error periods__error">{% for field in f %}{% for e in field.errors %}{{ e }} {% endfor %}{% endfor %}</span>{% endif %}
-        </div>
-      {% endfor %}
+    <div class="periods" data-periods>
+      <div class="periods__head" aria-hidden="true"><span></span><span>Beginn</span><span>Ende</span><span></span></div>
+      <div class="periods__rows" data-formset="periods">
+        {% for f in formset %}{% include "scheduling/includes/period_row.html" %}{% endfor %}
+      </div>
+      <template data-formset-template="periods">{% include "scheduling/includes/period_row.html" with f=formset.empty_form %}</template>
+      <div><button type="button" class="button button--secondary button--small" data-formset-add="periods">+ Stunde</button></div>
     </div>
-    <div><button type="submit" class="button button--primary">Speichern</button></div>
+    <div class="form-actions"><button type="submit" class="button button--primary">Speichern</button></div>
   </form>
 </div>
 {% endblock %}

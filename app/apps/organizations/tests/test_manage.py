@@ -1,3 +1,5 @@
+from datetime import time
+
 import pytest
 from django.db import IntegrityError, transaction
 from django.urls import reverse
@@ -235,3 +237,63 @@ def test_edit_page_goes_back_to_its_list(owner_client, org):
     ).content.decode()
 
     assert f'<a class="back-link" href="{reverse("productions:categories")}">' in content
+
+
+# ---------- Einrichtungs-Checkliste ----------
+
+
+def test_owner_sees_setup_checklist_on_dashboard(owner_client):
+    response = owner_client.get(reverse("productions:dashboard"))
+    content = response.content.decode()
+
+    assert "AG einrichten · 0 von 6" in content
+    assert "Stundenraster eintragen" in content
+    assert reverse("scheduling:periods") in content
+
+
+@pytest.mark.parametrize("role", [Role.ADMIN, Role.TEACHER, Role.STUDENT])
+def test_only_owner_sees_setup_checklist(org, make_member, login, role):
+    client = login(make_member(org, role).user, org)
+
+    assert "AG einrichten" not in client.get(reverse("productions:dashboard")).content.decode()
+
+
+def test_setup_step_is_marked_done(org, owner_client):
+    from apps.scheduling.models import SchoolPeriod
+
+    SchoolPeriod.objects.create(organization=org, number=1, start_time=time(8), end_time=time(9))
+
+    content = owner_client.get(reverse("productions:dashboard")).content.decode()
+
+    assert "AG einrichten · 1 von 6" in content
+
+
+def test_owner_can_dismiss_setup_checklist(org, owner_client):
+    response = owner_client.post(reverse("organizations:setup_dismiss"))
+
+    assert response.url == reverse("productions:dashboard")
+    org.refresh_from_db()
+    assert org.setup_hint_dismissed
+    assert (
+        "AG einrichten" not in owner_client.get(reverse("productions:dashboard")).content.decode()
+    )
+
+
+@pytest.mark.parametrize("role", [Role.ADMIN, Role.TEACHER, Role.STUDENT])
+def test_only_owner_can_dismiss_setup_checklist(org, make_member, login, role):
+    client = login(make_member(org, role).user, org)
+
+    assert client.post(reverse("organizations:setup_dismiss")).status_code == 403
+    org.refresh_from_db()
+    assert not org.setup_hint_dismissed
+    assert client.get(reverse("organizations:setup_dismiss")).status_code == 405
+
+
+def test_setup_checklist_counts_only_own_org(org, other_org, owner_client):
+    from apps.scheduling.models import SchoolPeriod
+
+    SchoolPeriod.objects.create(
+        organization=other_org, number=1, start_time=time(8), end_time=time(9)
+    )
+
+    assert "0 von 6" in owner_client.get(reverse("productions:dashboard")).content.decode()

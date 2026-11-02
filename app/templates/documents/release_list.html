@@ -1,23 +1,21 @@
 <div class="doc">
-  {% include "documents/includes/head.html" with kind="Freistellungsliste" %}
+  {% include "documents/includes/head.html" with kind="Freistellungsliste" hide_organization=True %}
 
-  {% if blocks %}
-    <table class="doc__table">
+  {% for table in tables %}
+    <h2 class="doc__section-title">{{ table.date|date:"l, d.m.Y" }}</h2>
+    <table class="doc__release">
       <thead>
-        <tr><th>Name</th><th>Jg.</th></tr>
+        <tr><th class="doc__release-name">Name</th><th class="doc__release-grade">Jg.</th>{% for column in table.columns %}<th class="doc__release-period">{{ column }}</th>{% endfor %}</tr>
       </thead>
-      {% for block in blocks %}
-        <tbody>
-          <tr class="doc__group"><th colspan="2">{{ block.date|date:"D., d.m.Y" }} · {{ block.periods_label }} ({{ block.time_label }})</th></tr>
-          {% for row in block.rows %}
-            <tr><td>{{ row.name }}</td><td>{{ row.grade|default:"–" }}</td></tr>
-          {% endfor %}
-        </tbody>
-      {% endfor %}
+      <tbody>
+        {% for name, grade, cells in table.rows %}
+          <tr><td>{{ name }}</td><td>{{ grade|default:"–" }}</td>{% for marked in cells %}<td class="doc__release-cell">{% if marked %}<svg class="doc__cross" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="freistellen"><line x1="0" y1="0" x2="100" y2="100"/><line x1="100" y1="0" x2="0" y2="100"/></svg>{% endif %}</td>{% endfor %}</tr>
+        {% endfor %}
+      </tbody>
     </table>
-  {% else %}
+  {% empty %}
     <p class="doc__muted">Niemand muss vom Unterricht freigestellt werden.</p>
-  {% endif %}
+  {% endfor %}
 
-  {% include "documents/includes/footer.html" %}
+  <footer class="doc__footer">Erstellt am {{ created_at|date:"d.m.Y, H:i" }} Uhr von {{ created_by }}</footer>
 </div>

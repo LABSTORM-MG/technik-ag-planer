@@ -83,6 +83,15 @@ def _google_problem(request, connection):
     return connection.last_error
 
 
+@require_POST
+@owner_required
+def setup_dismiss(request):
+    request.organization.setup_hint_dismissed = True
+    request.organization.save(update_fields=["setup_hint_dismissed"])
+    messages.info(request, "Ausgeblendet. Alles findest du weiter unter „AG anpassen“.")
+    return redirect("productions:dashboard")
+
+
 @org_required
 def customize(request):
     """Unterseite „AG anpassen“: alles, was je AG einstellbar ist."""

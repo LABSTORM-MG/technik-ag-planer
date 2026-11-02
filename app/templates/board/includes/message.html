@@ -12,7 +12,7 @@
   {% endif %}
 </li>
 {% else %}
-<li class="chat-message{% if m.is_own %} chat-message--own{% endif %}" id="nachricht-{{ m.pk }}" data-msg data-msg-id="{{ m.pk }}"{% if m.can_edit %} data-edit-url="{% url 'board:edit' m.pk %}"{% endif %}{% if m.can_delete %} data-can-delete{% endif %}>
+<li class="chat-message{% if m.is_own %} chat-message--own{% endif %}" id="nachricht-{{ m.pk }}" data-msg data-msg-id="{{ m.pk }}" data-author="{{ m.author_name }}"{% if m.can_edit %} data-edit-url="{% url 'board:edit' m.pk %}"{% endif %}{% if m.can_delete %} data-can-delete{% endif %}>
   <div class="chat-message__bubble">
     {% if not m.is_own %}<span class="chat-message__author color-{{ m.color }}">{{ m.author_name }}</span>{% endif %}
     <p class="chat-message__text">{{ m.text|linebreaksbr }}</p>

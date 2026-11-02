@@ -399,27 +399,29 @@ def unavailability_delete(request, pk):
 @permission_required_in_org(Perm.MANAGE_ORG_CONFIG)
 def periods(request):
     queryset = SchoolPeriod.objects.for_org(request.organization)
-    initial = []
-    if not queryset.exists() and request.method != "POST":
-        # Vorschlag nur beim Anzeigen – beim Speichern zählen alle ausgefüllten Zeilen als neu
-        initial = [{"number": n, "start_time": s, "end_time": e} for n, s, e in DEFAULT_PERIODS]
-    formset = PeriodFormSet(request.POST or None, queryset=queryset, initial=initial)
-    if initial:
-        formset.extra = len(initial)  # Vorschlag als vorausgefüllte Zeilen
+    saved = [{"start_time": p.start_time, "end_time": p.end_time} for p in queryset]
+    # Ohne gespeichertes Raster startet die Seite mit einem Vorschlag
+    initial = saved or [{"start_time": s, "end_time": e} for _n, s, e in DEFAULT_PERIODS]
+    # Beim Absenden ohne Startwerte: Sonst zählen unveränderte neue Zeilen als leer
+    formset = PeriodFormSet(
+        request.POST or None,
+        initial=None if request.method == "POST" else initial,
+        prefix="periods",
+    )
     if request.method == "POST" and formset.is_valid():
         with transaction.atomic():
-            for item in formset.save(commit=False):
-                item.organization = request.organization
-                item.save()
-            for obj in formset.deleted_objects:
-                if obj.pk:
-                    obj.delete()
+            for period in queryset:
+                period.delete()  # einzeln, damit das Änderungsprotokoll es erfasst
+            for number, (start, end) in enumerate(formset.rows, start=1):
+                SchoolPeriod.objects.create(
+                    organization=request.organization, number=number, start_time=start, end_time=end
+                )
         messages.success(request, "Stundenraster gespeichert.")
         return redirect("scheduling:periods")
     return render(
         request,
         "scheduling/periods.html",
-        {**SETTINGS, "formset": formset, "is_suggestion": not queryset.exists()},
+        {**SETTINGS, "formset": formset, "is_suggestion": not saved},
     )
 
 
@@ -440,35 +442,56 @@ def _uid(request, kind, pk):
     return f"{kind}-{pk}@{request.get_host().split(':')[0]}"
 
 
-def _prefers_apple(request):
-    """iPadOS meldet sich als Mac, deshalb zählt auch „Macintosh“."""
+def _calendar_of_device(request):
+    """„apple“, „google“ oder None, wenn das Gerät keinen klaren Kalender hat.
+
+    iPadOS meldet sich als Mac, deshalb zählt auch „Macintosh“.
+    """
     agent = request.headers.get("User-Agent", "")
-    return any(name in agent for name in ("iPhone", "iPad", "Macintosh"))
+    if any(name in agent for name in ("iPhone", "iPad", "Macintosh")):
+        return "apple"
+    return "google" if "Android" in agent else None
 
 
 def _private_calendar(request, file_url_name, pk, event):
     file_url = reverse(file_url_name, args=[pk])
-    google = {
-        "label": "Google Kalender",
-        "hint": "Öffnet den Termin bei Google zum Speichern",
-        "href": ics.google_url(event),
-        "external": True,
-    }
-    apple = {
-        "label": "Apple Kalender",
-        "hint": "Für iPhone, iPad und Mac",
-        "href": f"{file_url}?oeffnen=1",
-        "external": False,
-    }
+    google_url = ics.google_url(event)
+    apple_url = f"{file_url}?oeffnen=1"
+    device = _calendar_of_device(request)
+    if device:
+        target = apple_url if device == "apple" else google_url
+        if request.headers.get("X-Sheet"):
+            # Für das Sheet: keine Auswahl nötig, app.js geht direkt dorthin
+            response = HttpResponse(status=204)
+            response["X-Sheet-Navigate"] = target
+        else:
+            response = redirect(target)
+        patch_vary_headers(response, ["User-Agent"])
+        return response
+    options = [
+        {
+            "label": "Google Kalender",
+            "hint": "Öffnet den Termin bei Google zum Speichern",
+            "href": google_url,
+            "external": True,
+        },
+        {
+            "label": "Apple Kalender",
+            "hint": "Für iPhone, iPad und Mac",
+            "href": apple_url,
+            "external": False,
+        },
+        {
+            "label": "Datei herunterladen",
+            "hint": "Für alle anderen Kalender, z. B. Outlook",
+            "href": file_url,
+            "external": False,
+        },
+    ]
     response = render(
         request,
         "scheduling/private_calendar.html",
-        {
-            **CALENDAR,
-            "event": event,
-            "options": [apple, google] if _prefers_apple(request) else [google, apple],
-            "file_url": file_url,
-        },
+        {**CALENDAR, "event": event, "options": options},
     )
     patch_vary_headers(response, ["User-Agent"])
     return response

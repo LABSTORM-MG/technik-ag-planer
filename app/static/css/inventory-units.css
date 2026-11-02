@@ -69,3 +69,6 @@
 .inventory-record { min-width: 0; overflow-wrap: anywhere; }
 .unit-label { max-width: 100%; text-align: center; }
 .inventory-device-header { min-width: 0; }
+.unit-label__qr { max-width: 100%; height: auto; image-rendering: pixelated; }
+.inventory-photo-scan { display: inline-flex; }
+.inventory-photo-scan input { position: absolute; width: 1px; height: 1px; opacity: 0; }

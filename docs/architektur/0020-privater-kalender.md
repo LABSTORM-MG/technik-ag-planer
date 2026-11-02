@@ -24,3 +24,7 @@ Einträge ließen sich nur als .ics-Datei herunterladen. Mitglieder mussten die 
 - Übernommen wird eine Kopie, spätere Änderungen kommen nicht an. Dafür bleibt das Abo des Google-Kalenders der AG.
 - Beim Tippen auf Google sendet der Browser Titel, Zeit, Ort und Beschreibung an Google. Selbst eingetragene Notizen können Namen enthalten; die Datenschutz-Vorlage weist darauf hin.
 - Das Verhalten des Apple-Links in der installierten App und das von Android lässt sich nur am echten Gerät prüfen.
+
+## Nachtrag
+
+Das Gerät bestimmt den Kalender jetzt selbst: iPhone, iPad und Mac gehen direkt zu Apple, Android zu Google. Nur auf anderen Geräten erscheint die Auswahl, dort mit der Datei als gleichwertigem dritten Weg.

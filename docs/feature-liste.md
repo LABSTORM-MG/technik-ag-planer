@@ -167,7 +167,7 @@ Der Kalender zeigt Produktionen, Jobs, Termine und Abwesenheiten der ganzen AG o
 
 - Der Owner legt in den Einstellungen die Unterrichtsstunden der Schule fest: Nummer, Beginn und Ende (z. B. 1. Stunde 8:00–8:45), Pausen dazwischen; das Raster gilt an allen Schultagen gleich
 - Zeiten lassen sich überall wahlweise als Uhrzeit oder als Schulstunde eingeben (z. B. „ab der 5. Stunde“) – bei Jobs, Terminen und „Nicht verfügbar“; die App rechnet über das Raster in Uhrzeiten um
-- Die Freistellungsliste nennt die betroffenen Schulstunden, gruppiert nach Stundenblöcken, damit Lehrkräfte blockweise eintragen können
+- Die Freistellungsliste ist je Tag eine Tabelle: Namen mit Jahrgangsstufe aufsteigend in den Zeilen, Schulstunden in den Spalten, Kreuze in den betroffenen Feldern; ohne Stundenraster stehen Uhrzeiten in den Spalten, die Vorschau zeigt, wer warum fehlt
 
 **„+ Neu“-Menü**
 
@@ -602,7 +602,8 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | – | Technik-Auswahl im Anfrage-Formular je AG | fertig | #18 |
 | – | Einstellungen: Unterseite „AG anpassen“, ganze Zeile anklickbar, Google-Hinweis für den Owner | fertig | #25, #26 |
 | – | Dashboard-Kachel und Navigations-Zähler für offene Technik-Anfragen | fertig | #19 |
-| – | Chat-Bedienung, Geräte ohne Reservierung, Material-Auswahl, Freistellungs-Blöcke, Zurück-Knöpfe | fertig | #31 |
+| – | Chat-Bedienung, Geräte ohne Reservierung, Material-Auswahl, Zurück-Knöpfe | fertig | #31 |
+| – | Kopieren mehrerer Nachrichten, Stundenraster, Einrichtungs-Checkliste, QR-Lesbarkeit, Freistellungs-Tabelle, Warnung bei ungespeicherten Änderungen | fertig | #32 |
 | – | Oberfläche: Nachfrage bei Anfragen, Kalender, Board auf dem Handy, Crew-Schalter, Produktionsseite | fertig | #20, #21 |
 | – | „In privaten Kalender“ mit Auswahl Google, Apple, Datei | fertig | #22 |
 

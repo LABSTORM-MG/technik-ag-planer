@@ -1,0 +1,25 @@
+{% comment %}Einrichtungs-Checkliste. Parameter: setup_steps, setup_done{% endcomment %}
+<section class="card setup-card" aria-labelledby="einrichten-titel">
+  <div class="setup-card__head">
+    <div>
+      <h2 class="section-title" id="einrichten-titel">AG einrichten · {{ setup_done }} von {{ setup_steps|length }}</h2>
+      <p class="muted">Kategorien, Status-Werte und mehr findest du unter <a href="{% url 'organizations:customize' %}">AG anpassen</a>.</p>
+    </div>
+    <form method="post" action="{% url 'organizations:setup_dismiss' %}">
+      {% csrf_token %}<button type="submit" class="button button--secondary button--small">Ausblenden</button>
+    </form>
+  </div>
+  <ul class="list list--rows">
+    {% for step in setup_steps %}
+      <li>
+        <a class="list__item list__link setup-step" href="{{ step.url }}">
+          <span class="todo__check{% if step.done %} todo__check--done{% endif %}" aria-hidden="true"></span>
+          <span class="list__main">
+            <span class="list__title">{{ step.label }}{% if step.done %}<span class="visually-hidden"> (erledigt)</span>{% endif %}</span>
+            <span class="list__subtitle">{{ step.hint }}</span>
+          </span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</section>

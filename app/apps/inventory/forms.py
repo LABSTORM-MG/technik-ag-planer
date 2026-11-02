@@ -111,6 +111,10 @@ class MaterialPicker(forms.RadioSelect):
     template_name = "inventory/widgets/material_picker.html"
     option_template_name = "inventory/widgets/material_picker_option.html"
 
+    def __init__(self, *args, collapsed=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.collapsed = collapsed  # In Listen mit vielen Zeilen erst auf Tippen aufklappen
+
     def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
         option = super().create_option(name, value, label, selected, index, subindex, attrs)
         option["material"] = getattr(value, "instance", None)
@@ -126,6 +130,16 @@ class MaterialPicker(forms.RadioSelect):
                     categories[material.category_id] = material.category
         context["widget"]["categories"] = sorted(
             categories.values(), key=lambda c: (c.position, c.name)
+        )
+        context["widget"]["collapsed"] = self.collapsed
+        context["widget"]["selected_label"] = next(
+            (
+                option["label"]
+                for _group, options, _index in context["widget"]["optgroups"]
+                for option in options
+                if option["selected"]
+            ),
+            "",
         )
         return context
 
@@ -176,16 +190,23 @@ class KitItemForm(forms.ModelForm):
     class Meta:
         model = KitItem
         fields = ["material", "quantity"]
-        widgets = {"quantity": forms.NumberInput(attrs={"min": 1})}
+        widgets = {
+            "material": MaterialPicker(collapsed=True),
+            "quantity": forms.NumberInput(attrs={"min": 1}),
+        }
 
     def __init__(self, *args, organization=None, **kwargs):
         super().__init__(*args, **kwargs)
         # Archiviertes Material ist nicht wählbar – außer es steht schon im Satz
         current = Q(pk=self.instance.material_id) if self.instance.material_id else Q(pk=None)
-        self.fields["material"].queryset = Material.objects.for_org(organization).filter(
-            Q(archived_at__isnull=True) | current
+        self.fields["material"].empty_label = None
+        self.fields["material"].queryset = (
+            Material.objects.for_org(organization)
+            .filter(Q(archived_at__isnull=True) | current)
+            .select_related("category")
+            .order_by("category__position", "category__name", "name")
         )
-        self.fields["material"].empty_label = "Material wählen"
+        self.fields["material"].label_from_instance = lambda m: m.name
         self.fields["quantity"].min_value = 1
 
 

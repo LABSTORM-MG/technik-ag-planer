@@ -64,41 +64,102 @@ def release_rows(production):
 
 
 @dataclass
-class ReleaseBlock:
-    """Ein Stundenblock an einem Tag mit allen Schülerinnen und Schülern, die er betrifft."""
+class ReleaseTable:
+    """Ein Tag der Freistellungsliste: Personen in den Zeilen, Stunden in den Spalten."""
 
     date: date
-    periods: list
-    rows: list = field(default_factory=list)
-
-    @property
-    def periods_label(self):
-        return school_periods.describe(self.periods)
-
-    @property
-    def time_label(self):
-        return f"{self.periods[0].start_time:%H:%M}–{self.periods[-1].end_time:%H:%M} Uhr"
+    columns: list
+    rows: list = field(default_factory=list)  # (Name, Jahrgang, [angekreuzt je Spalte])
 
 
-def _runs(periods):
-    """Teilt Stunden in zusammenhängende Blöcke; eine Lücke beginnt einen neuen."""
-    runs = []
-    for period in periods:
-        if runs and period.number == runs[-1][-1].number + 1:
-            runs[-1].append(period)
-        else:
-            runs.append([period])
-    return runs
+def _merged_job_times(production):
+    """Ohne Stundenraster: zusammengefasste Jobzeiten je Person an Schultagen."""
+    people = {}
+    assignments = (
+        CrewAssignment.objects.for_org(production.organization)
+        .filter(job__production=production, status=CrewAssignment.Status.CONFIRMED)
+        .filter(membership__isnull=False)
+        .exclude(membership__role=Role.TEACHER)
+        .exclude(membership__user__grade=Grade.EXTERN)
+        .select_related("job", "membership__user")
+    )
+    for a in assignments:
+        if a.job.date.weekday() < 5:
+            user = a.membership.user
+            key = (a.job.date, GRADE_ORDER.get(user.grade, len(GRADE_ORDER)), str(user).lower())
+            people.setdefault(key, (user, []))[1].append((a.job.start_time, a.job.end_time))
+    result = []
+    for key, (user, times) in sorted(people.items(), key=lambda item: item[0]):
+        merged = []
+        for start, end in sorted(times):
+            if merged and start <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], end)
+            else:
+                merged.append([start, end])
+        result.append((key[0], user, [tuple(span) for span in merged]))
+    return result
 
 
-def release_blocks(production):
-    """Freistellungsliste nach Blöcken, damit Lehrkräfte blockweise eintragen können."""
-    blocks = {}
+def _tables_by_job_times(production):
+    days = {}
+    for day, user, spans in _merged_job_times(production):
+        days.setdefault(day, []).append((user, spans))
+    tables = []
+    for day, people in sorted(days.items()):
+        columns = sorted({span for _user, spans in people for span in spans})
+        table = ReleaseTable(day, [f"{s:%H:%M}–{e:%H:%M}" for s, e in columns])
+        for user, spans in people:
+            table.rows.append((str(user), user.get_grade_display(), [c in spans for c in columns]))
+        tables.append(table)
+    return tables
+
+
+def release_tables(production):
+    """Je Schultag eine Tabelle, damit Lehrkräfte Stunde für Stunde eintragen können."""
+    raster = school_periods.periods_for(production.organization)
+    if not raster:
+        return _tables_by_job_times(production)
+    tables = {}
     for row in release_rows(production):
-        for run in _runs(row.periods):
-            key = (row.date, run[0].number, run[-1].number)
-            blocks.setdefault(key, ReleaseBlock(row.date, run)).rows.append(row)
-    return [blocks[key] for key in sorted(blocks)]
+        table = tables.setdefault(
+            row.date, ReleaseTable(row.date, [f"{p.number}." for p in raster])
+        )
+        numbers = {p.number for p in row.periods}
+        table.rows.append((row.name, row.grade, [p.number in numbers for p in raster]))
+    return [tables[day] for day in sorted(tables)]
+
+
+def release_omissions(production):
+    """Wer in einem Job steht, aber nicht auf der Liste, und warum (nur für die Vorschau)."""
+    listed = {(row[0], table.date) for table in release_tables(production) for row in table.rows}
+    has_raster = bool(school_periods.periods_for(production.organization))
+    reasons = {}
+    assignments = (
+        CrewAssignment.objects.for_org(production.organization)
+        .filter(job__production=production, membership__isnull=False)
+        .select_related("job", "membership__user")
+    )
+    for a in assignments:
+        user = a.membership.user
+        if a.status != CrewAssignment.Status.CONFIRMED:
+            reason = "noch nicht zugesagt"
+        elif a.membership.role == Role.TEACHER:
+            reason = "Lehrkraft"
+        elif user.grade == Grade.EXTERN:
+            reason = "extern"
+        elif a.job.date.weekday() >= 5:
+            reason = "Job am Wochenende"
+        elif has_raster and (str(user), a.job.date) not in listed:
+            reason = "Job außerhalb der Schulstunden"
+        else:
+            continue
+        reasons.setdefault(str(user), set()).add(reason)
+    names = {row[0] for row in listed}
+    return [
+        f"{name}: {', '.join(sorted(why))}"
+        for name, why in sorted(reasons.items())
+        if name not in names
+    ]
 
 
 def packing_items(production):

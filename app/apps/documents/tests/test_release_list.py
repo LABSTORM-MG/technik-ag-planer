@@ -2,7 +2,9 @@
 
 from datetime import time, timedelta
 
-from apps.documents.services import release_blocks, release_rows
+from django.urls import reverse
+
+from apps.documents.services import release_omissions, release_rows, release_tables
 from apps.organizations.permissions import Role
 from apps.productions.models import CrewAssignment
 from apps.scheduling.models import SchoolPeriod
@@ -72,52 +74,91 @@ def test_without_raster_nobody_is_listed(
     assert release_rows(production) == []
 
 
-def test_blocks_group_students_by_same_periods(
+def test_table_has_periods_as_columns_and_crosses(
     org, raster, monday, make_member, make_production, make_job, make_assignment
 ):
     production = make_production(org)
-    long_job = make_job(production, "Aufbau", day=monday, start=time(9), end=time(11))
-    short_job = make_job(production, "Show", day=monday, start=time(12, 30), end=time(13))
-    emma = make_member(org, Role.STUDENT, display_name="Emma", grade="Q1")
-    ben = make_member(org, Role.STUDENT, display_name="Ben", grade="7")
-    mia = make_member(org, Role.STUDENT, display_name="Mia", grade="9")
-    make_assignment(long_job, emma, CONFIRMED)
-    make_assignment(long_job, ben, CONFIRMED)
-    make_assignment(short_job, emma, CONFIRMED)
-    make_assignment(short_job, mia, CONFIRMED)
+    job = make_job(production, "Aufbau", day=monday, start=time(9), end=time(11))
+    make_assignment(job, make_member(org, Role.STUDENT, display_name="Emma", grade="Q1"), CONFIRMED)
+    make_assignment(job, make_member(org, Role.STUDENT, display_name="Ben", grade="7"), CONFIRMED)
 
-    blocks = release_blocks(production)
+    [table] = release_tables(production)
 
-    assert [(b.periods_label, [r.name for r in b.rows]) for b in blocks] == [
-        ("2.–4. Stunde", ["Ben", "Emma"]),
-        ("6. Stunde", ["Mia", "Emma"]),
-    ]
+    assert table.date == monday
+    assert table.columns[:2] == ["1.", "2."]
+    assert [(name, grade) for name, grade, _cells in table.rows] == [("Ben", "7"), ("Emma", "Q1")]
+    marked = [i + 1 for i, cell in enumerate(table.rows[0][2]) if cell]
+    assert marked == [2, 3, 4]
 
 
-def test_blocks_are_separate_per_day_and_contain_only_release_rows(
+def test_table_per_day_and_only_confirmed(
     org, raster, monday, make_member, make_production, make_job, make_assignment
 ):
     production = make_production(org, length=2)
     first = make_job(production, "Aufbau", day=monday, start=time(9), end=time(10))
-    second = make_job(
-        production, "Abbau", day=monday + timedelta(days=1), start=time(9), end=time(10)
-    )
+    second_day = monday + timedelta(days=1)
+    second = make_job(production, "Abbau", day=second_day, start=time(9), end=time(10))
     student = make_member(org, Role.STUDENT, display_name="Emma", grade="Q1")
     make_assignment(first, student, CONFIRMED)
     make_assignment(second, student, CONFIRMED)
     make_assignment(first, make_member(org, Role.STUDENT, display_name="Angefragt"))
 
-    blocks = release_blocks(production)
+    tables = release_tables(production)
 
-    assert [b.date for b in blocks] == [monday, monday + timedelta(days=1)]
-    assert all([r.name for r in b.rows] == ["Emma"] for b in blocks)
-    assert "Uhr" in blocks[0].time_label
+    assert [t.date for t in tables] == [monday, second_day]
+    assert all([row[0] for row in t.rows] == ["Emma"] for t in tables)
 
 
-def test_no_blocks_without_raster(
+def test_without_raster_columns_are_merged_job_times(
     org, monday, make_member, make_production, make_job, make_assignment
 ):
     production = make_production(org)
-    make_assignment(make_job(production, day=monday), make_member(org), CONFIRMED)
+    first = make_job(production, "Aufbau", day=monday, start=time(22, 43), end=time(22, 50))
+    second = make_job(production, "Abbau", day=monday, start=time(22, 50), end=time(22, 55))
+    weekend = make_job(production, "Sa", day=monday + timedelta(days=5))
+    student = make_member(org, Role.STUDENT, display_name="Lennart", grade="10")
+    make_assignment(first, student, CONFIRMED)
+    make_assignment(second, student, CONFIRMED)
+    make_assignment(weekend, student, CONFIRMED)
 
-    assert release_blocks(production) == []
+    [table] = release_tables(production)
+
+    assert table.columns == ["22:43–22:55"]
+    assert table.rows[0][0] == "Lennart" and table.rows[0][2] == [True]
+
+
+def test_omissions_name_who_is_missing_and_why(
+    org, raster, monday, make_member, make_production, make_job, make_assignment
+):
+    production = make_production(org)
+    school = make_job(production, "Aufbau", day=monday, start=time(9), end=time(10))
+    evening = make_job(production, "Show", day=monday, start=time(22), end=time(23))
+    make_assignment(school, make_member(org, display_name="Da", grade="7"), CONFIRMED)
+    make_assignment(evening, make_member(org, display_name="Abend", grade="7"), CONFIRMED)
+    make_assignment(school, make_member(org, display_name="Offen", grade="7"))
+    make_assignment(school, make_member(org, Role.TEACHER, display_name="Frau L"), CONFIRMED)
+
+    assert release_omissions(production) == [
+        "Abend: Job außerhalb der Schulstunden",
+        "Frau L: Lehrkraft",
+        "Offen: noch nicht zugesagt",
+    ]
+
+
+def test_release_list_page_has_no_org_or_app_name_in_document(
+    org, owner, login, raster, monday, make_member, make_production, make_job, make_assignment
+):
+    production = make_production(org)
+    job = make_job(production, "Aufbau", day=monday, start=time(9), end=time(10))
+    make_assignment(job, make_member(org, Role.STUDENT, display_name="Emma", grade="Q1"), CONFIRMED)
+
+    content = (
+        login(owner.user, org)
+        .get(reverse("documents:release_list", args=[production.pk]))
+        .content.decode()
+    )
+    document = content.split('<div class="paper">')[1]
+
+    assert "Emma" in document and "doc__cross" in document
+    assert org.name not in document
+    assert "Technik-AG Planer" not in document

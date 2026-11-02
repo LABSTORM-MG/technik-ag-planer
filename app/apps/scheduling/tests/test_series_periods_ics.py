@@ -131,43 +131,71 @@ def test_job_form_accepts_school_periods(org, periods, planner_client, concert):
     assert (job.start_time, job.end_time) == (time(11, 40), time(13, 10))
 
 
-def test_owner_saves_period_grid(org, owner, login):
+def _period_data(*rows, initial=0, **extra):
+    data = {
+        "periods-TOTAL_FORMS": str(len(rows)),
+        "periods-INITIAL_FORMS": str(initial),
+        "periods-MIN_NUM_FORMS": "0",
+        "periods-MAX_NUM_FORMS": "1000",
+        **extra,
+    }
+    for i, (start, end) in enumerate(rows):
+        data[f"periods-{i}-start_time"] = start
+        data[f"periods-{i}-end_time"] = end
+    return data
+
+
+def test_owner_saves_period_grid_in_time_order(org, owner, login):
     client = login(owner.user, org)
     response = client.get(reverse("scheduling:periods"))
     assert "Vorschlag" in response.content.decode()
 
-    data = {
-        "form-TOTAL_FORMS": "2",
-        "form-INITIAL_FORMS": "0",
-        "form-MIN_NUM_FORMS": "0",
-        "form-MAX_NUM_FORMS": "1000",
-        "form-0-number": "1",
-        "form-0-start_time": "08:00",
-        "form-0-end_time": "08:45",
-        "form-1-number": "2",
-        "form-1-start_time": "08:45",
-        "form-1-end_time": "09:30",
-    }
-    client.post(reverse("scheduling:periods"), data)
-    assert SchoolPeriod.objects.for_org(org).count() == 2
+    client.post(reverse("scheduling:periods"), _period_data(("08:45", "09:30"), ("08:00", "08:45")))
+
+    saved = SchoolPeriod.objects.for_org(org)
+    assert [(p.number, f"{p.start_time:%H:%M}") for p in saved] == [(1, "08:00"), (2, "08:45")]
+
+
+def test_period_grid_edit_renumbers_and_removes(org, owner, login):
+    client = login(owner.user, org)
+    url = reverse("scheduling:periods")
+    client.post(url, _period_data(("08:00", "08:45"), ("08:45", "09:30"), ("09:50", "10:35")))
+
+    data = _period_data(
+        ("08:00", "08:45"),
+        ("08:45", "09:30"),
+        ("09:50", "10:35"),
+        initial=3,
+        **{"periods-1-DELETE": "on"},
+    )
+    assert client.post(url, data).status_code == 302
+
+    saved = SchoolPeriod.objects.for_org(org)
+    assert [(p.number, f"{p.start_time:%H:%M}") for p in saved] == [(1, "08:00"), (2, "09:50")]
 
 
 def test_period_grid_rejects_overlaps(org, owner, login):
-    data = {
-        "form-TOTAL_FORMS": "2",
-        "form-INITIAL_FORMS": "0",
-        "form-MIN_NUM_FORMS": "0",
-        "form-MAX_NUM_FORMS": "1000",
-        "form-0-number": "1",
-        "form-0-start_time": "08:00",
-        "form-0-end_time": "09:00",
-        "form-1-number": "2",
-        "form-1-start_time": "08:45",
-        "form-1-end_time": "09:30",
-    }
+    data = _period_data(("08:00", "09:00"), ("08:45", "09:30"))
     response = login(owner.user, org).post(reverse("scheduling:periods"), data)
     assert "überschneiden" in response.content.decode()
     assert not SchoolPeriod.objects.exists()
+
+
+def test_period_grid_rejects_end_before_start(org, owner, login):
+    data = _period_data(("09:00", "08:00"))
+    response = login(owner.user, org).post(reverse("scheduling:periods"), data)
+    assert "Das Ende muss nach dem Beginn liegen." in response.content.decode()
+    assert not SchoolPeriod.objects.exists()
+
+
+def test_period_grid_keeps_other_orgs(org, other_org, owner, login):
+    SchoolPeriod.objects.create(
+        organization=other_org, number=1, start_time=time(8), end_time=time(9)
+    )
+    login(owner.user, org).post(reverse("scheduling:periods"), _period_data(("10:00", "11:00")))
+
+    assert SchoolPeriod.objects.for_org(other_org).count() == 1
+    assert SchoolPeriod.objects.for_org(org).count() == 1
 
 
 def test_period_grid_only_for_owner(org, planner_client, student_client):
