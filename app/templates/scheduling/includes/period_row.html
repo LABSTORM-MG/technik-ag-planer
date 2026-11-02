@@ -1,0 +1,10 @@
+{% comment %}Zeile im Stundenraster; die Nummer ergibt sich aus der Reihenfolge. Parameter: f{% endcomment %}
+<div class="periods__row" data-period-row>
+  <p class="periods__gap" data-period-gap hidden></p>
+  <span class="periods__number" aria-hidden="true"></span>
+  <label class="periods__field"><span class="visually-hidden">Beginn</span>{{ f.start_time }}</label>
+  <span class="periods__dash" aria-hidden="true">–</span>
+  <label class="periods__field"><span class="visually-hidden">Ende</span>{{ f.end_time }}</label>
+  <label class="icon-button periods__remove" title="Stunde entfernen">{{ f.DELETE }}<span class="visually-hidden">Stunde entfernen</span>{% include "includes/icon.html" with name="close" %}</label>
+  {% if f.errors %}<span class="field__error periods__error">{% for field in f %}{% for e in field.errors %}{{ e }} {% endfor %}{% endfor %}</span>{% endif %}
+</div>

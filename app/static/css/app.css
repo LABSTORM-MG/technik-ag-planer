@@ -1604,23 +1604,19 @@ a.list__item:hover,
   gap: var(--space-2);
 }
 
-.periods__row {
-  display: grid;
-  grid-template-columns: 70px 1fr 1fr 60px;
-  align-items: center;
+.periods__rows {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-2);
+  counter-reset: period;
 }
 
-.periods__row input:not([type="checkbox"]) {
-  width: 100%;
-  min-height: 40px;
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-raised);
-  color: var(--color-text);
-  font: inherit;
-  color-scheme: dark;
+.periods__head,
+.periods__row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 12px minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .periods__head {
@@ -1628,6 +1624,67 @@ a.list__item:hover,
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
+}
+
+.periods__row {
+  counter-increment: period;
+}
+
+.periods__row:has(.periods__remove input:checked) {
+  display: none;
+}
+
+.periods__number {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-raised);
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+}
+
+.periods__number::before {
+  content: counter(period);
+}
+
+.periods__dash {
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.periods__field input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font: inherit;
+  color-scheme: dark;
+}
+
+.periods__remove {
+  cursor: pointer;
+}
+
+.periods__remove input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.periods__gap {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  text-align: center;
 }
 
 .periods__error {
@@ -2375,4 +2432,26 @@ a.icon-button {
 .picker__empty {
   margin: 0;
   padding: var(--space-2);
+}
+
+/* ---------- Einrichtungs-Checkliste ---------- */
+
+.setup-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.setup-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.setup-step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }

@@ -24,6 +24,12 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 **Oberfläche**
 
+- Stundenraster neu gestaltet: Nummern ergeben sich automatisch, Pausen werden angezeigt, „+ Stunde“ belegt sinnvoll vor
+- Einrichtungs-Checkliste für den Owner auf dem Dashboard, solange die AG nicht fertig eingerichtet ist
+- Board: Mehrere Nachrichten kopieren, Absender nur am Anfang und beim Wechsel
+- Materialsätze nutzen die neue Material-Auswahl
+- QR-Etiketten größer und leichter lesbar, Scan auch per Foto
+- Freistellungsliste: ohne Stundenraster mit Uhrzeiten; die Vorschau nennt, wer warum fehlt
 - Board: nur noch Sprechblasen; Bearbeiten und Löschen per Gedrückthalten, Mehrfachauswahl zum Löschen, „Alle auswählen“; kompakte Chat-Blasen, die beim Hochscrollen erscheinen
 - Zurück-Knöpfe einheitlich und immer nur eine Ebene zurück
 - Freistellungsliste nach Stundenblöcken für Lehrkräfte

@@ -250,6 +250,59 @@ document.addEventListener("change", (event) => {
   if (target && times) target.value = select.dataset.periodEdge === "start" ? times[0] : times[1];
 });
 
+// Stundenraster: Pausen anzeigen und neue Stunden sinnvoll vorbelegen
+function toMinutes(value) {
+  const [hours, minutes] = value.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function toTime(minutes) {
+  const wrapped = Math.min(minutes, 23 * 60 + 59);
+  return `${String(Math.floor(wrapped / 60)).padStart(2, "0")}:${String(wrapped % 60).padStart(2, "0")}`;
+}
+
+function activePeriodRows(root) {
+  return [...root.querySelectorAll("[data-period-row]")].filter(
+    (row) => !row.querySelector('.periods__remove input').checked,
+  );
+}
+
+function updatePeriodGaps(root) {
+  let previousEnd = null;
+  activePeriodRows(root).forEach((row) => {
+    const [start, end] = row.querySelectorAll('input[type="time"]');
+    const gap = row.querySelector("[data-period-gap]");
+    const minutes = previousEnd && start.value ? toMinutes(start.value) - toMinutes(previousEnd) : 0;
+    gap.hidden = minutes <= 0;
+    gap.textContent = minutes > 0 ? `${minutes} Min. Pause` : "";
+    previousEnd = end.value || previousEnd;
+  });
+}
+
+document.querySelectorAll("[data-periods]").forEach((root) => {
+  updatePeriodGaps(root);
+  root.addEventListener("input", () => updatePeriodGaps(root));
+  root.addEventListener("change", () => updatePeriodGaps(root));
+  root.querySelector('[data-formset-add="periods"]').addEventListener("click", () => {
+    window.setTimeout(() => {
+      const rows = activePeriodRows(root);
+      const row = rows.at(-1);
+      const previous = rows.at(-2);
+      const [start, end] = row.querySelectorAll('input[type="time"]');
+      if (previous) {
+        const [lastStart, lastEnd] = previous.querySelectorAll('input[type="time"]');
+        if (lastEnd.value) {
+          const length = lastStart.value ? toMinutes(lastEnd.value) - toMinutes(lastStart.value) : 45;
+          start.value = lastEnd.value;
+          end.value = toTime(toMinutes(lastEnd.value) + Math.max(length, 5));
+        }
+      }
+      updatePeriodGaps(root);
+      start.focus();
+    });
+  });
+});
+
 // Board: neue Nachrichten alle 10 s holen, per fetch senden, Enter sendet (Shift+Enter = neue Zeile).
 // Ohne JavaScript funktioniert alles über normale Formulare und Neuladen der Seite.
 (() => {

@@ -9,6 +9,7 @@
   </header>
 
   <div class="stack">
+    {% if setup_steps %}{% include "organizations/includes/setup_card.html" %}{% endif %}
     {% if next_production %}
       <a class="card next-card{% if next_production.category %} color-{{ next_production.category.color }}{% endif %}" href="{% url 'productions:detail' next_production.pk %}">
         <p class="eyebrow">Nächste Produktion</p>

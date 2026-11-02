@@ -24,6 +24,7 @@ class Organization(models.Model):
         help_text="Wenn aktiv, müssen alle Mitglieder eine Authenticator-App einrichten.",
     )
     created_at = models.DateTimeField("angelegt am", auto_now_add=True)
+    setup_hint_dismissed = models.BooleanField("Einrichtungs-Hinweis ausgeblendet", default=False)
     school_year_changed_at = models.DateTimeField(
         "Schuljahreswechsel zuletzt am", null=True, blank=True
     )
