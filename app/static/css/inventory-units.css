@@ -1,4 +1,4 @@
-﻿.inventory-mode-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.inventory-mode-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
 .inventory-mode { display: flex; align-items: flex-start; gap: var(--space-3); cursor: pointer; border: 1px solid var(--color-line); }
 .inventory-mode:has(input:checked) { border-color: var(--color-accent); background: var(--color-surface-raised); }
 .inventory-mode input { margin-top: var(--space-1); width: 1.2rem; height: 1.2rem; accent-color: var(--color-accent); flex-shrink: 0; }
@@ -63,3 +63,9 @@
 .inventory-add-device > summary { display: inline-flex; list-style: none; }
 .inventory-add-device > summary::-webkit-details-marker { display: none; }
 .inventory-add-device > .card { margin-top: var(--space-3); }
+/* Lange Inventarcodes brechen um, statt aus dem Bildschirm zu laufen */
+.inventory-device-header strong,
+.unit-label span,
+.inventory-record { min-width: 0; overflow-wrap: anywhere; }
+.unit-label { max-width: 100%; text-align: center; }
+.inventory-device-header { min-width: 0; }

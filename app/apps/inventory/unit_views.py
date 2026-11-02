@@ -82,7 +82,9 @@ def units(request, pk):
 def create_unit(request, pk):
     material = get_object_or_404(Material.objects.for_org(request.organization).active(), pk=pk)
     try:
-        code = services.normalize_code(request.POST.get("code", "") or f"TAG-{uuid.uuid4().hex}")
+        code = services.normalize_code(
+            request.POST.get("code", "") or f"TAG-{uuid.uuid4().hex[:10].upper()}"
+        )
         with transaction.atomic():
             services.lock_mode(request.organization)
             if material.tracking != Material.Tracking.INDIVIDUAL:

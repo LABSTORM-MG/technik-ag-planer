@@ -2,9 +2,9 @@
 {% load hours %}
 {% block page_title_text %}Einsätze – {{ member.user }}{% endblock %}
 {% block page_title %}Einsätze: {{ member.user }}{% endblock %}
+{% block back_link %}{% if org_perms.VIEW_ALL_ASSIGNMENTS %}{% url 'productions:hours' as uebersicht %}{% with zurueck=uebersicht|add:"?"|add:request.GET.urlencode %}{% include "includes/back_link.html" with url=zurueck label="Alle Mitglieder" %}{% endwith %}{% endif %}{% if not org_perms.VIEW_ALL_ASSIGNMENTS %}{% url 'organizations:settings' as zurueck %}{% include "includes/back_link.html" with url=zurueck label="Einstellungen" %}{% endif %}{% endblock %}
 {% block page_content %}
 <div class="stack">
-  {% if org_perms.VIEW_ALL_ASSIGNMENTS %}<p><a href="{% url 'productions:hours' %}?{{ request.GET.urlencode }}">← Alle Mitglieder</a></p>{% endif %}
   {% include "productions/includes/period_filter.html" %}
   <section>
     <div class="section-head">

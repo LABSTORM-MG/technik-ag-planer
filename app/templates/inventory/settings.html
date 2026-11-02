@@ -1,11 +1,11 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% block title %}Materialverwaltung – Einstellungen{% endblock %}
 {% block topbar_title %}Einstellungen{% endblock %}
 {% block head %}<link rel="stylesheet" href="{% static 'css/inventory-units.css' %}">{% endblock %}
 {% block content %}
 <article class="stack inventory-workspace">
-<header class="page-header"><p class="eyebrow"><a href="{% url 'organizations:settings' %}">← Einstellungen</a></p><h1 class="page-title">Materialverwaltung</h1><p class="muted">Wähle einen Modus für deine gesamte AG. Es ist immer nur ein System aktiv.</p></header>
+<header class="page-header">{% url 'organizations:customize' as zurueck %}{% include "includes/back_link.html" with url=zurueck label="AG anpassen" %}<h1 class="page-title">Materialverwaltung</h1><p class="muted">Wähle einen Modus für deine gesamte AG. Es ist immer nur ein System aktiv.</p></header>
 <form method="post" class="form">{% csrf_token %}
 <div class="inventory-mode-grid">
 <label class="card inventory-mode"><input type="radio" name="mode" value="classic" {% if not current_organization.inventory_qr_enabled %}checked{% endif %}><span><strong>Klassische Liste</strong><span class="muted">Material als Mengen planen. Ausgabe und Rückgabe direkt in der Packliste abhaken. Ohne Einzelgeräte, Etiketten und Kamera.</span></span></label>

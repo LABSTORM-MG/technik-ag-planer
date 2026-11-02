@@ -1,23 +1,20 @@
 <div class="doc">
   {% include "documents/includes/head.html" with kind="Freistellungsliste" %}
 
-  {% if rows %}
+  {% if blocks %}
+    <p class="doc__meta">Veranstaltung: {{ production.name }} · Aufsicht führende Lehrkraft: {% for s in supervisors %}{{ s.user }}{% if not forloop.last %}, {% endif %}{% empty %}–{% endfor %}</p>
     <table class="doc__table">
       <thead>
-        <tr><th>Veranstaltung</th><th>Datum</th><th>Name</th><th>Jg.</th><th>Betroffene Stunden</th><th>Aufsicht führende Lehrkraft</th></tr>
+        <tr><th>Name</th><th>Jg.</th></tr>
       </thead>
-      <tbody>
-        {% for row in rows %}
-          <tr>
-            <td>{{ production.name }}</td>
-            <td>{{ row.date|date:"D., d.m.Y" }}</td>
-            <td>{{ row.name }}</td>
-            <td>{{ row.grade|default:"–" }}</td>
-            <td>{{ row.periods_label }}</td>
-            <td>{% for s in supervisors %}{{ s.user }}{% if not forloop.last %}, {% endif %}{% empty %}–{% endfor %}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
+      {% for block in blocks %}
+        <tbody>
+          <tr class="doc__group"><th colspan="2">{{ block.date|date:"D., d.m.Y" }} · {{ block.periods_label }} ({{ block.time_label }})</th></tr>
+          {% for row in block.rows %}
+            <tr><td>{{ row.name }}</td><td>{{ row.grade|default:"–" }}</td></tr>
+          {% endfor %}
+        </tbody>
+      {% endfor %}
     </table>
   {% else %}
     <p class="doc__muted">Niemand muss vom Unterricht freigestellt werden.</p>
