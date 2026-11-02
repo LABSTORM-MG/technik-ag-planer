@@ -345,13 +345,13 @@ def test_modes_are_exclusive(org, concert, planned, planner_client):
     pack_url = reverse("inventory:packing_list", args=[concert.pk])
     units_url = reverse("inventory:units", args=[planned.material_id])
     classic = planner_client.get(detail_url).content.decode()
-    assert "Einzelgeräte &amp; QR-Etiketten" not in classic
+    assert "Einzelgeräte verwalten" not in classic
     assert planner_client.get(units_url).status_code == 302
     assert "pack__check" in planner_client.get(pack_url).content.decode()
     planner_client.post(settings_url, {"mode": "qr"})
     org.refresh_from_db()
     assert org.inventory_qr_enabled
-    assert "Einzelgeräte &amp; QR-Etiketten" in planner_client.get(detail_url).content.decode()
+    assert "Einzelgeräte verwalten" in planner_client.get(detail_url).content.decode()
     assert planner_client.get(units_url).status_code == 200
     assert planner_client.get(pack_url).url == reverse("inventory:scan", args=[concert.pk])
     planner_client.post(
@@ -920,3 +920,14 @@ def test_packing_page_shows_switch_list_and_prefilled_amount(
     assert 'name="mode" value="return"' in content
     assert "Kabel" in content and 'value="7"' in content
     assert "Materialverwaltung kurz erklärt" not in content
+
+
+def test_material_page_only_links_to_device_management(unit, planner_client):
+    content = planner_client.get(
+        reverse("inventory:detail", args=[unit.material_id])
+    ).content.decode()
+
+    assert reverse("inventory:units", args=[unit.material_id]) in content
+    assert "Einzelgeräte verwalten" in content
+    assert reverse("inventory:unit_create", args=[unit.material_id]) not in content
+    assert "Einzelgerät hinzufügen" not in content
