@@ -531,7 +531,7 @@ h3 {
 }
 
 .input,
-.field input:not([type="checkbox"]),
+.field input:not([type="checkbox"], [type="radio"]),
 .field select {
   width: 100%;
   min-height: 44px;
@@ -979,6 +979,7 @@ a.list__item:hover,
 }
 
 .chip {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -995,6 +996,8 @@ a.list__item:hover,
 
 .chip input {
   position: absolute;
+  width: 1px;
+  height: 1px;
   opacity: 0;
   pointer-events: none;
 }
@@ -1101,15 +1104,10 @@ a.list__item:hover,
   cursor: pointer;
 }
 
-/* Stärker als die allgemeine Regel für Felder, die Eingaben auf volle Breite setzt */
-.segmented--choice input,
-.field .segmented--choice input {
+.segmented--choice input {
   position: absolute;
   width: 1px;
-  min-height: 0;
   height: 1px;
-  padding: 0;
-  border: 0;
   opacity: 0;
 }
 
@@ -2394,13 +2392,10 @@ a.icon-button {
   outline-offset: 2px;
 }
 
-.field .picker__item input {
+.picker__item input {
   position: absolute;
   width: 1px;
-  min-height: 0;
   height: 1px;
-  padding: 0;
-  border: 0;
   opacity: 0;
 }
 

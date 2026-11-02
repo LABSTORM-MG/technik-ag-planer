@@ -28,3 +28,10 @@ def test_templates_use_radios_only_inside_switches():
 def test_forms_use_segmented_switch():
     assert isinstance(SettingsForm().fields["reminder_mode"].widget, SegmentedRadio)
     assert isinstance(EventEditScopeForm().fields["scope"].widget, SegmentedRadio)
+
+
+def test_hidden_radios_do_not_inherit_full_width():
+    """Sonst werden Seiten mit Chips oder Schaltern breiter als der Bildschirm."""
+    css = (APP_DIR / "static" / "css" / "app.css").read_text()
+
+    assert '.field input:not([type="checkbox"], [type="radio"])' in css
