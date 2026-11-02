@@ -23,7 +23,13 @@
     </div>
   </header>
   {% if current_organization.inventory_qr_enabled and material.tracking == "individual" %}
-  <section class="stack inventory-workspace" id="einzelgeraete"><div><h2 class="section-title">Einzelgeräte &amp; QR-Etiketten</h2><p class="field__help">Gerät anklicken, um Etikett, Defekte und Historie zu öffnen.</p></div>{% include "inventory/includes/device_list.html" %}</section>
+  <section class="stack" id="einzelgeraete">
+    <div class="section-head">
+      <h2 class="section-title">Einzelgeräte</h2>
+      <a class="button button--secondary button--small" href="{% url 'inventory:units' material.pk %}">Einzelgeräte verwalten</a>
+    </div>
+    <p class="muted">{{ units|length }} erfasst. Geräte anlegen, QR-Codes, Defekte und Historie findest du in der Verwaltung.</p>
+  </section>
   {% endif %}
 
   {% if material.notes %}
