@@ -29,6 +29,7 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 - Board: Mehrere Nachrichten kopieren, Absender nur am Anfang und beim Wechsel
 - Materialsätze nutzen die neue Material-Auswahl
 - QR-Etiketten größer und leichter lesbar, Scan auch per Foto
+- QR-Codes werden mindestens als Version 2 erzeugt und lassen sich dadurch auch schräg scannen; bereits gedruckte Etiketten neu drucken ([ADR 0024](docs/architektur/0024-qr-mindestversion.md))
 - Freistellungsliste als Tabelle: Namen und Jahrgang links, Stunden oben, Kreuze in den betroffenen Feldern; ohne Stundenraster mit Uhrzeiten; die Vorschau nennt, wer warum fehlt
 - Warnung beim Verlassen eines Formulars mit ungespeicherten Änderungen
 - „Material packen“ neu: Schalter „Ausgabe | Rückgabe“ für die ganze Seite, Packliste mit Stand je Material, Mengen ohne Neuladen, die offene Menge ist schon eingetragen
