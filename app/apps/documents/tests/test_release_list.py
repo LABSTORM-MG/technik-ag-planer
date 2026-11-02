@@ -2,7 +2,7 @@
 
 from datetime import time, timedelta
 
-from apps.documents.services import release_rows
+from apps.documents.services import release_blocks, release_rows
 from apps.organizations.permissions import Role
 from apps.productions.models import CrewAssignment
 from apps.scheduling.models import SchoolPeriod
@@ -70,3 +70,54 @@ def test_without_raster_nobody_is_listed(
     job = make_job(production, day=monday, start=time(9), end=time(11))
     make_assignment(job, make_member(org), CONFIRMED)
     assert release_rows(production) == []
+
+
+def test_blocks_group_students_by_same_periods(
+    org, raster, monday, make_member, make_production, make_job, make_assignment
+):
+    production = make_production(org)
+    long_job = make_job(production, "Aufbau", day=monday, start=time(9), end=time(11))
+    short_job = make_job(production, "Show", day=monday, start=time(12, 30), end=time(13))
+    emma = make_member(org, Role.STUDENT, display_name="Emma", grade="Q1")
+    ben = make_member(org, Role.STUDENT, display_name="Ben", grade="7")
+    mia = make_member(org, Role.STUDENT, display_name="Mia", grade="9")
+    make_assignment(long_job, emma, CONFIRMED)
+    make_assignment(long_job, ben, CONFIRMED)
+    make_assignment(short_job, emma, CONFIRMED)
+    make_assignment(short_job, mia, CONFIRMED)
+
+    blocks = release_blocks(production)
+
+    assert [(b.periods_label, [r.name for r in b.rows]) for b in blocks] == [
+        ("2.–4. Stunde", ["Ben", "Emma"]),
+        ("6. Stunde", ["Mia", "Emma"]),
+    ]
+
+
+def test_blocks_are_separate_per_day_and_contain_only_release_rows(
+    org, raster, monday, make_member, make_production, make_job, make_assignment
+):
+    production = make_production(org, length=2)
+    first = make_job(production, "Aufbau", day=monday, start=time(9), end=time(10))
+    second = make_job(
+        production, "Abbau", day=monday + timedelta(days=1), start=time(9), end=time(10)
+    )
+    student = make_member(org, Role.STUDENT, display_name="Emma", grade="Q1")
+    make_assignment(first, student, CONFIRMED)
+    make_assignment(second, student, CONFIRMED)
+    make_assignment(first, make_member(org, Role.STUDENT, display_name="Angefragt"))
+
+    blocks = release_blocks(production)
+
+    assert [b.date for b in blocks] == [monday, monday + timedelta(days=1)]
+    assert all([r.name for r in b.rows] == ["Emma"] for b in blocks)
+    assert "Uhr" in blocks[0].time_label
+
+
+def test_no_blocks_without_raster(
+    org, monday, make_member, make_production, make_job, make_assignment
+):
+    production = make_production(org)
+    make_assignment(make_job(production, day=monday), make_member(org), CONFIRMED)
+
+    assert release_blocks(production) == []

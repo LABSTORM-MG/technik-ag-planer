@@ -320,3 +320,17 @@ def test_form_as_sheet_fragment(planner_client):
     content = response.content.decode()
     assert "<html" not in content
     assert 'name="name"' in content
+
+
+def test_upcoming_lists_are_sorted_by_date_with_job_counts(
+    org, planner_client, make_production, make_job
+):
+    later = make_production(org, "Später", days_ahead=30)
+    soon = make_production(org, "Bald", days_ahead=2)
+    make_job(later, "Aufbau")
+    make_production(org, "Mittel", days_ahead=10)
+
+    for url in ["productions:list", "productions:dashboard"]:
+        names = [p.name for p in planner_client.get(reverse(url)).context["upcoming"]]
+        assert names == ["Bald", "Mittel", "Später"], url
+    assert soon.name == names[0]

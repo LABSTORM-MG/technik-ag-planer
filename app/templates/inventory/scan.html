@@ -7,17 +7,16 @@
 <header class="page-header"><p class="eyebrow">{{ production.name }}</p><h1 class="page-title">Materialausgabe</h1><a href="{% url 'productions:detail' production.pk %}">Zur Produktion</a> · <a href="{% url 'inventory:teardown_protocol' production.pk %}">Abbauprotokoll / Drucken</a></header>
 {% if teardown.completed_at %}<section class="card"><strong>Produktion abgeschlossen</strong><p class="muted">Der Abbau wurde am {{ teardown.completed_at }} abgeschlossen. Neue Ausgaben sind gesperrt; offene Rückgaben bleiben möglich.</p></section>{% endif %}
 {% include "inventory/includes/tracking_help.html" %}
-<section id="reservation-state" class="card stack">
+<section id="material-state" class="card stack">
 <h2 class="section-title">Material</h2>
-<p class="muted">Alles für diese Produktion: Einzelgeräte werden gescannt, Mengen nach Stückzahl erfasst.</p>
-{% if has_individual_plans %}
-<div class="stack"><h3 class="eyebrow">Einzelgeräte</h3>
-{% for reservation in reservations %}<div class="inventory-row-summary inventory-record"><span><strong>{{ reservation.unit.material.name }}</strong><span class="list__subtitle">{{ reservation.unit.code }}</span></span><span class="tag {% if reservation.issue_state == 'issued' %}tag--warning{% elif reservation.issue_state == 'returned' %}tag--success{% else %}tag--accent{% endif %}">{% if reservation.issue_state == 'issued' %}Ausgegeben{% elif reservation.issue_state == 'returned' %}Zurück{% else %}Reserviert{% endif %}</span></div>{% empty %}<p class="muted">Noch keine Einzelgeräte zugeordnet.</p>{% endfor %}
+<p class="muted">Einzelgeräte einfach scannen, jedes freie Gerät geht. Mengen nach Stückzahl erfassen.</p>
+{% if open_issues %}
+<div class="stack"><h3 class="eyebrow">Ausgegebene Einzelgeräte</h3>
+{% for issue in open_issues %}<div class="inventory-row-summary inventory-record"><span><strong>{{ issue.unit.material.name }}</strong><span class="list__subtitle">{{ issue.unit.code }}</span></span><span class="tag tag--warning">Ausgegeben</span></div>{% endfor %}
 </div>{% endif %}
 {% if quantity_plans %}{% include "inventory/includes/quantity_issue.html" %}{% endif %}
-{% if org_perms.MANAGE_PRODUCTIONS %}<a href="{% url 'productions:detail' production.pk %}#material">Reservierungen in der Produktion verwalten →</a>{% endif %}
 </section>
-{% if has_individual_plans %}
+{% if has_units %}
 <section class="card stack inventory-scanner"><p class="eyebrow">QR-Scanner</p><h2 class="section-title">Ausgabe und Rückgabe</h2>
 <form class="form" method="post" id="scan-form">{% csrf_token %}
 <fieldset class="inventory-mode-tabs"><legend class="visually-hidden">Scanmodus</legend><label><input type="radio" name="mode" value="issue" {% if not teardown.completed_at %}checked{% else %}disabled{% endif %}><span>Ausgabe</span></label><label><input type="radio" name="mode" value="return" {% if teardown.completed_at %}checked{% endif %}><span>Rückgabe</span></label></fieldset>

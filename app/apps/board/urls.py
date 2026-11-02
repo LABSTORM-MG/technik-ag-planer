@@ -11,4 +11,5 @@ urlpatterns = [
     path("board/senden/", views.send, name="send"),
     path("board/nachricht/<int:pk>/bearbeiten/", views.edit, name="edit"),
     path("board/nachricht/<int:pk>/loeschen/", views.delete, name="delete"),
+    path("board/nachrichten/loeschen/", views.delete_many, name="delete_many"),
 ]

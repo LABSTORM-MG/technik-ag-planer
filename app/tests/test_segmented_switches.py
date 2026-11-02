@@ -13,7 +13,7 @@ ALLOWED = {
     "chip_option.html",
     "scan.html",  # eigener Schalter „Ausgabe | Rückgabe“ mit großen Flächen
     "settings.html",  # Materialverwaltung: Modus als Karten mit Erklärung
-    "production_reservations.html",  # Geräteauswahl aus einer Liste, kein Umschalter
+    "material_picker_option.html",  # Auswahl aus einer Liste, kein Umschalter
 }
 
 

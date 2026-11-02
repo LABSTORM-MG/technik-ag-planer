@@ -31,7 +31,7 @@
         const page = await fetch(location.href, {credentials: 'same-origin'});
         if (page.ok) {
           const documentState = new DOMParser().parseFromString(await page.text(), 'text/html');
-          for (const id of ['reservation-state', 'teardown-state']) {
+          for (const id of ['material-state', 'teardown-state']) {
             const updated = documentState.getElementById(id);
             if (updated) document.getElementById(id).replaceWith(updated);
           }

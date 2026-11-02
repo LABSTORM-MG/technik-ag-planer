@@ -203,5 +203,35 @@ def test_settings_rows_are_whole_links(owner_client):
 def test_customize_subpages_link_back_to_customize(owner_client):
     content = owner_client.get(reverse("organizations:school_year")).content.decode()
 
-    assert "← AG anpassen" in content
-    assert "← Einstellungen" in owner_client.get(reverse("organizations:members")).content.decode()
+    assert reverse(CUSTOMIZE) in content
+
+
+@pytest.mark.parametrize(
+    ("url", "kwargs", "label", "target"),
+    [
+        ("organizations:customize", {}, "Einstellungen", "organizations:settings"),
+        ("organizations:members", {}, "Einstellungen", "organizations:settings"),
+        ("productions:categories", {}, "AG anpassen", "organizations:customize"),
+        ("productions:statuses", {}, "AG anpassen", "organizations:customize"),
+        ("scheduling:periods", {}, "AG anpassen", "organizations:customize"),
+        ("inventory:settings", {}, "AG anpassen", "organizations:customize"),
+        ("inquiries:tech_options", {}, "AG anpassen", "organizations:customize"),
+        ("google_sync:settings", {}, "AG anpassen", "organizations:customize"),
+    ],
+)
+def test_back_link_goes_one_level_up(owner_client, url, kwargs, label, target):
+    content = owner_client.get(reverse(url, kwargs=kwargs)).content.decode()
+
+    assert f'<a class="back-link" href="{reverse(target)}">' in content
+    assert f"<span>{label}</span>" in content
+
+
+def test_edit_page_goes_back_to_its_list(owner_client, org):
+    from apps.productions.models import Category
+
+    category = Category.objects.for_org(org).first()
+    content = owner_client.get(
+        reverse("productions:category_edit", args=[category.pk])
+    ).content.decode()
+
+    assert f'<a class="back-link" href="{reverse("productions:categories")}">' in content

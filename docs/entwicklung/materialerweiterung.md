@@ -1,3 +1,5 @@
+> **Stand:** Die Reservierung einzelner Geräte ist entfallen, siehe [ADR 0023](../architektur/0023-chat-und-geraete-ohne-reservierung.md). Ältere Stellen in dieser Übergabe beschreiben den ursprünglichen Beitrag.
+
 # Materialerweiterung im Fork – Übergabe an die ursprüngliche Entwicklung
 
 Stand: 02.11.2026. Ergänzung zu [Spezifikation und Meilenstein 13](../feature-liste.md), [ADR 0020](../architektur/0020-material-einzelgeraete.md) und [Bedienungsanleitung](../handbuch/material-scans.md).
@@ -36,16 +38,6 @@ Nach Geräteerfassung oder ersten Mengenbewegungen verhindert das Materialformul
 - Archivierung/Wiederaktivierung sind möglich. Offene Ausgaben und laufende oder zukünftige Reservierungen verhindern die Archivierung. Löschen ist nur ohne Historie zulässig.
 - QR-PNGs entstehen mit `qrcode`. Ihr Inhalt ist eine Geräteadresse. Eine gemeinsame Etikettenansicht und einzelne Etiketten sind über den Browser druckbar.
 
-### Reservierung auf der Produktionsseite
-
-- Zuerst die Materialart mit Menge einplanen, dann darunter konkrete Geräte reservieren.
-- Fortschritt beispielsweise „3 von 6 reserviert“, Auswahl über Gerätezeilen mit Verfügbarkeitsstatus.
-- Gesperrte Geräte werden mit Grund kenntlich gemacht: Defekt, Materialart gesperrt, noch ausgegeben oder zeitlich bereits reserviert.
-- Anzahl konkreter Reservierungen darf die geplante Menge nicht überschreiten.
-- Prüfung auf gleiche AG, Archivstatus, Defekte, offene Ausgaben und Terminüberschneidung.
-- Reservierung verwendet aktuelle Produktionstage einschließlich des Enddatums; nach Terminänderung wird bei Ausgabe erneut geprüft.
-- Reservieren/Aufheben führt zurück zum Materialabschnitt der Produktion. Die Ausgabeansicht enthält kein zweites Reservierungsformular.
-- Nach abgeschlossenem Abbau ist keine neue Reservierung zulässig. Zum Aufheben muss eine offene Ausgabe zuerst zurückgegeben werden.
 
 ### Scan-Ausgabe und Rückgabe
 

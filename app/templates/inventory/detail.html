@@ -6,7 +6,8 @@
 {% block content %}
 <article class="stack">
   <header class="page-header{% if material.category %} color-{{ material.category.color }}{% endif %}">
-    <p class="eyebrow"><a href="{% url 'inventory:list' %}">← Material</a>{% if material.category %} · <span class="dot" aria-hidden="true"></span> {{ material.category.name }}{% endif %}</p>
+    {% url 'inventory:list' as zurueck %}{% include "includes/back_link.html" with url=zurueck label="Material" %}
+    {% if material.category %}<p class="eyebrow"><span class="dot" aria-hidden="true"></span> {{ material.category.name }}</p>{% endif %}
     <h1 class="page-title">{{ material.name }}</h1>
     <p class="muted">{% include "inventory/includes/stock.html" with m=material %}{% if material.is_archived %} · <span class="tag">archiviert</span>{% endif %}</p>
     <div class="toolbar">

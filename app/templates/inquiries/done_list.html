@@ -3,7 +3,7 @@
 {% block topbar_title %}Anfragen{% endblock %}
 {% block content %}
 <header class="page-header">
-  <p class="eyebrow"><a href="{% url 'productions:list' %}">← Produktionen</a></p>
+  {% url 'productions:list' as zurueck %}{% include "includes/back_link.html" with url=zurueck label="Produktionen" %}
   <h1 class="page-title">Erledigte Anfragen</h1>
   <p class="muted">Erledigte Anfragen werden nach {{ keep_days }} Tagen endgültig gelöscht – sie enthalten Kontaktdaten von Personen ohne Konto.</p>
 </header>

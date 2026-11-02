@@ -19,7 +19,6 @@ from apps.inventory.models import (
     QuantityMovement,
     TeardownException,
     UnitIssue,
-    UnitReservation,
 )
 from apps.organizations import services as org_services
 from apps.organizations.permissions import Role
@@ -43,8 +42,7 @@ def planned(org, concert, mics):
     )
 
 
-def test_reservation_scan_return(org, concert, unit, planned, planner):
-    unit_services.reserve(concert, unit, planner.user)
+def test_scan_issue_and_return(org, concert, unit, planned, planner):
     unit_services.scan_unit(concert, "https://example.org/geraet/mic-01/", "issue", planner.user)
     with pytest.raises(ValidationError):
         unit_services.scan_unit(concert, unit.code, "issue", planner.user)
@@ -55,28 +53,34 @@ def test_reservation_scan_return(org, concert, unit, planned, planner):
     assert issue.returned_by == planner.user and issue.returned_at
 
 
-def test_overlap_and_adjacent_days(org, concert, unit, planned, planner, make_production):
-    unit_services.reserve(concert, unit, planner.user)
-    other = make_production(org)
-    PlannedMaterial.objects.create(organization=org, production=other, material=unit.material)
-    with pytest.raises(ValidationError, match="bereits reserviert"):
-        unit_services.reserve(other, unit, planner.user)
-    other.start_date = concert.end_date + timedelta(days=1)
-    other.end_date = other.start_date
-    other.save()
-    unit_services.reserve(other, unit, planner.user)
-    with pytest.raises(ValidationError, match="vorher"):
-        unit_services.scan_unit(other, unit.code, "issue", planner.user)
+def test_free_device_issued_without_planning(org, concert, unit, planner):
+    message = unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+
+    assert "nicht eingeplant" in message
+    plan = PlannedMaterial.objects.get(production=concert, material=unit.material)
+    assert plan.quantity == 1
 
 
-def test_no_reservation_and_expired(concert, unit, planned, planner):
-    with pytest.raises(ValidationError, match="Reservierung"):
-        unit_services.scan_unit(concert, unit.code, "issue", planner.user)
-    unit_services.reserve(concert, unit, planner.user)
-    concert.start_date = concert.end_date = timezone.localdate() - timedelta(days=1)
-    concert.save()
-    with pytest.raises(ValidationError, match="Reservierung"):
-        unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+def test_more_devices_than_planned_raises_the_plan(org, concert, unit, planned, planner):
+    PlannedMaterial.objects.filter(pk=planned.pk).update(quantity=1)
+    second = MaterialUnit.objects.create(organization=org, material=unit.material, code="MIC-02")
+
+    first = unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+    over = unit_services.scan_unit(concert, second.code, "issue", planner.user)
+
+    assert first == "Ausgabe gespeichert."
+    assert "2 von 1 geplant, Planung auf 2 erhöht" in over
+    planned.refresh_from_db()
+    assert planned.quantity == 2
+
+
+def test_device_out_for_other_production_cannot_be_issued(
+    org, concert, unit, planned, planner, make_production
+):
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+
+    with pytest.raises(ValidationError, match="noch ausgegeben"):
+        unit_services.scan_unit(make_production(org), unit.code, "issue", planner.user)
 
 
 def test_unit_defect_counts_once_and_only_blocks_affected_device(
@@ -86,17 +90,16 @@ def test_unit_defect_counts_once_and_only_blocks_affected_device(
     defect = unit_services.report_defect(unit, "Kapsel ist beschädigt", planner.user)
     assert services.defective_count(unit.material) == 1
     with pytest.raises(ValidationError, match="defekt"):
-        unit_services.reserve(concert, unit, planner.user)
-    unit_services.reserve(concert, second, planner.user)
+        unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+    unit_services.scan_unit(concert, second.code, "issue", planner.user)
     with pytest.raises(ValidationError):
         unit_services.resolve_defect(defect, "repaired", "", planner.user)
     unit_services.resolve_defect(defect, "repaired", "Kapsel ausgetauscht", planner.user)
     assert services.defective_count(unit.material) == 0
-    unit_services.reserve(concert, unit, planner.user)
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
 
 
 def test_teardown_missing_device_stays_blocked(concert, unit, planned, planner):
-    unit_services.reserve(concert, unit, planner.user)
     unit_services.scan_unit(concert, unit.code, "issue", planner.user)
     unit_services.teardown(concert, "start", planner.user)
     with pytest.raises(ValidationError, match="ungeklärt"):
@@ -111,7 +114,6 @@ def test_teardown_missing_device_stays_blocked(concert, unit, planned, planner):
     )
     unit_services.teardown(concert, "complete", planner.user)
     assert ProductionTeardown.objects.get().completed_at
-    assert not UnitReservation.objects.filter(released_at__isnull=True).exists()
     assert UnitIssue.objects.get().returned_at is None
     with pytest.raises(ValidationError):
         unit_services.scan_unit(concert, unit.code, "issue", planner.user)
@@ -121,7 +123,6 @@ def test_teardown_missing_device_stays_blocked(concert, unit, planned, planner):
 
 
 def test_damaged_exception_creates_real_defect(concert, unit, planned, planner):
-    unit_services.reserve(concert, unit, planner.user)
     unit_services.scan_unit(concert, unit.code, "issue", planner.user)
     unit_services.teardown(concert, "start", planner.user)
     unit_services.teardown(
@@ -145,10 +146,10 @@ def test_damaged_exception_creates_real_defect(concert, unit, planned, planner):
 
 
 def test_archive_and_delete_history(concert, unit, planned, planner):
-    reservation = unit_services.reserve(concert, unit, planner.user)
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
     with pytest.raises(ValidationError):
         unit_services.archive_unit(unit, "archive")
-    unit_services.cancel(reservation)
+    unit_services.scan_unit(concert, unit.code, "return", planner.user)
     with pytest.raises(ValidationError):
         unit_services.archive_unit(unit, "delete")
     unit_services.archive_unit(unit, "archive")
@@ -172,12 +173,6 @@ def test_pages_and_permissions(concert, unit, planned, planner_client, member_cl
     )
     assert (
         member_client.post(
-            reverse("inventory:reserve_unit", args=[concert.pk]), {"unit_id": unit.pk}
-        ).status_code
-        == 403
-    )
-    assert (
-        member_client.post(
             reverse("inventory:unit_action", args=[unit.pk]), {"operation": "archive"}
         ).status_code
         == 403
@@ -187,7 +182,7 @@ def test_pages_and_permissions(concert, unit, planned, planner_client, member_cl
         {"code": unit.code, "mode": "issue"},
         HTTP_ACCEPT="application/json",
     )
-    assert response.json()["ok"] is False
+    assert response.json()["ok"] is True
 
 
 def test_foreign_ag_rejected(other_org, unit, concert, planned, planner_client, make_material):
@@ -195,12 +190,6 @@ def test_foreign_ag_rejected(other_org, unit, concert, planned, planner_client, 
         organization=other_org, material=make_material(other_org), code="FOREIGN-01"
     )
     assert planner_client.get(reverse("inventory:unit_qr", args=[foreign.pk])).status_code == 404
-    assert (
-        planner_client.post(
-            reverse("inventory:reserve_unit", args=[concert.pk]), {"unit_id": foreign.pk}
-        ).status_code
-        == 404
-    )
     assert (
         planner_client.post(
             reverse("inventory:scan", args=[concert.pk]),
@@ -231,18 +220,12 @@ def test_custom_code_grows_stock(unit, planner_client):
 def test_legacy_generated_lowercase_code(concert, unit, planned, planner):
     unit.code = "TAG-abcdef01234"
     unit.save()
-    unit_services.reserve(concert, unit, planner.user)
     unit_services.scan_unit(concert, unit.code, "issue", planner.user)
     assert UnitIssue.objects.get().unit == unit
 
 
-def test_cancel_issued_and_return_wrong_production(
-    org, concert, unit, planned, planner, make_production
-):
-    reservation = unit_services.reserve(concert, unit, planner.user)
+def test_return_wrong_production(org, concert, unit, planned, planner, make_production):
     unit_services.scan_unit(concert, unit.code, "issue", planner.user)
-    with pytest.raises(ValidationError):
-        unit_services.cancel(reservation)
     other = make_production(org)
     with pytest.raises(ValidationError):
         unit_services.scan_unit(other, unit.code, "return", planner.user)
@@ -264,9 +247,8 @@ def test_private_loans_are_gone(org, mics, planner_client):
 
 
 @pytest.mark.django_db(transaction=True)
-@pytest.mark.parametrize("operation", ["reserve", "issue"])
 def test_parallel_device_operations_are_serialized(
-    operation, org, concert, unit, planned, planner, make_production
+    org, concert, unit, planned, planner, make_production
 ):
     from concurrent.futures import ThreadPoolExecutor
     from threading import Barrier
@@ -279,8 +261,6 @@ def test_parallel_device_operations_are_serialized(
     PlannedMaterial.objects.create(
         organization=org, production=other, material=unit.material, quantity=1
     )
-    if operation == "issue":
-        unit_services.reserve(concert, unit, planner.user)
     barrier = Barrier(2)
 
     def act(production):
@@ -288,10 +268,7 @@ def test_parallel_device_operations_are_serialized(
         try:
             barrier.wait(timeout=10)
             try:
-                if operation == "reserve":
-                    unit_services.reserve(production, unit, planner.user)
-                else:
-                    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+                unit_services.scan_unit(production, unit.code, "issue", planner.user)
             except ValidationError:
                 return False
             return True
@@ -301,10 +278,7 @@ def test_parallel_device_operations_are_serialized(
     with ThreadPoolExecutor(max_workers=2) as pool:
         results = list(pool.map(act, [concert, other]))
     assert sorted(results) == [False, True]
-    if operation == "reserve":
-        assert UnitReservation.objects.filter(released_at__isnull=True).count() == 1
-    else:
-        assert UnitIssue.objects.filter(returned_at__isnull=True).count() == 1
+    assert UnitIssue.objects.filter(returned_at__isnull=True).count() == 1
 
 
 def test_modes_are_exclusive(org, concert, planned, planner_client):
@@ -339,16 +313,11 @@ def test_switch_preserves_devices_and_blocks_outstanding_issues(
     org, unit, planned, concert, planner, planner_client
 ):
     url = reverse("inventory:settings")
-    unit_services.reserve(concert, unit, planner.user)
-    planner_client.post(url, {"mode": "classic"})
-    org.refresh_from_db()
-    assert org.inventory_qr_enabled
     unit_services.scan_unit(concert, unit.code, "issue", planner.user)
     planner_client.post(url, {"mode": "classic"})
     org.refresh_from_db()
     assert org.inventory_qr_enabled
     unit_services.scan_unit(concert, unit.code, "return", planner.user)
-    unit_services.cancel(UnitReservation.objects.get())
     planner_client.post(url, {"mode": "classic"})
     org.refresh_from_db()
     assert not org.inventory_qr_enabled
@@ -391,22 +360,12 @@ def test_classic_mode_reuses_material_with_existing_devices(org, unit, planned, 
     )
 
 
-def test_reservations_only_on_production_page(unit, planned, concert, planner_client):
-    production_url = reverse("productions:detail", args=[concert.pk])
-    scan_url = reverse("inventory:scan", args=[concert.pk])
-    reserve_url = reverse("inventory:reserve_unit", args=[concert.pk])
-    page = planner_client.get(production_url).content.decode()
-    assert reserve_url in page and "Gerät reservieren" in page
-    scan_page = planner_client.get(scan_url).content.decode()
-    assert reserve_url not in scan_page
-    assert "Reservierungen in der Produktion verwalten" in scan_page
-    response = planner_client.post(reserve_url, {"unit_id": unit.pk})
-    assert response.url == production_url + "#material"
-    reservation = UnitReservation.objects.get()
-    assert unit.code in planner_client.get(production_url).content.decode()
-    assert unit.code in planner_client.get(scan_url).content.decode()
-    response = planner_client.post(reverse("inventory:cancel_reservation", args=[reservation.pk]))
-    assert response.url == production_url + "#material"
+def test_production_page_has_no_device_reservation(unit, planned, concert, planner_client):
+    page = planner_client.get(reverse("productions:detail", args=[concert.pk])).content.decode()
+
+    assert "Gerät reservieren" not in page
+    scan_page = planner_client.get(reverse("inventory:scan", args=[concert.pk])).content.decode()
+    assert "Kamera starten" in scan_page
 
 
 def test_bulk_partial_return_and_teardown(org, concert, planned, planner, planner_client):
@@ -495,16 +454,15 @@ def test_new_inventory_data_is_exported_and_audited(
         organization=other_org, material=make_material(other_org), code="FOREIGN-EXPORT"
     )
     with acting_as(planner.user):
-        reservation = unit_services.reserve(concert, unit, planner.user)
-        unit_services.cancel(reservation)
+        unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+        unit_services.scan_unit(concert, unit.code, "return", planner.user)
     changes = AuditEntry.objects.filter(organization=org, actor=planner.user, action="update")
-    assert any("released_at" in entry.changes for entry in changes)
+    assert any("returned_at" in entry.changes for entry in changes)
     with zipfile.ZipFile(io.BytesIO(export_organization(org))) as archive:
         data = {name: json.loads(archive.read(name)) for name in archive.namelist()}
     names = [
         "MaterialUnit",
         "UnitIssue",
-        "UnitReservation",
         "ProductionTeardown",
         "TeardownException",
         "QuantityMovement",
@@ -642,7 +600,6 @@ def test_students_issue_only_with_confirmed_job_in_this_production(
     student = make_member(org, Role.STUDENT)
     if status:
         make_assignment(concert.jobs.get(name="Show"), student, status=status)
-    unit_services.reserve(concert, unit, planner.user)
     client = login(student.user, org)
     url = reverse("inventory:scan", args=[concert.pk])
 
@@ -696,16 +653,10 @@ def test_quantity_issue_needs_job_too(org, concert, mics, make_member, make_assi
     assert item.issued_quantity == 1
 
 
-def test_members_cannot_control_teardown_or_reserve(concert, unit, member_client):
+def test_members_cannot_control_teardown(concert, unit, member_client):
     assert (
         member_client.post(
             reverse("inventory:teardown", args=[concert.pk]), {"operation": "start"}
-        ).status_code
-        == 403
-    )
-    assert (
-        member_client.post(
-            reverse("inventory:reserve_unit", args=[concert.pk]), {"unit": unit.pk}
         ).status_code
         == 403
     )
@@ -720,3 +671,40 @@ def test_camera_allowed_for_own_site_only(name):
     if path is None:
         pytest.skip("deploy/ ist im Test-Container nicht eingebunden")
     assert "camera=(self)" in path.read_text()
+
+
+# ---------- Material-Auswahl und kurze Codes ----------
+
+
+def test_material_picker_shows_only_own_org_with_categories(
+    org, other_org, planner_client, concert, make_material
+):
+    own = make_material(org, "Eigenes Mikro")
+    make_material(other_org, "Fremdes Mikro")
+
+    page = planner_client.get(reverse("inventory:plan", args=[concert.pk])).content.decode()
+
+    assert "data-picker" in page
+    assert own.name in page
+    assert "Fremdes Mikro" not in page
+    assert "<select" not in page.split('name="material"')[0].split("<form")[-1]
+
+
+def test_material_picker_requires_a_choice_and_saves(org, planner_client, concert, make_material):
+    material = make_material(org, "Eigenes Mikro")
+    url = reverse("inventory:plan", args=[concert.pk])
+
+    assert planner_client.post(url, {"quantity": 1}).status_code == 200
+    assert not PlannedMaterial.objects.filter(production=concert).exists()
+
+    assert planner_client.post(url, {"material": material.pk, "quantity": 2}).status_code == 302
+    assert PlannedMaterial.objects.get(production=concert, material=material).quantity == 2
+
+
+def test_generated_code_is_short(org, unit, planner_client):
+    planner_client.post(reverse("inventory:unit_create", args=[unit.material_id]))
+
+    generated = MaterialUnit.objects.for_org(org).exclude(pk=unit.pk).get()
+
+    assert generated.code.startswith("TAG-")
+    assert len(generated.code) == 14

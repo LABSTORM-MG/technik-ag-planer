@@ -103,7 +103,10 @@ class ProductionQuerySet(OrganizationQuerySet):
         return self.filter(deleted_at__isnull=False)
 
     def upcoming(self, today=None):
-        return self.filter(end_date__gte=today or timezone.localdate())
+        # Ausdrücklich: Bei annotate() mit GROUP BY greift Meta.ordering nicht
+        return self.filter(end_date__gte=today or timezone.localdate()).order_by(
+            "start_date", "name"
+        )
 
     def past(self, today=None):
         return self.filter(end_date__lt=today or timezone.localdate())

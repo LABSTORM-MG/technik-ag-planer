@@ -4,7 +4,8 @@
 {% block content %}
 <article class="stack">
   <header class="page-header">
-    <p class="eyebrow"><a href="{% url 'scheduling:calendar' %}?datum={{ event.date|date:'Y-m-d' }}&amp;tag={{ event.date|date:'Y-m-d' }}">← Kalender</a>{% if event.series %} · Serie {{ event.series.get_frequency_display }} bis {{ event.series.until|date:"d.m.Y" }}{% endif %}</p>
+    {% url 'scheduling:calendar' as kalender %}{% with tag=event.date|date:'Y-m-d' %}{% with zurueck=kalender|add:"?datum="|add:tag|add:"&tag="|add:tag %}{% include "includes/back_link.html" with url=zurueck label="Kalender" %}{% endwith %}{% endwith %}
+    {% if event.series %}<p class="eyebrow">Serie {{ event.series.get_frequency_display }} bis {{ event.series.until|date:"d.m.Y" }}</p>{% endif %}
     <h1 class="page-title{% if event.cancelled %} todo__text--done{% endif %}">{{ event.title }}</h1>
     <p class="muted">{{ event.date|date:"l, j. F Y" }} · {% if event.all_day %}ganztägig{% else %}{{ event.start_time|time:"H:i" }}–{{ event.end_time|time:"H:i" }} Uhr{% endif %}{% if event.location %} · {{ event.location }}{% endif %}</p>
     {% if event.cancelled %}<p><span class="tag tag--warning">abgesagt</span></p>{% endif %}

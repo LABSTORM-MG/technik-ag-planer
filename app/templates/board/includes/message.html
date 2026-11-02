@@ -1,33 +1,38 @@
 {% if m.is_system %}
-<li class="chat__system" id="nachricht-{{ m.pk }}">
+<li class="chat__system" id="nachricht-{{ m.pk }}"{% if m.can_delete %} data-msg data-msg-id="{{ m.pk }}" data-can-delete{% endif %}>
   {% include "includes/icon.html" with name="info" %}
   {% if m.link_production_id and not m.link_production.deleted_at %}<a href="{% url 'productions:detail' m.link_production_id %}">{{ m.text }}</a>{% elif m.link_material_id %}<a href="{% url 'inventory:detail' m.link_material_id %}">{{ m.text }}</a>{% else %}<span>{{ m.text }}</span>{% endif %}
   <time class="chat__time" datetime="{{ m.created_at|date:'c' }}">{{ m.created_at|date:"H:i" }}</time>
   {% if m.can_delete %}
-    <form method="post" action="{% url 'board:delete' m.pk %}" data-confirm="Systemmeldung löschen?">
-      {% csrf_token %}<button type="submit" class="icon-button icon-button--small" aria-label="Systemmeldung löschen">{% include "includes/icon.html" with name="close" %}</button>
-    </form>
+    <noscript>
+      <form method="post" action="{% url 'board:delete' m.pk %}">
+        {% csrf_token %}<button type="submit" class="icon-button icon-button--small" aria-label="Systemmeldung löschen">{% include "includes/icon.html" with name="close" %}</button>
+      </form>
+    </noscript>
   {% endif %}
 </li>
 {% else %}
-<li class="message{% if m.is_own %} message--own{% endif %}" id="nachricht-{{ m.pk }}">
-  <div class="message__bubble">
-    {% if not m.is_own %}<span class="message__author color-{{ m.color }}">{{ m.author_name }}</span>{% endif %}
-    <p class="message__text">{{ m.text|linebreaksbr }}</p>
-    <span class="message__meta">
+<li class="chat-message{% if m.is_own %} chat-message--own{% endif %}" id="nachricht-{{ m.pk }}" data-msg data-msg-id="{{ m.pk }}"{% if m.can_edit %} data-edit-url="{% url 'board:edit' m.pk %}"{% endif %}{% if m.can_delete %} data-can-delete{% endif %}>
+  <div class="chat-message__bubble">
+    {% if not m.is_own %}<span class="chat-message__author color-{{ m.color }}">{{ m.author_name }}</span>{% endif %}
+    <p class="chat-message__text">{{ m.text|linebreaksbr }}</p>
+    <span class="chat-message__meta">
       {% if m.edited_at %}<span>bearbeitet</span>{% endif %}
       <time datetime="{{ m.created_at|date:'c' }}">{{ m.created_at|date:"H:i" }}</time>
     </span>
   </div>
+  {% comment %}Mit JavaScript über Gedrückthalten; das hier ist nur der Rückfallweg.{% endcomment %}
   {% if m.can_edit or m.can_delete %}
-    <div class="message__actions">
-      {% if m.can_edit %}<a class="link-button" href="{% url 'board:edit' m.pk %}" data-sheet-url>Bearbeiten</a>{% endif %}
-      {% if m.can_delete %}
-        <form method="post" action="{% url 'board:delete' m.pk %}" data-confirm="Nachricht löschen?">
-          {% csrf_token %}<button type="submit" class="link-button">Löschen</button>
-        </form>
-      {% endif %}
-    </div>
+    <noscript>
+      <div class="chat-message__actions">
+        {% if m.can_edit %}<a class="link-button" href="{% url 'board:edit' m.pk %}">Bearbeiten</a>{% endif %}
+        {% if m.can_delete %}
+          <form method="post" action="{% url 'board:delete' m.pk %}">
+            {% csrf_token %}<button type="submit" class="link-button">Löschen</button>
+          </form>
+        {% endif %}
+      </div>
+    </noscript>
   {% endif %}
 </li>
 {% endif %}

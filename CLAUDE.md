@@ -2,7 +2,7 @@
 
 Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilensteine: Abschnitt 15, Umsetzungsstand und Entscheidungen: Abschnitt 16 (nach jedem Meilenstein fortschreiben).
 
-**Stand: Alle 12 Meilensteine umgesetzt – Wartung und Ideen aus Abschnitt 16 („Vor dem Start“, „Ideen für später“).** Weiter mit Branch, Plan, PR wie bisher; neue Entscheidungen als ADR ab 0023.
+**Stand: Alle 12 Meilensteine umgesetzt – Wartung und Ideen aus Abschnitt 16 („Vor dem Start“, „Ideen für später“).** Weiter mit Branch, Plan, PR wie bisher; neue Entscheidungen als ADR ab 0024.
 
 ## Regeln
 
@@ -50,7 +50,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 | `scheduling` | Kalender, Termine und Serien, „Nicht verfügbar“, Stundenraster, ICS | 0006, 0019, 0020 |
 | `board` | Board, Produktions-Chats, Systemmeldungen (Signale), Lesestand | 0007 |
 | `inquiries` | Technik-Anfragen: öffentlicher Link, Formular, Technik-Auswahl je AG, Spam-Schutz, geteilte Ansicht Anfrage/Produktion | 0009, 0018 |
-| `inventory` | Material, Material-Kategorien, Defekte, Materialsätze, Planung je Produktion (Spitzenbedarf), Packliste, optionaler QR-Modus mit Einzelgeräten | 0008, 0022 |
+| `inventory` | Material, Material-Kategorien, Defekte, Materialsätze, Planung je Produktion (Spitzenbedarf), Packliste, optionaler QR-Modus mit Einzelgeräten | 0008, 0022, 0023 |
 | `google_sync` | Google-Konto der AG (OAuth, Token verschlüsselt), Drive-Ablage (`Attachment`), Kalender-Übertragung (Gesamtvergleich), Anleitung `docs/installation/google-cloud.md` | 0012 |
 | `notifications` | Web Push (VAPID), Geräte, Benachrichtigungs-Einstellungen, Erinnerungen, Manifest und Service Worker (`/sw.js`), App-Icon (`scripts/app_icon.py`) | 0013 |
 | `documents` | PDFs mit WeasyPrint: Call Sheets, Freistellungsliste, Packliste, Einsatzübersicht; Vorschau mit Herunterladen, Teilen, Drucken | 0010 |

@@ -4,7 +4,7 @@
 {% block topbar_title %}Einstellungen{% endblock %}
 {% block content %}
   <header class="page-header">
-    <p class="eyebrow">{% if nav_in_customize %}<a href="{% url 'organizations:customize' %}">← AG anpassen</a>{% else %}<a href="{% url 'organizations:settings' %}">← Einstellungen</a>{% endif %}</p>
+    {% block back_link %}{% if back %}{% include "includes/back_link.html" with url=back label="Zurück zur Liste" %}{% elif nav_in_customize %}{% url 'organizations:customize' as zurueck %}{% include "includes/back_link.html" with url=zurueck label="AG anpassen" %}{% else %}{% url 'organizations:settings' as zurueck %}{% include "includes/back_link.html" with url=zurueck label="Einstellungen" %}{% endif %}{% endblock %}
     <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
   </header>
   {% block page_content %}{% endblock %}

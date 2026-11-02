@@ -40,5 +40,6 @@
 | [0018](architektur/0018-technik-auswahl.md) | Technik-Auswahl je AG |
 | [0019](architektur/0019-kalender-produktion-einmal.md) | Kalender: Produktion einmal anzeigen |
 | [0022](architektur/0022-material-einzelgeraete.md) | Optionaler QR-Modus und gemischte Materialverwaltung (Fork, zur Übernahmeprüfung) |
+| [0023](architektur/0023-chat-und-geraete-ohne-reservierung.md) | Chat-Auswahl und Einzelgeräte ohne Reservierung |
 
 Neue Entscheidungen bekommen die nächste Nummer und einen Eintrag in Abschnitt 16 der Feature-Liste.

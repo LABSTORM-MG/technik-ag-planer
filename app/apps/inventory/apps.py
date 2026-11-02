@@ -30,7 +30,6 @@ class InventoryConfig(AppConfig):
             "PlannedMaterial",
             "MaterialUnit",
             "UnitIssue",
-            "UnitReservation",
             "ProductionTeardown",
             "TeardownException",
             "QuantityMovement",

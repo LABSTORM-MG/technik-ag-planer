@@ -6,10 +6,16 @@
 {% block content %}
 <article class="stack">
   <header class="page-header{% if production.category %} color-{{ production.category.color }}{% endif %}">
-    <p class="eyebrow"><a href="{% url 'productions:list' %}">← Produktionen</a>{% if production.category %} · <span class="dot" aria-hidden="true"></span> {{ production.category.name }}{% endif %}</p>
+    {% url 'productions:list' as zurueck %}{% include "includes/back_link.html" with url=zurueck label="Produktionen" %}
+    {% if production.category %}<p class="eyebrow"><span class="dot" aria-hidden="true"></span> {{ production.category.name }}</p>{% endif %}
     <h1 class="page-title">{{ production.name }}</h1>
     <p class="muted">{% if production.is_multi_day %}{{ production.start_date|date:"D., d.m." }} – {{ production.end_date|date:"D., d.m.Y" }}{% else %}{{ production.start_date|date:"l, j. F Y" }}{% endif %}</p>
     <div class="toolbar">
+      {% if planned_material %}
+        <a class="button button--primary button--small" href="{% url 'inventory:packing_list' production.pk %}">Material packen</a>
+      {% elif org_perms.MANAGE_PRODUCTIONS %}
+        <a class="button button--primary button--small" href="{% url 'inventory:plan' production.pk %}" data-sheet-url>Material einplanen</a>
+      {% endif %}
       {% if org_perms.MANAGE_PRODUCTIONS %}
         <form method="post" action="{% url 'productions:status' production.pk %}" data-auto-submit class="status-select color-{{ production.status.color }}">
           {% csrf_token %}
@@ -130,10 +136,7 @@
             <span class="dot" aria-hidden="true"></span>
             <div class="list__main">
               <a class="list__link list__title" href="{% url 'inventory:detail' p.material_id %}">{{ p.material }} × {{ p.quantity }}</a>
-              {% if current_organization.inventory_qr_enabled and p.material.tracking != "individual" %}<span class="list__subtitle">{{ p.material.get_tracking_display }}</span>{% endif %}
-              {% if current_organization.inventory_qr_enabled and p.material.tracking == "individual" %}
-                {% include "inventory/includes/production_reservations.html" %}
-              {% endif %}
+              {% if current_organization.inventory_qr_enabled %}<span class="list__subtitle">{{ p.material.get_tracking_display }}</span>{% endif %}
               {% if p.source_kit or p.shortage %}
                 <span class="list__subtitle">{% if p.source_kit %}aus Satz „{{ p.source_kit }}“{% endif %}{% if p.source_kit and p.shortage %} · {% endif %}{% if p.shortage %}<span class="text-danger">{{ p.shortage.needed }} benötigt, {{ p.shortage.available }} verfügbar</span>{% endif %}</span>
               {% endif %}

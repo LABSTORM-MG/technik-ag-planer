@@ -6,7 +6,7 @@
 {% block content %}
 <article class="stack">
   <header class="page-header">
-    <p class="eyebrow"><a href="{{ back_url }}">← {{ back_label }}</a></p>
+    {% include "includes/back_link.html" with url=back_url label=back_label %}
     <h1 class="page-title">{{ doc_title }}</h1>
     {% for hint in hints %}<p class="muted">{{ hint }}</p>{% endfor %}
     <div class="toolbar">

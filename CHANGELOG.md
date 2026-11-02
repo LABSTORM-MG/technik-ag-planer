@@ -9,7 +9,7 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 **Meilenstein 13 – Materialerweiterung**
 
 - Optionaler AG-Modus: klassische Packliste oder QR-Verwaltung mit Materialarten für Einzelgeräte, Mengen und Verbrauch.
-- Inventarcodes, druckbare QR-Etiketten, Gerätehistorie, konkrete Reservierungen auf der Produktionsseite und fortlaufender Kamerascan für Ausgabe/Rückgabe.
+- Inventarcodes, druckbare QR-Etiketten, Gerätehistorie, und fortlaufender Kamerascan für Ausgabe/Rückgabe.
 - Stückzahlausgabe mit Teilrückgaben, Verbrauchsentnahme mit Bestandsreduktion.
 - Gerätebezogene Defekte, Reparaturvermerke, Abbau mit begründeten Geräteausnahmen und druckbarem Protokoll.
 - Kompakte aufklappbare Materialoberflächen, klare Sperrzustände und integrierte Benutzerhilfe.
@@ -24,6 +24,13 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 **Oberfläche**
 
+- Board: nur noch Sprechblasen; Bearbeiten und Löschen per Gedrückthalten, Mehrfachauswahl zum Löschen, „Alle auswählen“; kompakte Chat-Blasen, die beim Hochscrollen erscheinen
+- Zurück-Knöpfe einheitlich und immer nur eine Ebene zurück
+- Freistellungsliste nach Stundenblöcken für Lehrkräfte
+- Material-Auswahl mit Suche und Kategorie-Filter; Knopf „Material packen“ oben auf der Produktionsseite
+- Einzelgeräte werden nicht mehr reserviert: Jedes freie Gerät lässt sich scannen, die Planung passt sich an
+- Behoben: Produktionsliste und Dashboard waren nicht zuverlässig nach Datum sortiert
+- Behoben: Lange Inventarcodes liefen aus dem Bildschirm; neue Codes sind kürzer
 - Einstellungen: Unterseite „AG anpassen“ für alles, was je AG einstellbar ist; die ganze Zeile ist anklickbar
 - Hinweis für den Owner, solange kein Google-Konto verbunden ist oder der Abgleich fehlschlägt
 - Behoben: Fehler beim Google-Abgleich zeigten weiter „verbunden“

@@ -280,3 +280,16 @@ def test_deleting_production_removes_its_plannings_with_cascade(org, mics, make_
     services.plan(production, mics, 1)
     production.delete()
     assert not PlannedMaterial.objects.exists()
+
+
+def test_material_button_at_top_of_production(org, planner_client, concert, mics):
+    url = reverse("productions:detail", args=[concert.pk])
+
+    assert "Material einplanen" in planner_client.get(url).content.decode()
+
+    planner_client.post(
+        reverse("inventory:plan", args=[concert.pk]), {"material": mics.pk, "quantity": 1}
+    )
+    content = planner_client.get(url).content.decode()
+    assert "Material packen" in content
+    assert reverse("inventory:packing_list", args=[concert.pk]) in content

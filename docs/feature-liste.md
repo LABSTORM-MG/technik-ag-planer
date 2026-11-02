@@ -167,7 +167,7 @@ Der Kalender zeigt Produktionen, Jobs, Termine und Abwesenheiten der ganzen AG o
 
 - Der Owner legt in den Einstellungen die Unterrichtsstunden der Schule fest: Nummer, Beginn und Ende (z. B. 1. Stunde 8:00–8:45), Pausen dazwischen; das Raster gilt an allen Schultagen gleich
 - Zeiten lassen sich überall wahlweise als Uhrzeit oder als Schulstunde eingeben (z. B. „ab der 5. Stunde“) – bei Jobs, Terminen und „Nicht verfügbar“; die App rechnet über das Raster in Uhrzeiten um
-- Die Freistellungsliste nennt die betroffenen Schulstunden
+- Die Freistellungsliste nennt die betroffenen Schulstunden, gruppiert nach Stundenblöcken, damit Lehrkräfte blockweise eintragen können
 
 **„+ Neu“-Menü**
 
@@ -312,9 +312,9 @@ Das Material-Modul verwaltet die Technik der AG mit Kategorien, Bestand und Plan
 
 ### Erweiterung: Materialmodi, Einzelgeräte und Mengenbewegungen (M13)
 
-- Pro AG exklusiv klassische Mengenliste mit Abhaken oder QR-Verwaltung; Standard bleibt klassisch. Wechsel in Einstellungen → AG anpassen → Materialverwaltung, mit Schutz für offene Ausgaben, Rückgaben, und Reservierungen. Für eine Produktion geben Owner, Admins, Lehrkräfte und alle mit einem zugesagten Job in dieser Produktion Material aus und nehmen es zurück; reservieren und den Abbau abschließen bleibt bei der Produktionsleitung. Eine private Ausleihe ohne Produktion gibt es nicht.
+- Pro AG exklusiv klassische Mengenliste mit Abhaken oder QR-Verwaltung; Standard bleibt klassisch. Wechsel in Einstellungen → AG anpassen → Materialverwaltung, mit Schutz für offene Ausgaben und Rückgaben. Für eine Produktion geben Owner, Admins, Lehrkräfte und alle mit einem zugesagten Job in dieser Produktion Material aus und nehmen es zurück; den Abbau abschließen bleibt bei der Produktionsleitung. Eine private Ausleihe ohne Produktion gibt es nicht.
 - Im QR-Modus pro Materialart: `bulk` (Mengenmaterial), `individual` (Einzelgeräte) oder `consumable` (Verbrauchsmaterial). Kabel werden nach Stückzahl geführt; besondere Kabel können bewusst Einzelgeräte sein.
-- Einzelgeräte mit Inventarcodes, Etiketten, aufklappbarer Geräteliste direkt am Material, Archiv und Historie. Konkrete Reservierungen nur im Materialabschnitt der Produktion, bis zur geplanten Menge und ohne zeitlichen Konflikt.
+- Einzelgeräte mit Inventarcodes, Etiketten, aufklappbarer Geräteliste direkt am Material, Archiv und Historie. Geräte werden nicht reserviert: Jedes freie Gerät lässt sich für eine Produktion scannen, die geplante Menge passt sich an.
 - Gemeinsame Materialausgabe: Kamerascan/Code für Einzelgeräte, Stückzahl und Teilrückgaben für Mengenmaterial, Bestandsentnahme ohne Rückgabe für Verbrauchsmaterial. Kamera benötigt HTTPS/localhost; Scannerbibliothek wird lokal ausgeliefert.
 - Gerätespezifische Defekte und Reparaturvermerke ergänzen vorhandene Defektmeldungen.
 - Abbau mit dokumentierten Ausnahmen für Einzelgeräte, Sperre ungeklärter Mengenrückgaben und druckbarem Protokoll. Vermisste Geräte bleiben gesperrt; spätere Rückgabe bleibt möglich.
@@ -567,7 +567,7 @@ Im Hauptverzeichnis liegt eine kurze `CLAUDE.md`, die Claude Code bei jeder Sitz
 | 10 | Google-Anbindung | OAuth-Verbindung, Drive-Ablage, Kalender-Übertragung, Anleitung für das Google-Cloud-Projekt (2, 9) |
 | 11 | PWA und Push | Web-App-Manifest, Service Worker, Web Push, Erinnerungen, Benachrichtigungs-Einstellungen (1, 9) |
 | 12 | Abschluss | Einstellungen vollständig, Hilfe & FAQ, Landingpage, Installations- und Betriebsdoku, Sicherheits-Review (10, 12, 14) |
-| 13 | Materialerweiterung | Optionaler QR-Modus, Einzelgeräte, Reservierungen, Mengen-/Verbrauchsausgabe, Defekte und Abbau (7, 10) |
+| 13 | Materialerweiterung | Optionaler QR-Modus, Einzelgeräte, Mengen-/Verbrauchsausgabe, Defekte und Abbau (7, 10) |
 
 **Hinweise zu den schwierigen Teilen**
 
@@ -602,6 +602,7 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | – | Technik-Auswahl im Anfrage-Formular je AG | fertig | #18 |
 | – | Einstellungen: Unterseite „AG anpassen“, ganze Zeile anklickbar, Google-Hinweis für den Owner | fertig | #25, #26 |
 | – | Dashboard-Kachel und Navigations-Zähler für offene Technik-Anfragen | fertig | #19 |
+| – | Chat-Bedienung, Geräte ohne Reservierung, Material-Auswahl, Freistellungs-Blöcke, Zurück-Knöpfe | fertig | #31 |
 | – | Oberfläche: Nachfrage bei Anfragen, Kalender, Board auf dem Handy, Crew-Schalter, Produktionsseite | fertig | #20, #21 |
 | – | „In privaten Kalender“ mit Auswahl Google, Apple, Datei | fertig | #22 |
 
@@ -665,6 +666,8 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | Kalender | „In privaten Kalender“ ersetzt die .ics-Knöpfe; der Google-Link enthält keine Namen von Mitgliedern, die Datei weiterhin die Crew eines Jobs | Direkter Weg in den eigenen Kalender, weniger Daten bei Google | ADR 0020 |
 | Kalender | Jobs ersetzen den Eintrag der Produktion an ihren Tagen und bleiben einzeln sichtbar | Mehrere Balken wirkten wie doppelte Termine | ADR 0019 |
 | Einstellungen | Unterseite „AG anpassen“ sammelt alle AG-Einstellungen; Fehler beim Google-Abgleich statt „verbunden“ anzeigen; Ordner endgültig gelöschter Produktionen in den Drive-Papierkorb | Übersicht und ehrlicher Status; Ordner können selbst abgelegte Dateien enthalten | ADR 0021 |
+| Material | Einzelgeräte werden nicht reserviert; jedes freie Gerät lässt sich scannen, die Planung passt sich an | Die Anzahl zählt nur für den Bestand, nicht welches Gerät es wird | ADR 0023 |
+| Board | Bearbeiten und Löschen über Gedrückthalten, Mehrfachauswahl nur zum Löschen | Aufgeräumter Chat wie in Messengern | ADR 0023 |
 | Anfragen | Technik-Auswahl je AG, gepflegt von Owner, Admins und Lehrkräften; Anfragen speichern den Text statt einer Verknüpfung | Jede AG hat andere Technik; alte Anfragen bleiben beim Umbenennen und Löschen unverändert | ADR 0018 |
 | Google | Kein Drive-Anhang am Google-Termin; der Termin verlinkt in die App | Dateien liegen privat im Drive der AG – Abonnenten könnten Anhänge nicht öffnen | ADR 0015 |
 | Entwicklung | Beispielkonten `owner@example.org`, `lehrer@…`, `schueler@…` …, Passwort jeweils der Name vor dem @ (M6–M11 mit Login ohne @; seit M12 wieder E-Mail-Eingabe) | Schneller durchklicken (Entscheidung des Projektinhabers) | README |

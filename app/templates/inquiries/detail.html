@@ -3,7 +3,7 @@
 {% block topbar_title %}Anfrage{% endblock %}
 {% block content %}
 <header class="page-header">
-  <p class="eyebrow"><a href="{% url 'productions:list' %}">← Produktionen</a></p>
+  {% url 'productions:list' as zurueck %}{% include "includes/back_link.html" with url=zurueck label="Produktionen" %}
   <h1 class="page-title">{{ inquiry.title }}</h1>
   <p class="muted">Eingegangen am {{ inquiry.created_at|date:"d.m.Y, H:i" }} Uhr{% if inquiry.is_done %} · erledigt am {{ inquiry.done_at|date:"d.m.Y" }}{% endif %}</p>
   <div class="toolbar">

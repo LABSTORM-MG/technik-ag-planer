@@ -6,7 +6,7 @@
   <header class="board__head{% if production.category %} color-{{ production.category.color }}{% endif %}">
     <div>
       {% if production %}
-        <p class="eyebrow"><a href="{% url 'board:index' %}">← Board</a></p>
+        {% url 'board:index' as zurueck %}{% include "includes/back_link.html" with url=zurueck label="Board" %}
         <h1 class="page-title">{{ production.name }}</h1>
         <p class="muted"><a href="{% url 'productions:detail' production.pk %}">Zur Produktion</a></p>
       {% else %}
@@ -17,6 +17,21 @@
   </header>
 
   {% include "board/includes/chat_bar.html" %}
+
+  <div class="chat-select" data-chat-select role="toolbar" aria-label="Ausgewählte Nachrichten" hidden>
+    <label class="chat-select__all"><input type="checkbox" data-select-all> Alle</label>
+    <span class="chat-select__count" data-select-count aria-live="polite"></span>
+    <div class="chat-select__actions">
+      <button type="button" class="button button--secondary button--small" data-select-copy hidden>Kopieren</button>
+      <a class="button button--secondary button--small" href="#" data-select-edit data-sheet-url hidden>Bearbeiten</a>
+      <form method="post" action="{% url 'board:delete_many' %}" data-select-delete hidden>
+        {% csrf_token %}
+        {% if production %}<input type="hidden" name="produktion" value="{{ production.pk }}">{% endif %}
+        <button type="submit" class="button button--danger button--small">Löschen</button>
+      </form>
+      <button type="button" class="icon-button" data-select-cancel aria-label="Auswahl beenden">{% include "includes/icon.html" with name="close" %}</button>
+    </div>
+  </div>
 
   <section class="chat" aria-label="Nachrichten">
     {% if has_older %}

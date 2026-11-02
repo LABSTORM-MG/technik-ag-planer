@@ -9,8 +9,6 @@ from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
-from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.organizations.decorators import org_required, permission_required_in_org
@@ -24,7 +22,6 @@ from .models import (
     PlannedMaterial,
     ProductionTeardown,
     UnitIssue,
-    UnitReservation,
 )
 from .views import _production
 
@@ -82,7 +79,9 @@ def units(request, pk):
 def create_unit(request, pk):
     material = get_object_or_404(Material.objects.for_org(request.organization).active(), pk=pk)
     try:
-        code = services.normalize_code(request.POST.get("code", "") or f"TAG-{uuid.uuid4().hex}")
+        code = services.normalize_code(
+            request.POST.get("code", "") or f"TAG-{uuid.uuid4().hex[:10].upper()}"
+        )
         with transaction.atomic():
             services.lock_mode(request.organization)
             if material.tracking != Material.Tracking.INDIVIDUAL:
@@ -162,29 +161,6 @@ def resolve_defect(request, pk):
     return redirect("inventory:units", pk=defect.material_id)
 
 
-@require_POST
-@permission_required_in_org(Perm.MANAGE_PRODUCTIONS)
-@qr_required
-def reserve(request, pk):
-    production = _production(request, pk)
-    unit = _unit(request, request.POST.get("unit_id", "0"))
-    _run(request, lambda: services.reserve(production, unit, request.user))
-    return redirect(reverse("productions:detail", args=[pk]) + "#material")
-
-
-@require_POST
-@permission_required_in_org(Perm.MANAGE_PRODUCTIONS)
-@qr_required
-def cancel(request, pk):
-    reservation = get_object_or_404(
-        UnitReservation.objects.for_org(request.organization),
-        pk=pk,
-        production__deleted_at__isnull=True,
-    )
-    _run(request, lambda: services.cancel(reservation))
-    return redirect(reverse("productions:detail", args=[reservation.production_id]) + "#material")
-
-
 @org_required
 @qr_required
 def scan(request, pk):
@@ -210,24 +186,12 @@ def scan(request, pk):
         .select_related("unit", "issued_by", "returned_by", "exception")
         .order_by("-issued_at")
     )
-    reservations = list(
-        UnitReservation.objects.for_org(request.organization)
-        .filter(production=production, released_at__isnull=True)
-        .select_related("unit__material")
-    )
-    for reservation in reservations:
-        latest = next((i for i in issues if i.unit_id == reservation.unit_id), None)
-        reservation.issue_state = (
-            "returned" if latest and latest.returned_at else "issued" if latest else "reserved"
-        )
     open_issues = [i for i in issues if i.returned_at is None]
     return render(
         request,
         "inventory/scan.html",
         {
-            "has_individual_plans": PlannedMaterial.objects.filter(
-                production=production, material__tracking="individual"
-            ).exists(),
+            "has_units": MaterialUnit.objects.for_org(request.organization).exists(),
             "quantity_plans": PlannedMaterial.objects.for_org(request.organization)
             .filter(production=production)
             .exclude(material__tracking="individual")
@@ -235,7 +199,7 @@ def scan(request, pk):
             "production": production,
             "issues": issues,
             "open_issue_count": len(open_issues),
-            "reservations": reservations,
+            "open_issues": open_issues,
             "teardown": ProductionTeardown.objects.filter(production=production).first(),
             "active_section": "inventory",
         },
@@ -318,25 +282,15 @@ def inventory_settings(request):
                 outstanding = (
                     UnitIssue.objects.for_org(org).filter(returned_at__isnull=True).exists()
                 )
-                reserved = (
-                    UnitReservation.objects.for_org(org)
-                    .filter(
-                        released_at__isnull=True,
-                        production__deleted_at__isnull=True,
-                        production__end_date__gte=timezone.localdate(),
-                    )
-                    .exists()
-                )
                 if not enabled and (
                     outstanding
-                    or reserved
                     or PlannedMaterial.objects.for_org(org)
                     .filter(material__tracking="bulk", issued_quantity__gt=F("returned_quantity"))
                     .exists()
                 ):
                     messages.error(
                         request,
-                        "Zuerst Geräte zurückgeben und aktive Reservierungen aufheben. "
+                        "Zuerst alle Geräte und Mengen zurückgeben. "
                         "Danach ist der Wechsel möglich.",
                     )
                 else:

@@ -298,27 +298,6 @@ class UnitIssue(OrganizationScopedModel):
         ]
 
 
-class UnitReservation(OrganizationScopedModel):
-    unit = models.ForeignKey(MaterialUnit, on_delete=models.RESTRICT, related_name="reservations")
-    production = models.ForeignKey(
-        "productions.Production", on_delete=models.CASCADE, related_name="unit_reservations"
-    )
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    released_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["unit", "production"],
-                condition=Q(released_at__isnull=True),
-                name="unit_unique_reservation",
-            )
-        ]
-
-
 class ProductionTeardown(OrganizationScopedModel):
     production = models.OneToOneField(
         "productions.Production", on_delete=models.CASCADE, related_name="teardown"

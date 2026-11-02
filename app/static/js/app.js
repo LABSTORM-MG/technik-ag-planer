@@ -70,6 +70,47 @@ document.addEventListener("submit", (event) => {
   if (message && !window.confirm(message)) event.preventDefault();
 });
 
+// Material-Auswahl: Suche und Filter nur mit JavaScript, ohne bleibt die ganze Liste nutzbar.
+// Über das Dokument, weil Sheet-Inhalte erst später in die Seite kommen.
+function filterPicker(picker) {
+  const query = picker.querySelector("[data-picker-search]").value.trim().toLowerCase();
+  const category = picker.querySelector("[data-picker-category][aria-current]")?.dataset.pickerCategory;
+  let visible = 0;
+  picker.querySelectorAll("[data-picker-item]").forEach((item) => {
+    const match =
+      (!category || item.dataset.category === category) &&
+      (!query || item.dataset.name.includes(query));
+    item.hidden = !match;
+    if (match) visible += 1;
+  });
+  picker.querySelector("[data-picker-empty]").hidden = visible > 0;
+}
+
+function enhancePickers(root = document) {
+  root.querySelectorAll("[data-picker]").forEach((picker) => {
+    picker.querySelector("[data-picker-search]").hidden = false;
+    const chips = picker.querySelector("[data-picker-chips]");
+    if (chips) chips.hidden = false;
+  });
+}
+
+enhancePickers();
+new MutationObserver(() => enhancePickers()).observe(document.body, { childList: true, subtree: true });
+document.addEventListener("input", (event) => {
+  const picker = event.target.closest?.("[data-picker-search]")?.closest("[data-picker]");
+  if (picker) filterPicker(picker);
+});
+document.addEventListener("click", (event) => {
+  const chip = event.target.closest("[data-picker-category]");
+  if (!chip) return;
+  const picker = chip.closest("[data-picker]");
+  picker.querySelectorAll("[data-picker-category]").forEach((other) => {
+    other.removeAttribute("aria-current");
+  });
+  chip.setAttribute("aria-current", "true");
+  filterPicker(picker);
+});
+
 // Formulare im Bottom-Sheet: <a href="…" data-sheet-url> lädt die Seite ohne Rahmen ins Sheet.
 // Ohne JavaScript öffnet der Link einfach die normale Seite.
 document.addEventListener("click", async (event) => {
@@ -318,6 +359,124 @@ document.addEventListener("change", (event) => {
     viewport.addEventListener("scroll", placeAboveKeyboard);
     input.addEventListener("blur", placeAboveKeyboard);
   }
+
+  // Chat-Blasen: beim kleinsten Hochscrollen da, beim Runterscrollen wieder weg
+  const chatBar = board.querySelector(".chat-bar");
+  if (chatBar) {
+    let lastY = window.scrollY;
+    window.addEventListener(
+      "scroll",
+      () => {
+        const y = window.scrollY;
+        if (Math.abs(y - lastY) < 4) return;
+        chatBar.classList.toggle("chat-bar--hidden", y > lastY && y > chatBar.offsetHeight);
+        lastY = y;
+      },
+      { passive: true },
+    );
+  }
+
+  // Auswahl: gedrückt halten (am PC auch Rechtsklick), danach Antippen zum Zu- und Abwählen
+  const bar = board.querySelector("[data-chat-select]");
+  const selectAll = bar.querySelector("[data-select-all]");
+  const editLink = bar.querySelector("[data-select-edit]");
+  const copyButton = bar.querySelector("[data-select-copy]");
+  const deleteForm = bar.querySelector("[data-select-delete]");
+  const HOLD_MS = 450;
+  let holdTimer = null;
+  let holdStart = null;
+  let justHeld = false;
+
+  const selected = () => [...list.querySelectorAll("[data-msg].is-selected")];
+  const deletable = () => [...list.querySelectorAll("[data-msg][data-can-delete]")];
+
+  function renderSelection() {
+    const items = selected();
+    bar.hidden = items.length === 0;
+    bar.querySelector("[data-select-count]").textContent = `${items.length} ausgewählt`;
+    const single = items.length === 1 ? items[0] : null;
+    editLink.hidden = !single?.dataset.editUrl;
+    if (single?.dataset.editUrl) editLink.href = single.dataset.editUrl;
+    copyButton.hidden = !single?.querySelector(".chat-message__text");
+    deleteForm.hidden = !items.length || !items.every((item) => "canDelete" in item.dataset);
+    const all = deletable();
+    selectAll.closest("label").hidden = all.length === 0;
+    selectAll.checked = all.length > 0 && all.every((item) => item.classList.contains("is-selected"));
+    deleteForm.dataset.confirm =
+      items.length === 1 ? "Nachricht löschen?" : `${items.length} Nachrichten löschen?`;
+    deleteForm.querySelectorAll("[name=ids]").forEach((input) => input.remove());
+    items.forEach((item) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = "ids";
+      input.value = item.dataset.msgId;
+      deleteForm.append(input);
+    });
+  }
+
+  function clearSelection() {
+    selected().forEach((item) => item.classList.remove("is-selected"));
+    renderSelection();
+  }
+
+  function hold(item) {
+    justHeld = true;
+    item.classList.add("is-selected");
+    renderSelection();
+    navigator.vibrate?.(15);
+  }
+
+  function cancelHold() {
+    window.clearTimeout(holdTimer);
+    holdTimer = null;
+  }
+
+  list.addEventListener("pointerdown", (event) => {
+    const item = event.target.closest("[data-msg]");
+    if (!item || event.button !== 0) return;
+    justHeld = false;
+    holdStart = [event.clientX, event.clientY];
+    holdTimer = window.setTimeout(() => hold(item), HOLD_MS);
+  });
+  list.addEventListener("pointermove", (event) => {
+    if (!holdTimer) return;
+    if (Math.hypot(event.clientX - holdStart[0], event.clientY - holdStart[1]) > 10) cancelHold();
+  });
+  ["pointerup", "pointercancel", "pointerleave"].forEach((name) => {
+    list.addEventListener(name, cancelHold);
+  });
+  list.addEventListener("contextmenu", (event) => {
+    const item = event.target.closest("[data-msg]");
+    if (!item) return;
+    event.preventDefault();
+    cancelHold();
+    if (!item.classList.contains("is-selected")) hold(item);
+  });
+  list.addEventListener("click", (event) => {
+    const item = event.target.closest("[data-msg]");
+    if (justHeld) {
+      justHeld = false;
+      event.preventDefault();
+      return;
+    }
+    if (!selected().length) return;
+    event.preventDefault();
+    if (!item) return;
+    item.classList.toggle("is-selected");
+    renderSelection();
+  });
+  selectAll.addEventListener("change", () => {
+    selected().forEach((item) => item.classList.remove("is-selected"));
+    if (selectAll.checked) deletable().forEach((item) => item.classList.add("is-selected"));
+    renderSelection();
+  });
+  bar.querySelector("[data-select-cancel]").addEventListener("click", clearSelection);
+  copyButton.addEventListener("click", async () => {
+    const text = selected()[0]?.querySelector(".chat-message__text")?.innerText;
+    if (text) await navigator.clipboard?.writeText(text);
+    clearSelection();
+  });
+  editLink.addEventListener("click", () => window.setTimeout(clearSelection));
 
   window.setInterval(() => {
     if (document.visibilityState === "visible") poll();
