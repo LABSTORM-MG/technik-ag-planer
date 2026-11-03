@@ -20,3 +20,4 @@ Ohne Anmeldung bleiben nur die Seiten erreichbar, die anders nicht funktionieren
 
 - Eine spätere Verifizierung der App bei Google verlangt eine öffentliche Seite, die die App beschreibt. Für den aktuellen Betrieb ohne Verifizierung ist sie nicht nötig; bei Bedarf käme eine kleine Info-Seite zurück.
 - Dark Mode und Darstellung unterscheiden sich je Mail-Programm. Abgerundete Ecken fehlen zum Beispiel in Outlook für Windows, Inhalt und Button bleiben dort nutzbar.
+- Die Vorlagen verwenden keine Rahmen: Gmail für Android hat sie im Dunkelmodus aufgehellt, die Hintergründe aber nicht. Der als Rahmen gebaute Button wurde dadurch zweifarbig. Er nutzt jetzt Polster und volle Breite, damit die Beschriftung auch auf dem Handy nicht umbricht.

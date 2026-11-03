@@ -37,7 +37,7 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 - **Google:** Aufrufe nur über `apps.google_sync.google_api` (Tests: Fixtures `google`/`connected` mit Attrappe); Dateien mit `apps.google_sync.drive.upload(org, datei, production=…|material=…|defect=…|inquiry=…)`, Liste per Include `google_sync/includes/attachments.html`. Neue Kalender-Einträge in `calendar_sync.desired_events` und `signals.WATCHED` ergänzen
 - **Push-Mitteilungen:** `apps.notifications.services.notify(org, konten, Kind.X, titel, text, url)` – nur Push, keine E-Mails; neue Auslöser in `apps/notifications/signals.py` (Tests: Fixtures `pushed`, `device`)
 - **Kalendereinträge:** `apps.scheduling.calendar.calendar_entries(org, start, end, membership=None)`
-- **E-Mails:** Vorlage erbt von `emails/base.html`, Button über `emails/includes/button.html`, immer auch eine `.txt`-Fassung. Inline-Styles; Farben mit `{% load mail %}{% token "color-…" %}`, absolute Links mit `{% site_url "app:name" %}`
+- **E-Mails:** Vorlage erbt von `emails/base.html`, Button über `emails/includes/button.html`, immer auch eine `.txt`-Fassung. Inline-Styles, keine Rahmen (Gmail hellt sie im Dunkelmodus auf); Farben mit `{% load mail %}{% token "color-…" %}`, absolute Links mit `{% site_url "app:name" %}`
 
 ## Apps (`app/apps/`)
 
