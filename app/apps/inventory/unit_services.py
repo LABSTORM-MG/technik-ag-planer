@@ -103,14 +103,19 @@ def check_available(unit):
         raise ValidationError("Dieses Gerät ist noch ausgegeben oder vermisst.")
 
 
-@transaction.atomic
-def scan_unit(production, raw, mode, user):
-    production = lock_production(production)
-    unit = (
-        MaterialUnit.objects.for_org(production.organization)
+def find_unit(organization, raw):
+    return (
+        MaterialUnit.objects.for_org(organization)
+        .select_related("material")
         .filter(code__iexact=normalize_code(raw))
         .first()
     )
+
+
+@transaction.atomic
+def scan_unit(production, raw, mode, user):
+    production = lock_production(production)
+    unit = find_unit(production.organization, raw)
     if unit is None:
         raise ValidationError("Unbekannter Inventarcode.")
     unit = lock_unit(unit)

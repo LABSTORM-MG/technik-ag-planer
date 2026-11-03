@@ -174,7 +174,11 @@ def scan(request, pk):
         else:
             ok = True
         if request.headers.get("Accept") == "application/json":
-            return JsonResponse({"ok": ok, "message": message})
+            result = {"ok": ok, "message": message}
+            if ok:
+                unit = services.find_unit(request.organization, request.POST.get("code", ""))
+                result["name"] = unit.material.name
+            return JsonResponse(result)
         (messages.success if ok else messages.error)(request, message)
         return redirect("inventory:scan", pk=pk)
     issues = list(

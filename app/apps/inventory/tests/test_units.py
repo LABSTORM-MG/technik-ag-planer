@@ -186,6 +186,34 @@ def test_pages_and_permissions(concert, unit, planned, planner_client, member_cl
     assert response.json()["ok"] is True
 
 
+def test_scan_reports_material_name_for_popup(unit, concert, planned, planner_client):
+    url = reverse("inventory:scan", args=[concert.pk])
+    data = {"code": unit.code.lower(), "mode": "issue"}
+
+    result = planner_client.post(url, data, HTTP_ACCEPT="application/json").json()
+    assert result["name"] == unit.material.name
+
+    again = planner_client.post(url, data, HTTP_ACCEPT="application/json").json()
+    assert again["ok"] is False
+    assert "name" not in again
+
+
+def test_unknown_code_reports_no_name(concert, unit, planner_client):
+    result = planner_client.post(
+        reverse("inventory:scan", args=[concert.pk]),
+        {"code": "GIBT-ES-NICHT", "mode": "issue"},
+        HTTP_ACCEPT="application/json",
+    ).json()
+    assert result["ok"] is False
+    assert "name" not in result
+
+
+def test_scan_page_opens_camera_in_own_view(concert, unit, planned, planner_client):
+    page = planner_client.get(reverse("inventory:scan", args=[concert.pk])).content.decode()
+    assert 'id="scan-overlay"' in page
+    assert 'id="scan-toast"' in page
+
+
 def test_foreign_ag_rejected(other_org, unit, concert, planned, planner_client, make_material):
     foreign = MaterialUnit.objects.create(
         organization=other_org, material=make_material(other_org), code="FOREIGN-01"
