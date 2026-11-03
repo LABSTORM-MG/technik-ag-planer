@@ -299,7 +299,7 @@ def kit_delete(request, pk):
 
 
 def _back_to_production(production):
-    return redirect(reverse("productions:detail", args=[production.pk]) + "#material")
+    return redirect("inventory:packing_list", pk=production.pk)
 
 
 @permission_required_in_org(Perm.MANAGE_PRODUCTIONS)
@@ -419,7 +419,12 @@ def packing_list(request, pk):
     return render(
         request,
         "inventory/packing_list.html",
-        {**PRODUCTIONS, "production": production, "planned": planned},
+        {
+            **PRODUCTIONS,
+            "production": production,
+            "planned": planned,
+            "planned_material": services.production_material(production),
+        },
     )
 
 

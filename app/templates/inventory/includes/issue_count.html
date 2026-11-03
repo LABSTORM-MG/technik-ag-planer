@@ -1,0 +1,2 @@
+<span class="issue-row__count" data-show="issue">{{ row.issued }} / {{ row.planned.quantity }}</span>
+<span class="issue-row__count" data-show="return">{% if row.is_consumable %}Verbrauch{% else %}{{ row.returned }} / {{ row.issued }}{% endif %}</span>

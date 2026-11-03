@@ -253,8 +253,38 @@ def test_production_detail_shows_material_and_packing_list_link(
     content = member_client.get(
         reverse("productions:detail", args=[production.pk])
     ).content.decode()
-    assert "Funkmikrofon × 2" in content
+    assert "0 von 2 ausgegeben" in content
+    assert "Funkmikrofon × 2" not in content  # Details stehen im Material-Menü
     assert reverse("inventory:packing_list", args=[production.pk]) in content
+
+
+def test_planning_moved_into_material_menu_for_planners_only(
+    org, planner_client, member_client, concert, mics
+):
+    services.plan(concert, mics, 2)
+    url = reverse("inventory:packing_list", args=[concert.pk])
+
+    planner_page = planner_client.get(url).content.decode()
+    assert "Planung ändern" in planner_page
+    assert reverse("inventory:plan", args=[concert.pk]) in planner_page
+    assert "Planung ändern" not in member_client.get(url).content.decode()
+
+
+def test_planning_returns_to_material_menu(planner_client, concert, mics):
+    response = planner_client.post(
+        reverse("inventory:plan", args=[concert.pk]), {"material": mics.pk, "quantity": 1}
+    )
+    assert response.url == reverse("inventory:packing_list", args=[concert.pk])
+
+
+def test_material_status_counts_classic_and_shortages(org, concert, mics):
+    planned = services.plan(concert, mics, 2)
+    services.set_packed(planned, "issued_at", True)
+
+    status = services.material_status(concert, services.production_material(concert))
+
+    assert (status["issued"], status["planned"], status["returned"]) == (2, 2, 0)
+    assert status["shortages"] == 0
 
 
 def test_manage_material_categories(org, owner, login, make_material):

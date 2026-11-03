@@ -210,6 +210,7 @@ def production_detail(request, pk):
             ),
             "todo_form": TodoForm(),
             "planned_material": planned_material,
+            "material_status": inventory_services.material_status(production, planned_material),
             "teardown_complete": teardown_complete,
             "supervisors": supervisors,
             "is_supervisor": request.membership in supervisors,

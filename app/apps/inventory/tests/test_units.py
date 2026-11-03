@@ -212,6 +212,19 @@ def test_scan_page_opens_camera_in_own_view(concert, unit, planned, planner_clie
     page = planner_client.get(reverse("inventory:scan", args=[concert.pk])).content.decode()
     assert 'id="scan-overlay"' in page
     assert 'id="scan-toast"' in page
+    assert 'name="camera-mode" value="issue">' in page
+    assert 'name="camera-mode" value="return">' in page
+
+
+def test_camera_switch_blocks_issue_after_teardown(concert, unit, planned, planner_client, planner):
+    ProductionTeardown.objects.create(
+        organization=concert.organization,
+        production=concert,
+        started_by=planner.user,
+        completed_at=timezone.now(),
+    )
+    page = planner_client.get(reverse("inventory:scan", args=[concert.pk])).content.decode()
+    assert 'name="camera-mode" value="issue" disabled>' in page
 
 
 def test_foreign_ag_rejected(other_org, unit, concert, planned, planner_client, make_material):
@@ -449,7 +462,7 @@ def test_production_page_has_no_device_reservation(unit, planned, concert, plann
 
     assert "Gerät reservieren" not in page
     scan_page = planner_client.get(reverse("inventory:scan", args=[concert.pk])).content.decode()
-    assert "Kamera starten" in scan_page
+    assert "Kamera öffnen" in scan_page
 
 
 def test_bulk_partial_return_and_teardown(org, concert, planned, planner, planner_client):
@@ -963,8 +976,53 @@ def test_packing_page_shows_switch_list_and_prefilled_amount(
 
     assert "Material packen" in content
     assert 'name="mode" value="return"' in content
-    assert "Kabel" in content and 'value="7"' in content
+    assert "Kabel" in content and 'name="quantity" value="7"' in content
     assert "Materialverwaltung kurz erklärt" not in content
+
+
+def test_packing_page_lists_free_devices_to_tick(
+    org, other_org, concert, make_production, unit, planned, planner_client, planner
+):
+    out_here = MaterialUnit.objects.create(organization=org, material=unit.material, code="HIER-1")
+    elsewhere = MaterialUnit.objects.create(organization=org, material=unit.material, code="WEG-1")
+    broken = MaterialUnit.objects.create(organization=org, material=unit.material, code="KAPUTT-1")
+    unit_services.scan_unit(concert, out_here.code, "issue", planner.user)
+    unit_services.scan_unit(make_production(org), elsewhere.code, "issue", planner.user)
+    unit_services.report_defect(broken, "Stecker abgebrochen", planner.user)
+
+    rows = unit_services.issue_rows(concert)
+    unit_services.add_packing_devices(rows, concert)
+
+    devices = {d.code: d for r in rows for d in r.devices}
+    assert set(devices) == {unit.code, "HIER-1"}
+    assert devices["HIER-1"].out and not devices[unit.code].out
+
+
+def test_ticking_device_issues_and_unticking_returns(concert, unit, planned, planner_client):
+    url = reverse("inventory:scan", args=[concert.pk])
+
+    page = planner_client.get(url).content.decode()
+    assert f'name="code" value="{unit.code}"' in page
+
+    assert planner_client.post(url, {"code": unit.code, "mode": "issue"}).status_code == 302
+    assert unit.issues.filter(returned_at__isnull=True).exists()
+    assert planner_client.post(url, {"code": unit.code, "mode": "return"}).status_code == 302
+    assert not unit.issues.filter(returned_at__isnull=True).exists()
+
+
+def test_quantity_tick_issues_whole_open_amount(org, concert, make_material, planner_client):
+    org.inventory_qr_enabled = True
+    org.save(update_fields=["inventory_qr_enabled"])
+    item = PlannedMaterial.objects.create(
+        organization=org, production=concert, material=make_material(org, "Kabel"), quantity=3
+    )
+    planner_client.post(
+        reverse("inventory:quantity_move", args=[item.pk]), {"operation": "issue", "quantity": 3}
+    )
+    page = planner_client.get(reverse("inventory:scan", args=[concert.pk])).content.decode()
+    item.refresh_from_db()
+    assert item.issued_quantity == 3
+    assert 'aria-pressed="true"' in page
 
 
 def test_material_page_only_links_to_device_management(unit, planner_client):

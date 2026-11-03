@@ -1,0 +1,37 @@
+{% if org_perms.MANAGE_PRODUCTIONS %}
+  <details{% if not planned_material %} open{% endif %}>
+    <summary>Planung ändern</summary>
+    <div class="stack details-body">
+      <div class="toolbar">
+        <a class="button button--secondary button--small" href="{% url 'inventory:plan' production.pk %}" data-sheet-url>+ Material</a>
+        <a class="button button--secondary button--small" href="{% url 'inventory:plan_kit' production.pk %}" data-sheet-url>+ Materialsatz</a>
+      </div>
+      <div id="production-plan">
+        {% if planned_material %}
+          <ul class="list">
+            {% for p in planned_material %}
+              <li class="list__item{% if p.material.category %} color-{{ p.material.category.color }}{% endif %}">
+                <span class="dot" aria-hidden="true"></span>
+                <div class="list__main">
+                  <a class="list__link list__title" href="{% url 'inventory:detail' p.material_id %}">{{ p.material }} × {{ p.quantity }}</a>
+                  {% if p.source_kit or p.shortage %}
+                    <span class="list__subtitle">{% if p.source_kit %}aus Satz „{{ p.source_kit }}“{% endif %}{% if p.source_kit and p.shortage %} · {% endif %}{% if p.shortage %}<span class="text-danger">{{ p.shortage.needed }} benötigt, {{ p.shortage.available }} verfügbar</span>{% endif %}</span>
+                  {% endif %}
+                </div>
+                {% if p.shortage %}<span class="tag tag--danger">überbucht</span>{% endif %}
+                <div class="list__actions">
+                  <a class="button button--secondary button--small" href="{% url 'inventory:planned_edit' p.pk %}" data-sheet-url aria-label="Menge von {{ p.material }} ändern">Menge</a>
+                  <form method="post" action="{% url 'inventory:planned_remove' p.pk %}">
+                    {% csrf_token %}<button type="submit" class="icon-button" aria-label="{{ p.material }} entfernen">{% include "includes/icon.html" with name="close" %}</button>
+                  </form>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">Noch kein Material eingeplant.</p>
+        {% endif %}
+      </div>
+    </div>
+  </details>
+{% endif %}

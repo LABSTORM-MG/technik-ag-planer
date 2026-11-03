@@ -29,7 +29,10 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 - Board: Mehrere Nachrichten kopieren, Absender nur am Anfang und beim Wechsel
 - Materialsätze nutzen die neue Material-Auswahl
 - QR-Etiketten größer und leichter lesbar, Scan auch per Foto
-- Scannen: Popup am unteren Rand („Name“ wurde gescannt, 3 Sekunden), Ton und Vibration; die Kamera öffnet sich als eigene Vollbild-Ansicht
+- Produktionsseite: Material nur noch als kleine Statuskarte, Mengen und Planung im Material-Menü der Produktion
+- Warnung beim Verlassen nur noch, wenn wirklich etwas geändert wurde
+- „Material packen“ neu: großer Knopf „Kamera öffnen“, darunter eine Liste mit Suche und Filtern, in der sich Geräte und Mengen einzeln abhaken lassen
+- Scannen: Popup am unteren Rand („Name“ wurde gescannt, 3 Sekunden), Ton und Vibration; die Kamera öffnet sich als eigene Vollbild-Ansicht, in der sich auch Ausgabe und Rückgabe umschalten lassen
 - QR-Codes werden mindestens als Version 2 erzeugt und lassen sich dadurch auch schräg scannen; bereits gedruckte Etiketten neu drucken ([ADR 0024](docs/architektur/0024-qr-mindestversion.md))
 - Freistellungsliste als Tabelle: Namen und Jahrgang links, Stunden oben, Kreuze in den betroffenen Feldern; ohne Stundenraster mit Uhrzeiten; die Vorschau nennt, wer warum fehlt
 - Warnung beim Verlassen eines Formulars mit ungespeicherten Änderungen

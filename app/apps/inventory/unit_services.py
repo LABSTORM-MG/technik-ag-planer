@@ -337,6 +337,7 @@ class IssueRow:
     issued: int
     returned: int
     devices_out: list = field(default_factory=list)
+    devices: list = field(default_factory=list)
 
     @property
     def material(self):
@@ -389,6 +390,44 @@ def issue_rows(production):
         else:
             rows.append(IssueRow(item, item.issued_quantity, item.returned_quantity))
     return rows
+
+
+@dataclass
+class PackingDevice:
+    number: int
+    code: str
+    out: bool = False
+    returned: bool = False
+
+
+def add_packing_devices(rows, production):
+    """Abhakbare Geräte je Zeile: was hier draußen ist, und alles, was noch frei ist."""
+    issues = UnitIssue.objects.for_org(production.organization).filter(returned_at__isnull=True)
+    out_here = set(issues.filter(production=production).values_list("unit_id", flat=True))
+    out_elsewhere = set(issues.exclude(production=production).values_list("unit_id", flat=True))
+    returned_here = set(
+        UnitIssue.objects.filter(production=production, returned_at__isnull=False).values_list(
+            "unit_id", flat=True
+        )
+    )
+    defective = set(
+        DefectReport.objects.for_org(production.organization)
+        .filter(unit__isnull=False, status__in=DefectReport.OPEN)
+        .values_list("unit_id", flat=True)
+    )
+    by_material = {row.material.pk: row for row in rows if row.is_individual}
+    units = (
+        MaterialUnit.objects.for_org(production.organization)
+        .filter(material_id__in=by_material)
+        .order_by("number")
+    )
+    for unit in units:
+        out = unit.pk in out_here
+        if not out and (unit.archived_at or unit.pk in out_elsewhere or unit.pk in defective):
+            continue
+        by_material[unit.material_id].devices.append(
+            PackingDevice(unit.number, unit.code, out, not out and unit.pk in returned_here)
+        )
 
 
 def has_outstanding_material(production):
