@@ -167,18 +167,22 @@ def scan(request, pk):
         raise PermissionDenied
     if request.method == "POST":
         try:
-            message = services.scan_unit(
+            scan = services.scan_unit(
                 production, request.POST.get("code", ""), request.POST.get("mode"), request.user
             )
         except ValidationError as error:
-            message, ok = " ".join(error.messages), False
+            message, ok, scan = " ".join(error.messages), False, None
         else:
-            ok = True
+            message, ok = scan.message, True
         if request.headers.get("Accept") == "application/json":
             result = {"ok": ok, "message": message}
-            if ok:
-                unit = services.find_unit(request.organization, request.POST.get("code", ""))
-                result["name"] = unit.material.name
+            if scan:
+                result |= {
+                    "name": scan.material.name,
+                    "action": scan.action,
+                    "detail": scan.detail(production),
+                    "over_plan": scan.over_plan,
+                }
             return JsonResponse(result)
         (messages.success if ok else messages.error)(request, message)
         return redirect("inventory:scan", pk=pk)
@@ -199,10 +203,7 @@ def scan(request, pk):
             "planned_material": production_material(production),
             "has_units": MaterialUnit.objects.for_org(request.organization).exists(),
             "rows": rows,
-            "issued_total": sum(r.issued for r in rows),
-            "planned_total": sum(max(r.planned.quantity, r.issued) for r in rows),
-            "returned_total": sum(r.returned for r in rows if not r.is_consumable),
-            "returnable_total": sum(r.issued for r in rows if not r.is_consumable),
+            **services.packing_totals(rows),
             "production": production,
             "issues": issues,
             "open_issue_count": sum(1 for i in issues if i.returned_at is None),
@@ -230,31 +231,6 @@ def teardown(request, pk):
         ),
     )
     return redirect("inventory:scan", pk=pk)
-
-
-@org_required
-@qr_required
-def protocol(request, pk):
-    production = _production(request, pk)
-    return render(
-        request,
-        "inventory/protocol.html",
-        {
-            "quantity_plans": PlannedMaterial.objects.for_org(request.organization)
-            .filter(production=production)
-            .exclude(material__tracking="individual")
-            .select_related("material")
-            .prefetch_related("movements__user"),
-            "production": production,
-            "teardown": ProductionTeardown.objects.filter(production=production)
-            .select_related("started_by", "completed_by")
-            .first(),
-            "issues": UnitIssue.objects.for_org(request.organization)
-            .filter(production=production)
-            .select_related("unit__material", "issued_by", "returned_by", "exception__created_by"),
-            "active_section": "inventory",
-        },
-    )
 
 
 def _active_units(request):
@@ -362,6 +338,12 @@ def quantity_move(request, pk):
         verb = "zurückgenommen" if operation == "return" else "ausgegeben"
         ok, message = True, f"{raw} × {planned.material.name} {verb}."
     if request.headers.get("Accept") == "application/json":
-        return JsonResponse({"ok": ok, "message": message})
+        result = {"ok": ok, "message": message}
+        if ok:
+            kind = "return" if operation == "return" else "issue"
+            result["detail"] = services.material_progress(
+                planned.production, planned.material, kind
+            )
+        return JsonResponse(result)
     (messages.success if ok else messages.error)(request, message)
     return redirect("inventory:scan", pk=planned.production_id)

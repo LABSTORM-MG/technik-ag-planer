@@ -14,7 +14,6 @@ urlpatterns = [
     path("geraete/<int:pk>/defekt/", unit_views.unit_defect, name="unit_defect"),
     path("geraete/defekte/<int:pk>/status/", unit_views.resolve_defect, name="unit_defect_status"),
     path("produktionen/<int:pk>/abbau/", unit_views.teardown, name="teardown"),
-    path("produktionen/<int:pk>/abbau-protokoll/", unit_views.protocol, name="teardown_protocol"),
     path("material/<int:pk>/geraete/", unit_views.units, name="units"),
     path("material/<int:pk>/geraete/neu/", unit_views.create_unit, name="unit_create"),
     path("geraete/<int:pk>/qr/", unit_views.qr, name="unit_qr"),

@@ -4,11 +4,13 @@ Jede View liefert ohne `as_pdf` die Vorschau im App-Layout, mit `as_pdf` das PDF
 beide aus demselben Template.
 """
 
+from django.http import Http404
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 
+from apps.inventory.models import PlannedMaterial, ProductionTeardown, UnitIssue
 from apps.organizations.decorators import org_required, permission_required_in_org
 from apps.organizations.permissions import Perm
 from apps.productions.models import Job, Production
@@ -171,4 +173,36 @@ def hours(request, pk, as_pdf=False):
             reverse("productions:hours_member", args=[membership.pk]) + _query(request),
             "Einsatzübersicht",
         ),
+    )
+
+
+@org_required
+def teardown_protocol(request, pk, as_pdf=False):
+    if not request.organization.inventory_qr_enabled:
+        raise Http404
+    production = _production(request, pk)
+    return _document(
+        request,
+        url=("teardown_protocol", production.pk),
+        as_pdf=as_pdf,
+        template="documents/teardown_protocol.html",
+        title=f"Abbauprotokoll – {production.name}",
+        filename=f"abbauprotokoll-{slugify(production.name)}",
+        context={
+            "production": production,
+            "supervisors": production.supervisors.all(),
+            "teardown": ProductionTeardown.objects.filter(production=production)
+            .select_related("started_by", "completed_by")
+            .first(),
+            "issues": UnitIssue.objects.for_org(request.organization)
+            .filter(production=production)
+            .select_related("unit__material", "issued_by", "returned_by", "exception")
+            .order_by("unit__material__name", "unit__number", "issued_at"),
+            "quantities": PlannedMaterial.objects.for_org(request.organization)
+            .filter(production=production)
+            .exclude(material__tracking="individual")
+            .select_related("material")
+            .order_by("material__name"),
+        },
+        back=(reverse("inventory:packing_list", args=[production.pk]), "Material"),
     )

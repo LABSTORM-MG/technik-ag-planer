@@ -103,6 +103,35 @@ def check_available(unit):
         raise ValidationError("Dieses Gerät ist noch ausgegeben oder vermisst.")
 
 
+@dataclass
+class ScanResult:
+    """Ergebnis eines Scans: `action` sagt, was passiert ist, `note` warnt zusätzlich."""
+
+    action: str
+    material: Material
+    kind: str = "issue"
+    note: str = ""
+    over_plan: bool = False
+
+    @property
+    def message(self):
+        return f"{self.action} {self.note}." if self.note else self.action
+
+    def detail(self, production):
+        return self.note or material_progress(production, self.material, self.kind)
+
+
+def reservation_conflict(material, production, quantity):
+    """Wer das Material im Zeitraum reserviert hat, wenn `quantity` nicht mehr frei ist."""
+    from .services import _plannings, check
+
+    if check(material, production, quantity) is None:
+        return []
+    return _plannings(
+        material, production.start_date, production.end_date, exclude_production=production
+    )
+
+
 def find_unit(organization, raw):
     return (
         MaterialUnit.objects.for_org(organization)
@@ -120,34 +149,65 @@ def scan_unit(production, raw, mode, user):
         raise ValidationError("Unbekannter Inventarcode.")
     unit = lock_unit(unit)
     current = unit.issues.filter(returned_at__isnull=True).first()
+    here = current is not None and current.production_id == production.pk
     if mode == "return":
-        if not current or current.production_id != production.pk:
+        if not here:
             raise ValidationError("Dieses Gerät ist hier nicht ausgegeben.")
         current.returned_at, current.returned_by = timezone.now(), user
         current.save(update_fields=["returned_at", "returned_by"])
-        return "Rückgabe gespeichert."
+        return ScanResult("Rückgabe gespeichert.", unit.material, "return")
+    if mode == "undo_issue":
+        # Versehentlicher Haken: Die Ausgabe hat nie stattgefunden, also auch keine Rückgabe
+        if not here or TeardownException.objects.filter(issue=current).exists():
+            raise ValidationError("Diese Ausgabe lässt sich nicht zurücknehmen.")
+        current.delete()
+        return ScanResult("Ausgabe zurückgenommen.", unit.material)
+    if mode == "undo_return":
+        check_open(production)
+        check_available(unit)
+        issue = (
+            unit.issues.filter(production=production, returned_at__isnull=False)
+            .order_by("-returned_at")
+            .first()
+        )
+        if issue is None:
+            raise ValidationError("Dieses Gerät ist hier nicht zurückgegeben.")
+        issue.returned_at, issue.returned_by = None, None
+        issue.save(update_fields=["returned_at", "returned_by"])
+        return ScanResult("Rückgabe zurückgenommen.", unit.material, "return")
     if mode != "issue":
         raise ValidationError("Ungültiger Scanmodus.")
     check_open(production)
     check_available(unit)
-    # Jedes freie Gerät geht; die Planung folgt dem, was tatsächlich rausgeht
-    plan, created = PlannedMaterial.objects.get_or_create(
-        organization=production.organization,
-        production=production,
-        material=unit.material,
-        defaults={"quantity": 1},
-    )
+    # Jedes freie Gerät geht, solange es in der Planung liegt. Darüber hinaus darf es nur raus,
+    # wenn der Rest nicht für andere Produktionen im selben Zeitraum reserviert ist.
+    plan = PlannedMaterial.objects.filter(production=production, material=unit.material).first()
     issued = (
         1
-        + UnitIssue.objects.filter(
-            production=production, unit__material=unit.material, returned_at__isnull=True
-        ).count()
+        + UnitIssue.objects.filter(production=production, unit__material=unit.material)
+        .exclude(unit=unit)
+        .values("unit")
+        .distinct()
+        .count()
     )
     note = ""
-    if created:
-        note = f" {unit.material.name} war nicht eingeplant und wurde ergänzt."
+    if plan is None or issued > plan.quantity:
+        others = reservation_conflict(unit.material, production, issued)
+        if others:
+            names = ", ".join(
+                f"{p.production.name} ({p.production.start_date:%d.%m.})" for p in others
+            )
+            raise ValidationError(f"{unit.material.name}: nichts mehr frei, reserviert für {names}")
+    if plan is None:
+        plan = PlannedMaterial.objects.create(
+            organization=production.organization,
+            production=production,
+            material=unit.material,
+            quantity=1,
+        )
+        note = "War nicht eingeplant, jetzt 1 geplant"
     elif issued > plan.quantity:
-        note = f" {issued} von {plan.quantity} geplant, Planung auf {issued} erhöht."
+        note = f"Über Planung: jetzt {issued} statt {plan.quantity} geplant"
         plan.quantity = issued
         plan.save(update_fields=["quantity"])
     UnitIssue.objects.create(
@@ -157,7 +217,7 @@ def scan_unit(production, raw, mode, user):
         production_name=production.name,
         issued_by=user,
     )
-    return f"Ausgabe gespeichert.{note}"
+    return ScanResult("Ausgabe gespeichert.", unit.material, note=note, over_plan=bool(note))
 
 
 @transaction.atomic
@@ -221,6 +281,12 @@ def teardown(production, operation, user, *, issue_id=None, reason="", note=""):
             ProductionTeardown.objects.create(
                 organization=production.organization, production=production, started_by=user
             )
+        return
+    if operation == "reopen":
+        if state is None or not state.completed_at:
+            raise ValidationError("Der Abbau ist nicht abgeschlossen.")
+        state.completed_at, state.completed_by = None, None
+        state.save(update_fields=["completed_at", "completed_by"])
         return
     if state is None or state.completed_at:
         raise ValidationError("Der Abbau ist nicht aktiv.")
@@ -379,17 +445,42 @@ def issue_rows(production):
     for item in planned:
         if item.material.tracking == Material.Tracking.INDIVIDUAL:
             found = by_material.get(item.material_id, [])
+            # Je Gerät einmal: Wer ein zweites Mal rausgeht, ist nicht zwei Geräte
+            units = {i.unit_id for i in found}
+            out = [i for i in found if not i.returned_at]
             rows.append(
-                IssueRow(
-                    item,
-                    len(found),
-                    sum(1 for i in found if i.returned_at),
-                    [i.unit.number for i in found if not i.returned_at],
-                )
+                IssueRow(item, len(units), len(units) - len(out), [i.unit.number for i in out])
             )
         else:
             rows.append(IssueRow(item, item.issued_quantity, item.returned_quantity))
     return rows
+
+
+def material_progress(production, material, kind):
+    """Kurzer Stand für das Popup: Wie viel fehlt von diesem Material noch?"""
+    row = next((r for r in issue_rows(production) if r.material.pk == material.pk), None)
+    if row is None:
+        return ""
+    if kind == "return":
+        if row.is_consumable:
+            return ""
+        if row.to_return:
+            return f"Noch {row.to_return} von {row.issued} offen"
+        return f"Alle {row.issued} zurück" if row.issued > 1 else "1 von 1 zurück"
+    if row.to_issue:
+        return f"Noch {row.to_issue} von {row.planned.quantity} offen"
+    planned = row.planned.quantity
+    return f"Alle {planned} ausgegeben" if planned > 1 else "1 von 1 ausgegeben"
+
+
+def packing_totals(rows):
+    """Gesamtstand für Packseite und Produktionsseite."""
+    return {
+        "issued_total": sum(r.issued for r in rows),
+        "planned_total": sum(max(r.planned.quantity, r.issued) for r in rows),
+        "returned_total": sum(r.returned for r in rows if not r.is_consumable),
+        "returnable_total": sum(r.issued for r in rows if not r.is_consumable),
+    }
 
 
 @dataclass

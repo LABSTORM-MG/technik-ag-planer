@@ -314,10 +314,10 @@ Das Material-Modul verwaltet die Technik der AG mit Kategorien, Bestand und Plan
 
 - Pro AG exklusiv klassische Mengenliste mit Abhaken oder QR-Verwaltung; Standard bleibt klassisch. Wechsel in Einstellungen → AG anpassen → Materialverwaltung, mit Schutz für offene Ausgaben und Rückgaben. Für eine Produktion geben Owner, Admins, Lehrkräfte und alle mit einem zugesagten Job in dieser Produktion Material aus und nehmen es zurück; den Abbau abschließen bleibt bei der Produktionsleitung. Eine private Ausleihe ohne Produktion gibt es nicht.
 - Im QR-Modus pro Materialart: `bulk` (Mengenmaterial), `individual` (Einzelgeräte) oder `consumable` (Verbrauchsmaterial). Kabel werden nach Stückzahl geführt; besondere Kabel können bewusst Einzelgeräte sein.
-- Einzelgeräte mit Inventarcodes, Etiketten, aufklappbarer Geräteliste direkt am Material, Archiv und Historie. Geräte werden nicht reserviert: Jedes freie Gerät lässt sich für eine Produktion scannen, die geplante Menge passt sich an.
+- Einzelgeräte mit Inventarcodes, Etiketten, aufklappbarer Geräteliste direkt am Material, Archiv und Historie. Reserviert wird automatisch über die Planung, als Anzahl je Tag: Innerhalb der Planung lässt sich jedes freie Gerät scannen, darüber hinaus nur, wenn der Rest nicht für eine andere Produktion im selben Zeitraum belegt ist; die geplante Menge passt sich an.
 - Gemeinsame Materialausgabe: Kamerascan/Code für Einzelgeräte, Stückzahl und Teilrückgaben für Mengenmaterial, Bestandsentnahme ohne Rückgabe für Verbrauchsmaterial. Kamera benötigt HTTPS/localhost; Scannerbibliothek wird lokal ausgeliefert.
 - Gerätespezifische Defekte und Reparaturvermerke ergänzen vorhandene Defektmeldungen.
-- Abbau mit dokumentierten Ausnahmen für Einzelgeräte, Sperre ungeklärter Mengenrückgaben und druckbarem Protokoll. Vermisste Geräte bleiben gesperrt; spätere Rückgabe bleibt möglich.
+- Abbau mit dokumentierten Ausnahmen für Einzelgeräte, Sperre ungeklärter Mengenrückgaben und Protokoll als PDF. Vermisste Geräte bleiben gesperrt; spätere Rückgabe bleibt möglich. Ein abgeschlossener Abbau lässt sich nach Rückfrage wieder öffnen.
 - Modus, Modelle und Migrationen: [ADR 0022](architektur/0022-material-einzelgeraete.md). Vollständiger Umfang und noch offene Übernahmeprüfungen: [Entwicklerübergabe](entwicklung/materialerweiterung.md). Bedienung: [Material-Handbuch](handbuch/material-scans.md).
 
 ## 8. Board
@@ -607,6 +607,8 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | – | Kopieren mehrerer Nachrichten, Stundenraster, Einrichtungs-Checkliste, QR-Lesbarkeit, Freistellungs-Tabelle, Warnung bei ungespeicherten Änderungen | fertig | #32 |
 | – | QR-Codes drucken mit Gerätenummer, persönliche Kalender-Einstellung, „Material packen“ neu | fertig | #33 |
 | – | QR-Codes mindestens Version 2, damit sie auch schräg lesbar sind (ADR 0024) | fertig | #36 |
+| – | Scan-Rückmeldung, Vollbild-Kamera, „Material packen“ neu mit Liste und Haken, kompakte Produktionsseite, Verlassen-Warnung genauer | fertig | #38, #39 |
+| – | Reservierung über die Planung, Stand in der Kamera, Abbau wieder öffnen, Abbauprotokoll als PDF | fertig | #40 |
 | – | Oberfläche: Nachfrage bei Anfragen, Kalender, Board auf dem Handy, Crew-Schalter, Produktionsseite | fertig | #20, #21 |
 | – | „In privaten Kalender“ mit Auswahl Google, Apple, Datei | fertig | #22 |
 
@@ -671,6 +673,7 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | Kalender | Jobs ersetzen den Eintrag der Produktion an ihren Tagen und bleiben einzeln sichtbar | Mehrere Balken wirkten wie doppelte Termine | ADR 0019 |
 | Einstellungen | Unterseite „AG anpassen“ sammelt alle AG-Einstellungen; Fehler beim Google-Abgleich statt „verbunden“ anzeigen; Ordner endgültig gelöschter Produktionen in den Drive-Papierkorb | Übersicht und ehrlicher Status; Ordner können selbst abgelegte Dateien enthalten | ADR 0021 |
 | Material | Einzelgeräte werden nicht reserviert; jedes freie Gerät lässt sich scannen, die Planung passt sich an | Die Anzahl zählt nur für den Bestand, nicht welches Gerät es wird | ADR 0023 |
+| Material | Die Planung ist die Reservierung (Anzahl je Tag); Scan über die Planung hinaus wird gesperrt, wenn der Rest anderweitig belegt ist | Kein Reservieren von Hand, Konflikte fallen trotzdem auf | ADR 0025 |
 | Board | Bearbeiten und Löschen über Gedrückthalten, Mehrfachauswahl nur zum Löschen | Aufgeräumter Chat wie in Messengern | ADR 0023 |
 | Anfragen | Technik-Auswahl je AG, gepflegt von Owner, Admins und Lehrkräften; Anfragen speichern den Text statt einer Verknüpfung | Jede AG hat andere Technik; alte Anfragen bleiben beim Umbenennen und Löschen unverändert | ADR 0018 |
 | Google | Kein Drive-Anhang am Google-Termin; der Termin verlinkt in die App | Dateien liegen privat im Drive der AG – Abonnenten könnten Anhänge nicht öffnen | ADR 0015 |
@@ -698,5 +701,6 @@ Die ursprünglichen Meilensteine 1–12 sind umgesetzt; für die Erweiterung M13
 
 **Ideen für später**
 
+- Begründete Verlustausnahme für Mengenmaterial beim Abbau, damit fehlende Stücke den Abschluss nicht blockieren
 - Besser gestaltete E-Mails für Einladung und „Passwort vergessen“
 - Kurzes Tutorial nach der ersten Kontoerstellung: die Website als App auf den Homebildschirm legen (iPhone, Android)

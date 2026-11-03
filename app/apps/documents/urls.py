@@ -29,6 +29,17 @@ urlpatterns = [
     ),
     path("einsaetze/<int:pk>/uebersicht/", views.hours, name="hours"),
     path("einsaetze/<int:pk>/uebersicht.pdf", views.hours, PDF, name="hours_pdf"),
+    path(
+        "produktionen/<int:pk>/abbauprotokoll/",
+        views.teardown_protocol,
+        name="teardown_protocol",
+    ),
+    path(
+        "produktionen/<int:pk>/abbauprotokoll.pdf",
+        views.teardown_protocol,
+        PDF,
+        name="teardown_protocol_pdf",
+    ),
     path("produktionen/<int:pk>/packliste.pdf", views.packing_list, PDF, name="packing_list_pdf"),
     path(
         "produktionen/<int:pk>/packliste/vorschau/",

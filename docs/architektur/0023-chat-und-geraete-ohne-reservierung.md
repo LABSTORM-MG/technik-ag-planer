@@ -1,5 +1,7 @@
 # ADR 0023: Chat-Auswahl und Einzelgeräte ohne Reservierung
 
+> Die Prüfung beim Scan über die Planung hinaus regelt inzwischen [ADR 0025](0025-reservierung-ueber-planung.md).
+
 - **Status:** angenommen
 - **Datum:** 2026-11-02
 

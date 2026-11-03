@@ -1,0 +1,43 @@
+<div class="doc">
+  {% include "documents/includes/head.html" with kind="Abbauprotokoll" %}
+
+  <p class="doc__meta">
+    {% if teardown %}Begonnen {{ teardown.started_at|date:"d.m.Y, H:i" }} · {{ teardown.started_by|default:"Ehemaliges Mitglied" }}{% else %}Abbau noch nicht begonnen{% endif %}
+    {% if teardown.completed_at %}<br>Abgeschlossen {{ teardown.completed_at|date:"d.m.Y, H:i" }} · {{ teardown.completed_by|default:"Ehemaliges Mitglied" }}{% elif teardown %}<br>Noch nicht abgeschlossen{% endif %}
+  </p>
+
+  {% if issues %}
+    <table class="doc__table">
+      <thead><tr><th>Gerät</th><th>Ausgabe</th><th>Rückgabe</th></tr></thead>
+      <tbody>
+        {% for issue in issues %}
+          <tr>
+            <td>{{ issue.unit.material.name }} · Nr. {{ issue.unit.number }}</td>
+            <td>{{ issue.issued_at|date:"d.m. H:i" }} · {{ issue.issued_by|default:"Ehemaliges Mitglied" }}</td>
+            <td>{% if issue.returned_at %}{{ issue.returned_at|date:"d.m. H:i" }} · {{ issue.returned_by|default:"Ehemaliges Mitglied" }}{% else %}offen{% endif %}{% if issue.exception %}<br>{{ issue.exception.get_reason_display }}: {{ issue.exception.note }}{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  {% if quantities %}
+    <table class="doc__table">
+      <thead><tr><th>Material</th><th class="doc__num">Geplant</th><th class="doc__num">Ausgegeben</th><th class="doc__num">Zurück</th></tr></thead>
+      <tbody>
+        {% for q in quantities %}
+          <tr>
+            <td>{{ q.material }}</td>
+            <td class="doc__num">{{ q.quantity }}</td>
+            <td class="doc__num">{{ q.issued_quantity }}</td>
+            <td class="doc__num">{% if q.material.tracking == "consumable" %}Verbrauch{% else %}{{ q.returned_quantity }}{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  {% if not issues and not quantities %}<p class="doc__muted">Noch keine Ausgaben erfasst.</p>{% endif %}
+
+  {% include "documents/includes/footer.html" %}
+</div>

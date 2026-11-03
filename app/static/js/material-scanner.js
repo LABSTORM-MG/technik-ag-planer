@@ -10,7 +10,13 @@
   // Ein Schalter für alles: zeigt nur, was zum gewählten Vorgang gehört
   const radios = [...document.querySelectorAll('input[name="mode"]')];
   const mode = () => radios.find((radio) => radio.checked)?.value || 'issue';
-  const applyMode = () => { workspace.dataset.mode = mode(); };
+  // Die Kamera-Ansicht zeigt denselben Gesamtstand wie die Seite
+  const syncProgress = () => {
+    const target = document.getElementById('scan-overlay-progress');
+    const source = document.querySelector(`#issue-progress [data-show="${mode()}"]`);
+    if (target && source) target.textContent = source.textContent;
+  };
+  const applyMode = () => { workspace.dataset.mode = mode(); syncProgress(); };
   radios.forEach((radio) => radio.addEventListener('change', applyMode));
   applyMode();
 
@@ -30,14 +36,19 @@
     audio ||= new Context();
     if (audio.state === 'suspended') void audio.resume();
   };
-  function beep(ok) {
+  const TONES = {
+    success: [[880, 0], [1320, 0.1]],
+    warning: [[660, 0], [660, 0.16], [660, 0.32]],
+    error: [[220, 0], [165, 0.18]],
+  };
+  function beep(kind) {
     if (!audio) return;
-    const tones = ok ? [[880, 0], [1320, 0.1]] : [[220, 0], [165, 0.18]];
+    const tones = TONES[kind];
     for (const [frequency, delay] of tones) {
       const start = audio.currentTime + delay;
       const oscillator = audio.createOscillator();
       const gain = audio.createGain();
-      oscillator.type = ok ? 'sine' : 'square';
+      oscillator.type = kind === 'error' ? 'square' : 'sine';
       oscillator.frequency.value = frequency;
       gain.gain.setValueAtTime(0.3, start);
       gain.gain.exponentialRampToValueAtTime(0.001, start + 0.16);
@@ -49,21 +60,22 @@
 
   const toast = document.getElementById('scan-toast');
   let toastTimer;
-  function showToast(title, detail, ok) {
+  function showToast(title, detail, kind) {
     document.getElementById('scan-toast-title').textContent = title;
     document.getElementById('scan-toast-detail').textContent = detail;
-    toast.className = `message message--${ok ? 'success' : 'error'} scan-toast`;
+    toast.className = `message message--${kind} scan-toast`;
     toast.hidden = false;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => { toast.hidden = true; }, 3000);
   }
 
   // Rückmeldung nach dem Speichern: Popup, Ton, Vibration und die Meldung auf der Seite
-  function announce(title, detail, ok) {
+  const VIBRATION = {success: 80, warning: [200, 80, 200], error: [60, 60, 60]};
+  function announce(title, detail, kind) {
     show(detail ? `${title}. ${detail}` : title);
-    showToast(title, detail, ok);
-    beep(ok);
-    navigator.vibrate?.(ok ? 80 : [60, 60, 60]);
+    showToast(title, detail, kind);
+    beep(kind);
+    navigator.vibrate?.(VIBRATION[kind]);
   }
 
   // Stand neu holen, ohne die Seite neu zu laden; Kamera und Scrollposition bleiben
@@ -77,15 +89,17 @@
     }
     // Neue Zeilen kennen den Filter noch nicht
     workspace.querySelector('[data-picker-search]')?.dispatchEvent(new Event('input', {bubbles: true}));
+    syncProgress();
   }
 
   async function post(url, data, tick = false) {
     const response = await fetch(url, {method: 'POST', body: data, headers: {Accept: 'application/json'}, credentials: 'same-origin'});
     if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) throw new Error('Sitzung abgelaufen oder Anfrage fehlgeschlagen. Bitte Seite neu laden.');
     const result = await response.json();
-    if (result.name && tick) announce(`${result.name}: ${result.message}`, '', result.ok);
-    else if (result.name) announce(`„${result.name}“ wurde gescannt`, result.message, result.ok);
-    else announce(result.message, '', result.ok);
+    const kind = !result.ok ? 'error' : result.over_plan ? 'warning' : 'success';
+    if (result.name && tick) announce(`${result.name}: ${result.action}`, result.detail, kind);
+    else if (result.name) announce(`„${result.name}“ wurde gescannt`, result.detail, kind);
+    else announce(result.message, result.detail || '', kind);
     if (result.ok) await refresh();
     return result;
   }
@@ -99,7 +113,7 @@
     busy = true;
     unlockAudio();
     try { await post(quantity.action, new FormData(quantity), quantity.hasAttribute('data-tick')); }
-    catch (error) { announce(error.message, '', false); }
+    catch (error) { announce(error.message, '', 'error'); }
     finally { busy = false; }
   });
 
@@ -145,7 +159,7 @@
       data.set('mode', mode());
       await post(form.action || location.href, data);
       form.elements.code.value = '';
-    } catch (error) { announce(error.message, '', false); }
+    } catch (error) { announce(error.message, '', 'error'); }
     finally { busy = false; }
   }
   form.addEventListener('submit', (event) => { event.preventDefault(); unlockAudio(); void submit(form.elements.code.value.trim()); });
@@ -167,7 +181,7 @@
       await submit(code);
     } catch (error) {
       photoReader.hidden = true;
-      announce(typeof error === 'string' || !error?.message ? 'Im Foto wurde kein QR-Code erkannt. Bitte näher heran und ohne Spiegelung.' : error.message, '', false);
+      announce(typeof error === 'string' || !error?.message ? 'Im Foto wurde kein QR-Code erkannt. Bitte näher heran und ohne Spiegelung.' : error.message, '', 'error');
     }
   });
 
@@ -192,7 +206,7 @@
       // In der Zwischenzeit geschlossen: Kamera nicht unsichtbar weiterlaufen lassen
       if (disposed || overlay.hidden) { await stop(); return; }
       show('Kamera aktiv. Etikett in den Rahmen halten.');
-    } catch (error) { await stop(); announce(error.message, '', false); }
+    } catch (error) { await stop(); announce(error.message, '', 'error'); }
     finally { starting = false; }
   });
 })();
