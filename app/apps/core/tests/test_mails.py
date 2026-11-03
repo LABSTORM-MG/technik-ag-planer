@@ -25,6 +25,7 @@ def _invite(org, owner, django_capture_on_commit_callbacks):
 
 def _assert_styled(html):
     assert "var(" not in html  # Mail-Programme kennen keine CSS-Variablen
+    assert "border:" not in html  # Gmail hellt Rahmen im Dunkelmodus auf (ADR 0026)
     for name in ["color-bg", "color-surface", "color-primary", "color-on-primary", "color-accent"]:
         assert _tokens()[name] in html
     # Fußzeile mit absoluten Links
