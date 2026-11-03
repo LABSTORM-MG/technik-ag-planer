@@ -30,7 +30,7 @@
         <button class="button button--primary" type="button" id="camera">Kamera starten</button>
         <label class="button button--secondary inventory-photo-scan">Foto aufnehmen<input type="file" id="photo" accept="image/*" capture="environment"></label>
       </div>
-      <div id="preview" hidden></div>
+      <div id="photo-reader" class="inventory-photo-reader" hidden></div>
       <form method="post" id="scan-form" data-no-unsaved>
         {% csrf_token %}
         <details>
@@ -42,7 +42,18 @@
         </details>
       </form>
     </section>
+    <div class="scan-overlay" id="scan-overlay" role="dialog" aria-modal="true" aria-label="Kamera" hidden>
+      <div class="scan-overlay__bar">
+        <span class="scan-overlay__mode" id="scan-overlay-mode"></span>
+        <button class="button button--secondary" type="button" id="camera-close">Schließen</button>
+      </div>
+      <div class="scan-overlay__view"><div id="preview"></div></div>
+    </div>
   {% endif %}
+  <div class="message scan-toast" id="scan-toast" aria-hidden="true" hidden>
+    <p class="scan-toast__title" id="scan-toast-title"></p>
+    <p class="scan-toast__detail" id="scan-toast-detail"></p>
+  </div>
 
   <section id="material-state" aria-label="Packliste">
     {% if rows %}
