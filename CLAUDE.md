@@ -2,7 +2,7 @@
 
 Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilensteine: Abschnitt 15, Umsetzungsstand und Entscheidungen: Abschnitt 16 (nach jedem Meilenstein fortschreiben).
 
-**Stand: Alle 12 Meilensteine umgesetzt – Wartung und Ideen aus Abschnitt 16 („Vor dem Start“, „Ideen für später“).** Weiter mit Branch, Plan, PR wie bisher; neue Entscheidungen als ADR ab 0026.
+**Stand: Alle 12 Meilensteine umgesetzt – Wartung und Ideen aus Abschnitt 16 („Vor dem Start“, „Ideen für später“).** Weiter mit Branch, Plan, PR wie bisher; neue Entscheidungen als ADR ab 0027.
 
 ## Regeln
 
@@ -37,12 +37,13 @@ Spezifikation: `docs/feature-liste.md` (nicht hier kopieren). Ablauf und Meilens
 - **Google:** Aufrufe nur über `apps.google_sync.google_api` (Tests: Fixtures `google`/`connected` mit Attrappe); Dateien mit `apps.google_sync.drive.upload(org, datei, production=…|material=…|defect=…|inquiry=…)`, Liste per Include `google_sync/includes/attachments.html`. Neue Kalender-Einträge in `calendar_sync.desired_events` und `signals.WATCHED` ergänzen
 - **Push-Mitteilungen:** `apps.notifications.services.notify(org, konten, Kind.X, titel, text, url)` – nur Push, keine E-Mails; neue Auslöser in `apps/notifications/signals.py` (Tests: Fixtures `pushed`, `device`)
 - **Kalendereinträge:** `apps.scheduling.calendar.calendar_entries(org, start, end, membership=None)`
+- **E-Mails:** Vorlage erbt von `emails/base.html`, Button über `emails/includes/button.html`, immer auch eine `.txt`-Fassung. Inline-Styles; Farben mit `{% load mail %}{% token "color-…" %}`, absolute Links mit `{% site_url "app:name" %}`
 
 ## Apps (`app/apps/`)
 
 | App | Inhalt | ADR |
 | --- | --- | --- |
-| `core` | Navigation, Landingpage, Hilfe & FAQ, Über die App, Rechtstexte (`LegalPage`), CSP-Middleware, Health-Check | 0003, 0014 |
+| `core` | Navigation, Hilfe & FAQ, Über die App, Rechtstexte (`LegalPage`), CSP-Middleware, Health-Check, Hilfen für E-Mail-Vorlagen | 0003, 0014, 0026 |
 | `accounts` | Konten, Login, 2FA, Passwort, Profil, Konto löschen | 0004, 0011 |
 | `organizations` | AGs, Rollen und Rechte, Einladungen, Einstellungen, Schuljahreswechsel, Datenexport, `beispieldaten` | 0004, 0011, 0017, 0021 |
 | `audit` | Änderungsprotokoll (7 Tage) | 0004 |

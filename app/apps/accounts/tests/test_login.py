@@ -7,13 +7,13 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from conftest import PASSWORD
 
 PUBLIC_URLS = [
-    reverse("productions:dashboard"),  # abgemeldet: Landingpage
     reverse("core:imprint"),
     reverse("accounts:login"),
     reverse("accounts:password_reset"),
     reverse("core:healthz"),
 ]
 PROTECTED_URLS = [
+    reverse("productions:dashboard"),
     reverse("productions:list"),
     reverse("scheduling:calendar"),
     reverse("organizations:settings"),

@@ -22,7 +22,6 @@ PUBLIC = {
     "accounts:password_reset_confirm",
     "accounts:password_reset_complete",
     "organizations:accept_invitation",  # Token in der URL
-    "productions:dashboard",  # abgemeldet: Landingpage
     "inquiries:public",  # öffentlicher Anfrage-Link (Token, Spam-Schutz)
     "inquiries:public_thanks",
     "notifications:manifest",

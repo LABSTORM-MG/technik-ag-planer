@@ -1,6 +1,8 @@
 {% autoescape off %}Hallo,
 
-{% if invited_by %}{{ invited_by }} hat dich{% else %}du wurdest{% endif %} in die {{ organization.name }} im Technik-AG Planer eingeladen{% if invitation.role == "owner" %} – als Owner der AG{% endif %}.
+{% if invited_by %}{{ invited_by }} hat dich{% else %}du wurdest{% endif %} in die {{ organization.name }} im Technik-AG Planer eingeladen.
+
+Deine Rolle: {{ invitation.get_role_display }}
 
 Über diesen Link nimmst du die Einladung an:
 

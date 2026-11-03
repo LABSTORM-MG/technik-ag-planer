@@ -19,7 +19,7 @@ Planungs-App für Technik-AGs an Schulen: Produktionen, Jobs und Crew, Kalender,
 - **Team:** Fähigkeiten mit Filter und Vorschlägen beim Einteilen, Einsatzübersicht mit Stundenkorrektur, Schuljahreswechsel, Konto löschen (Einsätze bleiben als „Ehemaliges Mitglied“)
 - **Google-Anbindung:** Dateien (Produktionen, Material, Defektfotos, Anfragen) im Google Drive der AG, alle Kalendereinträge automatisch im Google-Kalender der AG – [Einrichtung](docs/installation/google-cloud.md)
 - **Als App installierbar** (Home-Bildschirm, Vollbild) mit **Push-Mitteilungen** zu Crew-Anfragen, Änderungen, Technik-Anfragen, Board und Chats sowie Erinnerung vor eigenen Jobs
-- **Landingpage, Hilfe & FAQ, „Über die App“** und Seiten für Impressum, Datenschutz und Nutzungsbedingungen
+- **Hilfe & FAQ, „Über die App“** und Seiten für Impressum, Datenschutz und Nutzungsbedingungen
 - **Django-Admin** für den Betreiber: AGs anlegen, Owner einladen, Konten verwalten, Datenexport, Änderungsprotokoll
 
 ## Schnellstart (Entwicklung)

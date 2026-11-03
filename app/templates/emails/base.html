@@ -1,0 +1,41 @@
+{% load mail %}<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
+  <title>Technik-AG Planer</title>
+</head>
+<body style="margin:0; padding:0; background-color:{% token 'color-bg' %};">
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all;">{% block preheader %}{% endblock %}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="{% token 'color-bg' %}" style="background-color:{% token 'color-bg' %};">
+    <tr>
+      <td align="center" style="padding:32px 16px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+          <tr>
+            <td style="padding:0 4px 16px; color:{% token 'color-text' %}; font-size:16px; line-height:24px; font-weight:700;">Technik-AG Planer</td>
+          </tr>
+          <tr>
+            <td height="4" bgcolor="{% token 'color-accent' %}" style="height:4px; font-size:0; line-height:0; background-color:{% token 'color-accent' %}; border-radius:12px 12px 0 0;">&nbsp;</td>
+          </tr>
+          <tr>
+            <td bgcolor="{% token 'color-surface' %}" style="padding:32px 28px; background-color:{% token 'color-surface' %}; border:1px solid {% token 'color-line' %}; border-top:0; border-radius:0 0 12px 12px; color:{% token 'color-text' %}; font-size:16px; line-height:24px;">
+              <h1 style="margin:0 0 16px; color:{% token 'color-text' %}; font-size:24px; line-height:32px; font-weight:700;">{% block heading %}{% endblock %}</h1>
+              {% block content %}{% endblock %}
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:20px 4px 0; color:{% token 'color-text-muted' %}; font-size:13px; line-height:20px;">
+              Diese E-Mail wurde automatisch verschickt. Bitte antworte nicht darauf.<br>
+              <a href="{% site_url 'core:imprint' %}" style="color:{% token 'color-text-muted' %}; text-decoration:underline;">Impressum</a>
+              &nbsp;·&nbsp;
+              <a href="{% site_url 'core:privacy' %}" style="color:{% token 'color-text-muted' %}; text-decoration:underline;">Datenschutz</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

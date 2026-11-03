@@ -1,4 +1,4 @@
-"""Landingpage, Rechtliches, Hilfe & FAQ, Über die App (M12)."""
+"""Startseite, Rechtliches, Hilfe & FAQ, Über die App (M12, ADR 0026)."""
 
 import pytest
 from django.test import Client
@@ -9,28 +9,16 @@ from apps.organizations.permissions import Role
 
 
 @pytest.mark.django_db
-def test_landing_for_anonymous():
-    content = Client().get("/").content.decode()
-    for text in [
-        "Zur App",
-        "nur auf Einladung",
-        "So startest du",
-        "kostenlos",
-        "Impressum",
-        "landing/handy-dashboard.png",
-    ]:
-        assert text in content
-    assert "Crew-Anfragen offen" not in content  # nicht das Dashboard
+def test_start_page_sends_anonymous_to_login():
+    response = Client().get("/", follow=True)
+
+    assert response.redirect_chain[0][0].startswith(reverse("accounts:login"))
+    content = response.content.decode()
+    assert "Anmelden" in content and "Impressum" in content
 
 
 def test_dashboard_for_members(member_client):
-    content = member_client.get("/").content.decode()
-    assert "Was steht an?" in content and "So startest du" not in content
-
-
-def test_screenshots_exist(settings):
-    for name in ["handy-dashboard", "handy-produktion", "handy-material", "computer-kalender"]:
-        assert (settings.BASE_DIR / "static" / "landing" / f"{name}.png").exists()
+    assert "Was steht an?" in member_client.get("/").content.decode()
 
 
 @pytest.mark.django_db
@@ -58,7 +46,7 @@ def test_legal_links_on_public_pages(org):
     link = link_for(org)
     link.is_active = True
     link.save()
-    for url in ["/", reverse("accounts:login"), reverse("inquiries:public", args=[link.token])]:
+    for url in [reverse("accounts:login"), reverse("inquiries:public", args=[link.token])]:
         assert reverse("core:privacy") in Client().get(url).content.decode(), url
 
 

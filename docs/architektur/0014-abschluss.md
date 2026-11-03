@@ -1,6 +1,6 @@
 # ADR 0014: Abschluss – Landingpage, Rechtstexte, CSP, Sicherheits-Test, Backups
 
-- **Status:** angenommen
+- **Status:** angenommen; Landingpage ersetzt durch [ADR 0026](0026-login-als-startseite-und-gestaltete-mails.md)
 - **Datum:** 2026-10-18
 
 ## Kontext
