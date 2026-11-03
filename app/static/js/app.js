@@ -137,21 +137,44 @@ document.addEventListener("click", (event) => {
 });
 
 // Warnung vor ungespeicherten Änderungen beim Verlassen eines Formulars.
-// Vergleicht mit den Startwerten, zurückgesetzte Eingaben zählen also nicht.
+// Zählt nur, was jemand selbst angefasst hat und vom Startwert abweicht: Wiederhergestellte
+// Entwürfe und von Skripten gesetzte Felder lösen nichts aus, zurückgesetzte Eingaben auch nicht.
 (() => {
   const LEAVE_TEXT = "Du hast ungespeicherte Änderungen. Wirklich verlassen, ohne zu speichern?";
   let leaving = false;
+  const touched = new WeakSet();
+
+  ["input", "change"].forEach((type) => {
+    document.addEventListener(type, (event) => {
+      if (!event.target?.form) return;
+      touched.add(event.target);
+      touched.add(event.target.form);
+    });
+  });
+
+  function selectChanged(select) {
+    const options = [...select.options];
+    // Ohne vorgewählten Eintrag zeigt der Browser den ersten; das ist noch keine Änderung
+    if (!select.multiple && !options.some((option) => option.defaultSelected)) {
+      return select.selectedIndex > 0;
+    }
+    return options.some((option) => option.selected !== option.defaultSelected);
+  }
+
+  function changed(element) {
+    if (element.type === "checkbox" || element.type === "radio") {
+      return element.checked !== element.defaultChecked;
+    }
+    if (element.tagName === "SELECT") return selectChanged(element);
+    return "defaultValue" in element && element.value !== element.defaultValue;
+  }
 
   function isDirty(form) {
+    if (!touched.has(form)) return false;
     return [...form.elements].some((element) => {
       if (!element.name || element.name === "csrfmiddlewaretoken") return false;
-      if (element.type === "checkbox" || element.type === "radio") {
-        return element.checked !== element.defaultChecked;
-      }
-      if (element.tagName === "SELECT") {
-        return [...element.options].some((option) => option.selected !== option.defaultSelected);
-      }
-      return "defaultValue" in element && element.value !== element.defaultValue;
+      // Versteckte Felder füllen Bedienelemente per Skript, sie zählen mit dem Formular
+      return (touched.has(element) || element.type === "hidden") && changed(element);
     });
   }
 

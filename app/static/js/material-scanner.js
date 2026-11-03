@@ -14,12 +14,13 @@
   radios.forEach((radio) => radio.addEventListener('change', applyMode));
   applyMode();
 
-  // Die Meldung klebt über dem Kamerabild, damit man sie beim Scannen sieht
-  function show(text, kind = '') {
-    status.hidden = false;
-    status.textContent = text;
-    status.className = kind ? `message message--${kind} inventory-scan-status` : 'inventory-scan-status';
-  }
+  // Für Screenreader; sichtbar meldet sich das Popup
+  function show(text) { status.textContent = text; }
+
+  // Nur offene: reicht als Attribut, das CSS blendet die erledigten Zeilen aus
+  document.getElementById('only-open')?.addEventListener('change', (event) => {
+    workspace.toggleAttribute('data-only-open', event.target.checked);
+  });
 
   // Ton ohne Audiodatei; Browser erlauben ihn erst nach einem Tippen, darum unlockAudio
   let audio;
@@ -59,7 +60,7 @@
 
   // Rückmeldung nach dem Speichern: Popup, Ton, Vibration und die Meldung auf der Seite
   function announce(title, detail, ok) {
-    show(detail ? `${title}. ${detail}` : title, ok ? 'success' : 'error');
+    show(detail ? `${title}. ${detail}` : title);
     showToast(title, detail, ok);
     beep(ok);
     navigator.vibrate?.(ok ? 80 : [60, 60, 60]);
@@ -70,17 +71,20 @@
     const page = await fetch(location.href, {credentials: 'same-origin'});
     if (!page.ok) return;
     const next = new DOMParser().parseFromString(await page.text(), 'text/html');
-    for (const id of ['material-state', 'issue-progress', 'teardown-state']) {
+    for (const id of ['material-state', 'issue-progress', 'teardown-state', 'production-plan']) {
       const updated = next.getElementById(id);
       if (updated) document.getElementById(id)?.replaceWith(updated);
     }
+    // Neue Zeilen kennen den Filter noch nicht
+    workspace.querySelector('[data-picker-search]')?.dispatchEvent(new Event('input', {bubbles: true}));
   }
 
-  async function post(url, data) {
+  async function post(url, data, tick = false) {
     const response = await fetch(url, {method: 'POST', body: data, headers: {Accept: 'application/json'}, credentials: 'same-origin'});
     if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) throw new Error('Sitzung abgelaufen oder Anfrage fehlgeschlagen. Bitte Seite neu laden.');
     const result = await response.json();
-    if (result.name) announce(`„${result.name}“ wurde gescannt`, result.message, result.ok);
+    if (result.name && tick) announce(`${result.name}: ${result.message}`, '', result.ok);
+    else if (result.name) announce(`„${result.name}“ wurde gescannt`, result.message, result.ok);
     else announce(result.message, '', result.ok);
     if (result.ok) await refresh();
     return result;
@@ -94,7 +98,7 @@
     if (busy) return;
     busy = true;
     unlockAudio();
-    try { await post(quantity.action, new FormData(quantity)); }
+    try { await post(quantity.action, new FormData(quantity), quantity.hasAttribute('data-tick')); }
     catch (error) { announce(error.message, '', false); }
     finally { busy = false; }
   });
@@ -102,6 +106,13 @@
   if (!form) return;
 
   const overlay = document.getElementById('scan-overlay');
+  // Der Schalter in der Kamera steuert denselben Vorgang wie der auf der Seite
+  const cameraRadios = [...document.querySelectorAll('input[name="camera-mode"]')];
+  cameraRadios.forEach((radio) => radio.addEventListener('change', () => {
+    const main = radios.find((candidate) => candidate.value === radio.value);
+    if (main) main.checked = true;
+    applyMode();
+  }));
   let historyEntry = false;
 
   async function stop() {
@@ -156,7 +167,7 @@
       await submit(code);
     } catch (error) {
       photoReader.hidden = true;
-      show(typeof error === 'string' || !error?.message ? 'Im Foto wurde kein QR-Code erkannt. Bitte näher heran und ohne Spiegelung.' : error.message, 'error');
+      announce(typeof error === 'string' || !error?.message ? 'Im Foto wurde kein QR-Code erkannt. Bitte näher heran und ohne Spiegelung.' : error.message, '', false);
     }
   });
 
@@ -167,7 +178,7 @@
     try {
       if (!window.isSecureContext) throw new Error('Die Kamera benötigt HTTPS oder localhost.');
       if (!window.Html5Qrcode) throw new Error('Kamerascanner konnte nicht geladen werden. Bitte Code von Hand eingeben.');
-      document.getElementById('scan-overlay-mode').textContent = mode() === 'return' ? 'Rückgabe' : 'Ausgabe';
+      cameraRadios.forEach((radio) => { radio.checked = radio.value === mode(); });
       overlay.hidden = false;
       overlay.append(toast);
       document.getElementById('camera-close').focus();

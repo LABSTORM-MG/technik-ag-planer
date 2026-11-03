@@ -22,6 +22,7 @@ from .models import (
     ProductionTeardown,
     UnitIssue,
 )
+from .services import production_material
 from .views import _production
 
 
@@ -188,10 +189,14 @@ def scan(request, pk):
         .order_by("-issued_at")
     )
     rows = services.issue_rows(production)
+    services.add_packing_devices(rows, production)
+    categories = {r.material.category_id: r.material.category for r in rows if r.material.category}
     return render(
         request,
         "inventory/scan.html",
         {
+            "categories": categories.values(),
+            "planned_material": production_material(production),
             "has_units": MaterialUnit.objects.for_org(request.organization).exists(),
             "rows": rows,
             "issued_total": sum(r.issued for r in rows),

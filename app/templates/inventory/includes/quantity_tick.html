@@ -1,0 +1,20 @@
+<div class="issue-quantity" data-show="{{ show }}">
+  <form method="post" action="{% url 'inventory:quantity_move' row.planned.pk %}" data-quantity-form data-tick data-no-unsaved>
+    {% csrf_token %}<input type="hidden" name="operation" value="{{ operation }}"><input type="hidden" name="quantity" value="{{ open }}">
+    <button class="tick-row" aria-pressed="{{ open|yesno:'false,true' }}"{% if not open or operation == "issue" and teardown.completed_at %} disabled{% endif %}>
+      <span class="tick-row__box" aria-hidden="true"></span><span class="tick-row__label issue-row__name">{{ row.material.name }}</span>
+      {% include "inventory/includes/issue_count.html" %}
+    </button>
+  </form>
+  {% if open > 1 and not teardown.completed_at or open > 1 and operation == "return" %}
+    <details>
+      <summary>Teilmenge</summary>
+      <form class="issue-row__form" method="post" action="{% url 'inventory:quantity_move' row.planned.pk %}" data-quantity-form data-no-unsaved>
+        {% csrf_token %}<input type="hidden" name="operation" value="{{ operation }}">
+        <label class="visually-hidden" for="menge-{{ operation }}-{{ row.planned.pk }}">Stückzahl</label>
+        <input class="input issue-row__qty" id="menge-{{ operation }}-{{ row.planned.pk }}" name="quantity" type="number" inputmode="numeric" min="1" max="{{ open }}" value="1">
+        <button class="button button--secondary button--small">{% if operation == "return" %}Zurücknehmen{% elif row.is_consumable %}Entnehmen{% else %}Ausgeben{% endif %}</button>
+      </form>
+    </details>
+  {% endif %}
+</div>
