@@ -13,7 +13,7 @@
 
 ## Erweiterungen
 
-- [Materialerweiterung – Entwicklerübergabe](entwicklung/materialerweiterung.md): Funktionsumfang, Modelle, Migrationen, Teststand und offene Übernahmeprüfungen zu Meilenstein 13.
+- [Materialverwaltung mit QR-Modus](entwicklung/materialerweiterung.md): Aufbau, Reservierung, Abbau, Rechte, Teststand und offene Übernahmeprüfungen zu Meilenstein 13.
 - [Material und Scans – Bedienungsanleitung](handbuch/material-scans.md).
 
 ## Architektur-Entscheidungen
@@ -41,5 +41,7 @@
 | [0019](architektur/0019-kalender-produktion-einmal.md) | Kalender: Produktion einmal anzeigen |
 | [0022](architektur/0022-material-einzelgeraete.md) | Optionaler QR-Modus und gemischte Materialverwaltung (Fork, zur Übernahmeprüfung) |
 | [0023](architektur/0023-chat-und-geraete-ohne-reservierung.md) | Chat-Auswahl und Einzelgeräte ohne Reservierung |
+| [0024](architektur/0024-qr-mindestversion.md) | QR-Codes mindestens in Version 2 |
+| [0025](architektur/0025-reservierung-ueber-planung.md) | Reservierung über die Planung |
 
 Neue Entscheidungen bekommen die nächste Nummer und einen Eintrag in Abschnitt 16 der Feature-Liste.

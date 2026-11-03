@@ -25,7 +25,7 @@ from .forms import (
     PlanKitForm,
     PlannedQuantityForm,
 )
-from .models import DefectReport, Kit, Material, MaterialCategory, PlannedMaterial
+from .models import DefectReport, Kit, Material, MaterialCategory, PlannedMaterial, UnitIssue
 
 INVENTORY = {"active_section": "inventory"}
 PRODUCTIONS = {"active_section": "productions"}
@@ -365,7 +365,13 @@ def planned_edit(request, pk):
     shortages = []
     if request.method == "POST" and form.is_valid():
         quantity = form.cleaned_data["quantity"]
-        if quantity < planned.issued_quantity:
+        devices = (
+            UnitIssue.objects.filter(production=planned.production, unit__material=planned.material)
+            .values("unit")
+            .distinct()
+            .count()
+        )
+        if quantity < max(planned.issued_quantity, devices):
             form.add_error(
                 "quantity", "Die Menge darf nicht unter der bereits ausgegebenen Menge liegen."
             )

@@ -66,7 +66,7 @@ Unter **Einstellungen → Materialverwaltung** kann eine Person mit Materialverw
 
 Vorhandene Daten bleiben erhalten; neue Migrationen mit `make migrate` ausführen. Für die Kamera sind HTTPS oder localhost und eine Browserfreigabe erforderlich. Die lokale Entwicklungsdatenbank ist extern standardmäßig auf Port **5433** erreichbar (`POSTGRES_DEV_PORT`); innerhalb von Docker bleibt es Port 5432.
 
-[Bedienungsanleitung](docs/handbuch/material-scans.md) · [Entwicklerübergabe](docs/entwicklung/materialerweiterung.md) · [Architekturentscheidung ADR 0022](docs/architektur/0022-material-einzelgeraete.md)
+[Bedienungsanleitung](docs/handbuch/material-scans.md) · [Technische Übersicht](docs/entwicklung/materialerweiterung.md) · [Architekturentscheidung ADR 0022](docs/architektur/0022-material-einzelgeraete.md)
 
 ## Betrieb
 

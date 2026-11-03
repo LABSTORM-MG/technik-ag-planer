@@ -130,11 +130,11 @@ def material_status(production, planned):
     status = {"planned": sum(p.quantity for p in planned)}
     status["shortages"] = sum(1 for p in planned if p.shortage)
     if production.organization.inventory_qr_enabled:
-        rows = unit_services.issue_rows(production)
-        status["planned"] = sum(max(r.planned.quantity, r.issued) for r in rows)
-        status["issued"] = sum(r.issued for r in rows)
-        status["returned"] = sum(r.returned for r in rows if not r.is_consumable)
-        status["returnable"] = sum(r.issued for r in rows if not r.is_consumable)
+        totals = unit_services.packing_totals(unit_services.issue_rows(production))
+        status["planned"] = totals["planned_total"]
+        status["issued"] = totals["issued_total"]
+        status["returned"] = totals["returned_total"]
+        status["returnable"] = totals["returnable_total"]
         return status
     status["issued"] = sum(p.quantity for p in planned if p.issued_at)
     status["returned"] = sum(p.quantity for p in planned if p.returned_at)

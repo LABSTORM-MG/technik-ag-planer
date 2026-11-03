@@ -55,9 +55,9 @@ def test_scan_issue_and_return(org, concert, unit, planned, planner):
 
 
 def test_free_device_issued_without_planning(org, concert, unit, planner):
-    message = unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+    result = unit_services.scan_unit(concert, unit.code, "issue", planner.user)
 
-    assert "nicht eingeplant" in message
+    assert "nicht eingeplant" in result.message and result.over_plan
     plan = PlannedMaterial.objects.get(production=concert, material=unit.material)
     assert plan.quantity == 1
 
@@ -69,8 +69,8 @@ def test_more_devices_than_planned_raises_the_plan(org, concert, unit, planned, 
     first = unit_services.scan_unit(concert, unit.code, "issue", planner.user)
     over = unit_services.scan_unit(concert, second.code, "issue", planner.user)
 
-    assert first == "Ausgabe gespeichert."
-    assert "2 von 1 geplant, Planung auf 2 erhöht" in over
+    assert first.message == "Ausgabe gespeichert." and not first.over_plan
+    assert "jetzt 2 statt 1 geplant" in over.message and over.over_plan
     planned.refresh_from_db()
     assert planned.quantity == 2
 
@@ -165,7 +165,6 @@ def test_pages_and_permissions(concert, unit, planned, planner_client, member_cl
     for name, pk in [
         ("units", unit.material_id),
         ("scan", concert.pk),
-        ("teardown_protocol", concert.pk),
     ]:
         assert planner_client.get(reverse(f"inventory:{name}", args=[pk])).status_code == 200
     assert (
@@ -514,7 +513,7 @@ def test_bulk_output_has_no_device_scanner(org, concert, planned, planner_client
     planned.refresh_from_db()
     assert planned.issued_quantity == 1
     content = planner_client.get(
-        reverse("inventory:teardown_protocol", args=[concert.pk])
+        reverse("documents:teardown_protocol", args=[concert.pk])
     ).content.decode()
     assert planned.material.name in content
 
@@ -961,7 +960,7 @@ def test_quantity_move_answers_json_without_reload(org, concert, make_material, 
         url, {"operation": "issue", "quantity": 1}, headers={"accept": "application/json"}
     ).json()
 
-    assert ok == {"ok": True, "message": "2 × Kabel ausgegeben."}
+    assert ok == {"ok": True, "message": "2 × Kabel ausgegeben.", "detail": "Alle 2 ausgegeben"}
     assert bad["ok"] is False
 
 
@@ -1023,6 +1022,228 @@ def test_quantity_tick_issues_whole_open_amount(org, concert, make_material, pla
     item.refresh_from_db()
     assert item.issued_quantity == 3
     assert 'aria-pressed="true"' in page
+
+
+def _second_production(org, make_production, concert, material, quantity):
+    other = make_production(org, name="Schulfest")
+    Production.objects.filter(pk=other.pk).update(
+        start_date=concert.start_date, end_date=concert.end_date
+    )
+    other.refresh_from_db()
+    PlannedMaterial.objects.create(
+        organization=org, production=other, material=material, quantity=quantity
+    )
+    return other
+
+
+def _stocked_units(org, material, count):
+    material.quantity = count
+    material.save(update_fields=["quantity"])
+    existing = MaterialUnit.objects.for_org(org).filter(material=material).count()
+    return [
+        MaterialUnit.objects.create(organization=org, material=material, code=f"RES-{i}")
+        for i in range(count - existing)
+    ]
+
+
+def test_scan_over_plan_blocked_when_rest_is_reserved(
+    org, concert, unit, planned, planner, make_production
+):
+    PlannedMaterial.objects.filter(pk=planned.pk).update(quantity=1)
+    [spare] = _stocked_units(org, unit.material, 2)
+    _second_production(org, make_production, concert, unit.material, 1)
+
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+    with pytest.raises(ValidationError, match="reserviert für Schulfest"):
+        unit_services.scan_unit(concert, spare.code, "issue", planner.user)
+
+    planned.refresh_from_db()
+    assert planned.quantity == 1
+    assert not spare.issues.exists()
+
+
+def test_unplanned_scan_blocked_when_stock_is_reserved(
+    org, concert, unit, planner, make_production
+):
+    _stocked_units(org, unit.material, 1)
+    _second_production(org, make_production, concert, unit.material, 1)
+
+    with pytest.raises(ValidationError, match="reserviert für Schulfest"):
+        unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+    assert not PlannedMaterial.objects.filter(production=concert).exists()
+
+
+def test_scan_over_plan_ok_when_other_production_is_on_other_days(
+    org, concert, unit, planned, planner, make_production
+):
+    PlannedMaterial.objects.filter(pk=planned.pk).update(quantity=1)
+    [spare] = _stocked_units(org, unit.material, 2)
+    other = _second_production(org, make_production, concert, unit.material, 1)
+    Production.objects.filter(pk=other.pk).update(
+        start_date=concert.end_date + timedelta(days=10),
+        end_date=concert.end_date + timedelta(days=10),
+    )
+
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+    assert unit_services.scan_unit(concert, spare.code, "issue", planner.user).over_plan
+
+
+def test_scan_within_plan_always_allowed_even_if_overbooked(
+    org, concert, unit, planned, planner, make_production
+):
+    _stocked_units(org, unit.material, 1)
+    _second_production(org, make_production, concert, unit.material, 5)
+
+    assert not unit_services.scan_unit(concert, unit.code, "issue", planner.user).over_plan
+
+
+def test_scan_over_plan_without_stock_limit_is_never_blocked(
+    org, concert, unit, planned, planner, make_production
+):
+    PlannedMaterial.objects.filter(pk=planned.pk).update(quantity=1)
+    spare = MaterialUnit.objects.create(organization=org, material=unit.material, code="FREI-1")
+    unit.material.quantity = None
+    unit.material.save(update_fields=["quantity"])
+    _second_production(org, make_production, concert, unit.material, 5)
+
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+    assert unit_services.scan_unit(concert, spare.code, "issue", planner.user).over_plan
+
+
+def test_scan_json_reports_remaining_and_over_plan(org, concert, unit, planned, planner_client):
+    url = reverse("inventory:scan", args=[concert.pk])
+    second = MaterialUnit.objects.create(organization=org, material=unit.material, code="MIC-02")
+    third = MaterialUnit.objects.create(organization=org, material=unit.material, code="MIC-03")
+
+    def post(code, mode="issue"):
+        return planner_client.post(
+            url, {"code": code, "mode": mode}, HTTP_ACCEPT="application/json"
+        ).json()
+
+    first = post(unit.code)
+    assert first["detail"] == "Noch 1 von 2 offen" and first["over_plan"] is False
+    assert post(second.code)["detail"] == "Alle 2 ausgegeben"
+    over = post(third.code)
+    assert over["over_plan"] is True and "jetzt 3 statt 2" in over["detail"]
+    assert post(unit.code, "return")["detail"] == "Noch 2 von 3 offen"
+    assert "detail" not in post("GIBT-ES-NICHT")
+
+
+def test_undo_tick_leaves_no_trace_in_the_counts(concert, unit, planned, planner):
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+    unit_services.scan_unit(concert, unit.code, "undo_issue", planner.user)
+
+    [row] = unit_services.issue_rows(concert)
+    assert (row.issued, row.returned) == (0, 0)
+    assert not unit.issues.exists()
+
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+    unit_services.scan_unit(concert, unit.code, "return", planner.user)
+    unit_services.scan_unit(concert, unit.code, "undo_return", planner.user)
+
+    [row] = unit_services.issue_rows(concert)
+    assert (row.issued, row.returned, row.to_return) == (1, 0, 1)
+    assert unit.issues.filter(returned_at__isnull=True).count() == 1
+
+
+def test_device_issued_twice_counts_once(concert, unit, planned, planner):
+    for mode in ["issue", "return", "issue"]:
+        unit_services.scan_unit(concert, unit.code, mode, planner.user)
+
+    [row] = unit_services.issue_rows(concert)
+    assert (row.issued, row.returned) == (1, 0)
+
+
+def test_plan_cannot_shrink_below_issued_devices(concert, unit, planned, planner, planner_client):
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+    url = reverse("inventory:planned_edit", args=[planned.pk])
+
+    response = planner_client.post(url, {"quantity": 0})
+
+    planned.refresh_from_db()
+    assert response.status_code == 200 and planned.quantity == 2
+
+
+def _complete_teardown(concert, planner):
+    unit_services.teardown(concert, "start", planner.user)
+    unit_services.teardown(concert, "complete", planner.user)
+
+
+def test_teardown_can_be_reopened_and_issuing_works_again(concert, unit, planned, planner):
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+    unit_services.scan_unit(concert, unit.code, "return", planner.user)
+    _complete_teardown(concert, planner)
+    with pytest.raises(ValidationError):
+        unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+
+    unit_services.teardown(concert, "reopen", planner.user)
+
+    state = ProductionTeardown.objects.get()
+    assert state.completed_at is None and state.completed_by is None
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+
+
+def test_reopen_keeps_exceptions(concert, unit, planned, planner):
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+    unit_services.teardown(concert, "start", planner.user)
+    issue = unit.issues.get()
+    unit_services.teardown(
+        concert, "exception", planner.user, issue_id=issue.pk, reason="missing", note="Nicht da"
+    )
+    unit_services.teardown(concert, "complete", planner.user)
+
+    unit_services.teardown(concert, "reopen", planner.user)
+
+    assert hasattr(unit.issues.get(), "exception")
+
+
+def test_reopen_needs_completed_teardown(concert, unit, planner):
+    with pytest.raises(ValidationError):
+        unit_services.teardown(concert, "reopen", planner.user)
+    unit_services.teardown(concert, "start", planner.user)
+    with pytest.raises(ValidationError):
+        unit_services.teardown(concert, "reopen", planner.user)
+
+
+def test_reopen_rights_and_foreign_org(
+    org, other_org, concert, unit, planner, planner_client, member_client, make_production
+):
+    _complete_teardown(concert, planner)
+    url = reverse("inventory:teardown", args=[concert.pk])
+    page = planner_client.get(reverse("inventory:scan", args=[concert.pk])).content.decode()
+    assert 'value="reopen"' in page
+
+    assert member_client.post(url, {"operation": "reopen"}).status_code == 403
+    assert ProductionTeardown.objects.get().completed_at
+    foreign = make_production(other_org)
+    foreign_url = reverse("inventory:teardown", args=[foreign.pk])
+    assert planner_client.post(foreign_url, {"operation": "reopen"}).status_code == 404
+
+    assert planner_client.post(url, {"operation": "reopen"}).status_code == 302
+    assert ProductionTeardown.objects.get().completed_at is None
+
+
+def test_protocol_preview_and_real_pdf(concert, unit, planned, planner, planner_client):
+    unit_services.scan_unit(concert, unit.code, "issue", planner.user)
+    args = [concert.pk]
+
+    preview = planner_client.get(reverse("documents:teardown_protocol", args=args))
+    assert preview.status_code == 200 and unit.material.name in preview.content.decode()
+    pdf = planner_client.get(reverse("documents:teardown_protocol_pdf", args=args))
+    assert pdf["Content-Type"] == "application/pdf" and pdf.content.startswith(b"%PDF")
+
+
+def test_protocol_needs_qr_mode_and_own_org(
+    org, other_org, concert, unit, planner_client, member_client, make_production
+):
+    url = reverse("documents:teardown_protocol", args=[concert.pk])
+    foreign = reverse("documents:teardown_protocol", args=[make_production(other_org).pk])
+
+    assert planner_client.get(foreign).status_code == 404
+    assert member_client.get(url).status_code == 200
+    org.inventory_qr_enabled = False
+    org.save(update_fields=["inventory_qr_enabled"])
+    assert planner_client.get(url).status_code == 404
 
 
 def test_material_page_only_links_to_device_management(unit, planner_client):

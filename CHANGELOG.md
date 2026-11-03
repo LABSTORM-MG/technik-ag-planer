@@ -31,6 +31,11 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 - QR-Etiketten größer und leichter lesbar, Scan auch per Foto
 - Produktionsseite: Material nur noch als kleine Statuskarte, Mengen und Planung im Material-Menü der Produktion
 - Warnung beim Verlassen nur noch, wenn wirklich etwas geändert wurde
+- Reservierung über die Planung: Eingeplantes Material ist für die Tage der Produktion belegt; ein Scan über die Planung hinaus wird gesperrt, wenn der Rest für eine andere Produktion reserviert ist ([ADR 0025](docs/architektur/0025-reservierung-ueber-planung.md))
+- Kamera zeigt den Gesamtstand und je Scan, wie viel noch offen ist; über der Planung warnt sie mit eigener Farbe, eigenem Ton und längerer Vibration
+- Haken an Geräten lassen sich sauber zurücknehmen und ändern die Zählung nicht
+- Abgeschlossener Abbau lässt sich nach Rückfrage wieder öffnen
+- Abbauprotokoll als kompaktes PDF
 - „Material packen“ neu: großer Knopf „Kamera öffnen“, darunter eine Liste mit Suche und Filtern, in der sich Geräte und Mengen einzeln abhaken lassen
 - Scannen: Popup am unteren Rand („Name“ wurde gescannt, 3 Sekunden), Ton und Vibration; die Kamera öffnet sich als eigene Vollbild-Ansicht, in der sich auch Ausgabe und Rückgabe umschalten lassen
 - QR-Codes werden mindestens als Version 2 erzeugt und lassen sich dadurch auch schräg scannen; bereits gedruckte Etiketten neu drucken ([ADR 0024](docs/architektur/0024-qr-mindestversion.md))

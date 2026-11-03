@@ -1,8 +1,8 @@
 <li data-show="{{ show }}">
   <form method="post" data-quantity-form data-tick data-no-unsaved>
     {% csrf_token %}<input type="hidden" name="code" value="{{ device.code }}"><input type="hidden" name="mode" value="{{ action }}">
-    <button class="tick-row" aria-pressed="{{ pressed|yesno:'true,false' }}"{% if action == "issue" and teardown.completed_at %} disabled{% endif %}>
-      <span class="tick-row__box" aria-hidden="true"></span><span class="tick-row__label">Gerät {{ device.number }}</span>
+    <button class="tick-row" aria-pressed="{{ pressed|yesno:'true,false' }}"{% if action == "issue" and teardown.completed_at or action == "undo_return" and teardown.completed_at %} disabled{% endif %}>
+      <span class="tick-row__box" aria-hidden="true"></span><span class="tick-row__label">Gerät {{ device.number }}{% if note %} · {{ note }}{% endif %}</span>
     </button>
   </form>
 </li>
