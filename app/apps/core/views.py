@@ -48,11 +48,6 @@ def healthz(request):
     return JsonResponse({"status": "ok", "datenbank": True})
 
 
-def landing(request):
-    """Öffentliche Startseite (Abschnitt 12) – über `landing_for_anonymous` an „/“."""
-    return render(request, "core/landing.html", {"features": FEATURES})
-
-
 @login_not_required
 def legal(request, kind):
     if kind not in LegalPage.Kind.values:

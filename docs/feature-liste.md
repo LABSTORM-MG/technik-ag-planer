@@ -425,15 +425,12 @@ Die App speichert nur, was für die Planung nötig ist, und richtet sich an Schu
 - Datensparsam: Namen sind frei wählbar; die App fragt nur E-Mail-Adresse, Name und Jahrgangsstufe ab
 - Organisatorisch, nicht Teil der Entwicklung: Einsatz der App und Nutzung von Google vor dem Start mit Schulleitung und Datenschutzbeauftragter der Schule abstimmen; klären, ob für Schülerinnen und Schüler unter 16 eine Einwilligung der Eltern nötig ist
 
-## 12. Landingpage und Kosten
+## 12. Startseite und Kosten
 
-**Landingpage**
+**Startseite**
 
-- Hero mit Claim, Button „Zur App“, Hinweis, dass Konten nur auf Einladung vergeben werden
-- Funktionsübersicht mit Screenshots für Handy und Computer
-- Abschnitte Geräte, Sicherheit und Datenschutz, Kosten
-- „So startest du“ in drei Schritten: Einladung annehmen, Passwort setzen, Team einladen
-- Fußzeile mit Impressum, Datenschutz, Nutzungsbedingungen
+- Keine öffentliche Werbeseite: Wer nicht angemeldet ist, landet unter `/` beim Login (ADR 0026)
+- Der Login weist darauf hin, dass Konten nur auf Einladung vergeben werden, und verlinkt Impressum, Datenschutz und Nutzungsbedingungen
 
 **Kosten**
 
@@ -567,7 +564,7 @@ Im Hauptverzeichnis liegt eine kurze `CLAUDE.md`, die Claude Code bei jeder Sitz
 | 9 | Team-Funktionen | Fähigkeiten, Einsatzübersicht mit Stundenkorrektur, Schuljahreswechsel, Konto löschen mit Anonymisierung (2, 5) |
 | 10 | Google-Anbindung | OAuth-Verbindung, Drive-Ablage, Kalender-Übertragung, Anleitung für das Google-Cloud-Projekt (2, 9) |
 | 11 | PWA und Push | Web-App-Manifest, Service Worker, Web Push, Erinnerungen, Benachrichtigungs-Einstellungen (1, 9) |
-| 12 | Abschluss | Einstellungen vollständig, Hilfe & FAQ, Landingpage, Installations- und Betriebsdoku, Sicherheits-Review (10, 12, 14) |
+| 12 | Abschluss | Einstellungen vollständig, Hilfe & FAQ, Landingpage (später entfernt, ADR 0026), Installations- und Betriebsdoku, Sicherheits-Review (10, 12, 14) |
 | 13 | Materialerweiterung | Optionaler QR-Modus, Einzelgeräte, Mengen-/Verbrauchsausgabe, Defekte und Abbau (7, 10) |
 
 **Hinweise zu den schwierigen Teilen**
@@ -661,7 +658,8 @@ Dieser Abschnitt wird nach jedem Meilenstein fortgeschrieben (Schritt 6 im Ablau
 | Push | Abo je Gerät, Einstellungen je Konto (für alle AGs); jede Art einzeln abschaltbar; wer etwas auslöst, bekommt keine Mitteilung | Ein Handy gehört einer Person; keine Mitteilung über eigene Änderungen | ADR 0013 |
 | Push | Erinnerung standardmäßig am Vorabend um 18 Uhr, alternativ einige Stunden vorher; bei verschobenem Job erneut | Abschnitt 9 | ADR 0013 |
 | Push | Board-Nachrichten an alle, Chat-Nachrichten an Eingeteilte und Aufsicht | Regel wie der Zähler in der Navigation | ADR 0013 |
-| Startseite | Nicht Angemeldete sehen unter `/` die Landingpage, Angemeldete das Dashboard; Screenshots automatisch aus den Beispieldaten | Gleiche Startadresse für die installierte App | ADR 0014 |
+| Startseite | Nicht Angemeldete landen unter `/` beim Login, Angemeldete beim Dashboard; die Landingpage aus M12 ist entfallen | Die App richtet sich nur an eingeladene Mitglieder; gleiche Startadresse für die installierte App | ADR 0026 |
+| E-Mails | Gestaltet im Dunkel-Design der App; die Vorlagen holen ihre Farben beim Rendern aus `tokens.css` (`{% token %}`) | Mail-Programme kennen keine CSS-Variablen; `tokens.css` bleibt die einzige Stelle mit Farbwerten | ADR 0026 |
 | Rechtliches | Impressum, Datenschutz, Nutzungsbedingungen trägt der Betreiber im Django-Admin ein; Vorlagen in `docs/rechtliches/` (ohne Rechtsberatung) | Jede Installation hat einen eigenen Betreiber | ADR 0014 |
 | Sicherheit | Content-Security-Policy ohne `unsafe-inline`; Test ordnet jede View als öffentlich, Konto-View oder AG-geprüft ein; Push nur an Push-Dienste der Browser; Anfragen am Proxy höchstens 30 MB | Ergebnis des Sicherheits-Reviews (`docs/sicherheit/review-2026-10.md`) | ADR 0014 |
 | Betrieb | Backup-Skripte für Datenbank und `.env` (14 Tage), Dateien liegen im Drive der AGs | Abschnitt 14 | ADR 0014 |
@@ -702,5 +700,4 @@ Die ursprünglichen Meilensteine 1–12 sind umgesetzt; für die Erweiterung M13
 **Ideen für später**
 
 - Begründete Verlustausnahme für Mengenmaterial beim Abbau, damit fehlende Stücke den Abschluss nicht blockieren
-- Besser gestaltete E-Mails für Einladung und „Passwort vergessen“
 - Kurzes Tutorial nach der ersten Kontoerstellung: die Website als App auf den Homebildschirm legen (iPhone, Android)

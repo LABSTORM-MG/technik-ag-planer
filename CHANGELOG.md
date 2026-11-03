@@ -4,6 +4,15 @@ Alle wichtigen Änderungen an diesem Projekt. Format nach [Keep a Changelog](htt
 
 ## [Unveröffentlicht]
 
+### Geändert
+
+- Einladungs- und Passwort-Mails sind gestaltet: Dunkel-Design der App, großer Button, Fußzeile mit Impressum und Datenschutz; die Einladung nennt die Rolle
+- `/` führt ohne Anmeldung direkt zum Login
+
+### Entfernt
+
+- Landingpage samt Screenshots und `scripts/screenshots.py`
+
 ### Hinzugefügt
 
 **Meilenstein 13 – Materialerweiterung**

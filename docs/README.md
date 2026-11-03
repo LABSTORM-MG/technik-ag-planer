@@ -43,5 +43,6 @@
 | [0023](architektur/0023-chat-und-geraete-ohne-reservierung.md) | Chat-Auswahl und Einzelgeräte ohne Reservierung |
 | [0024](architektur/0024-qr-mindestversion.md) | QR-Codes mindestens in Version 2 |
 | [0025](architektur/0025-reservierung-ueber-planung.md) | Reservierung über die Planung |
+| [0026](architektur/0026-login-als-startseite-und-gestaltete-mails.md) | Login als Startseite, gestaltete E-Mails |
 
 Neue Entscheidungen bekommen die nächste Nummer und einen Eintrag in Abschnitt 16 der Feature-Liste.
